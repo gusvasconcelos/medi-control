@@ -34,4 +34,4 @@ console_command = 'php /var/www/html/artisan tinker'
   cpus = 1
 
 [deploy]
-  release_command = "php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache"
+  release_command = "sh -c 'php artisan migrate --force && php artisan optimize:clear'"
