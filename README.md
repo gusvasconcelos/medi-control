@@ -1,79 +1,50 @@
-# Laravel API Starter Kit
+# Medi Control
 
-Este é um starter kit para desenvolvimento de APIs modernas utilizando o framework [Laravel](https://laravel.com/). O objetivo é fornecer uma base robusta, segura e pronta para produção, acelerando o desenvolvimento de novas APIs.
+Medi Control é um sistema de controle de tratamento medicamentoso para pacientes polimedicados.
 
-## To-Do List
+## Tecnologias
 
-Funcionalidades que ainda serão implementadas neste starter kit:
+-   PHP 8.2
+-   Laravel 12
+-   PostgreSQL
+-   Redis
 
--   [x] **Autenticação JWT**  
-         Autenticação segura baseada em tokens JWT para proteger suas rotas e recursos.
+## Instalação
 
--   [x] **Internalização**  
-         Suporte a múltiplos idiomas, atualmente inglês e português do Brasil.
+1. Clone o repositório
 
--   [x] **Tratamento de erros global e exceções personalizadas**
-        Tratamento de erros global e exceções personalizadas para melhorar a experiência do usuário.
+```bash
+git clone https://github.com/medi-control/medi-control.git
+```
 
--   [x] **Code Style**
-        Laravel Pint usando PSR-12 para formatação de código.
+2. Instale as dependências
 
--   [x] **Code Quality**
-        PHPStan para análise estática de código.
+```bash
+composer install
+```
 
--   [x] **RBAC (Role-Based Access Control)**  
-         Controle de acesso baseado em papéis para maior granularidade de permissões.
+3. Configure o arquivo `.env`
 
--   [x] **Logging via Discord**  
-         Sistema de logs customizável para monitoramento e auditoria.
+```bash
+cp .env.example .env
+```
 
--   [ ] **Docker**  
-         Ambiente de desenvolvimento e produção containerizado.
+4. Execute as migrações
 
--   [ ] **CI/CD com Github Actions**  
-         Pipeline de integração e entrega contínua utilizando Github Actions.
+```bash
+php artisan migrate
+```
 
--   [ ] **Mailing**  
-         Envio de e-mails transacionais e notificações.
+5. Execute os seeds
 
--   [ ] **Social Login (Google, Apple)**  
-         Autenticação via provedores sociais populares.
+```bash
+php artisan db:seed
+```
 
--   [ ] **File uploads**  
-         Upload e gerenciamento de arquivos.
+6. Execute o servidor
 
--   [x] **E2E tests**  
-         Testes de ponta a ponta para garantir a qualidade da API.
+```bash
+php artisan serve
+```
 
-## Como usar
-
-1. Clone o repositório:
-    ```bash
-    git clone https://github.com/gusvasconcelos/laravel-boilerplate-api.git
-    ```
-2. Instale as dependências:
-    ```bash
-    composer install
-    ```
-3. Configure o arquivo `.env` conforme necessário.
-    ```bash
-    cp .env.example .env
-    ```
-4. Execute as migrations:
-    ```bash
-    php artisan migrate
-    ```
-5. Gere a chave JWT:
-    ```bash
-    php artisan jwt:secret
-    ```
-6. Inicie o servidor de desenvolvimento:
-    ```bash
-    php artisan serve
-    ```
-
----
-
-## Sobre
-
-Este repositório foi criado para acelerar o desenvolvimento de APIs RESTful com Laravel, seguindo as melhores práticas de segurança, escalabilidade e manutenibilidade. Ideal para projetos que precisam de uma base sólida e recursos essenciais já prontos para uso.
+7. Acesse a aplicação em `http://localhost:8000`

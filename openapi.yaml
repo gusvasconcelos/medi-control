@@ -1,0 +1,309 @@
+openapi: 3.0.3
+info:
+  title: Medi Control API
+  description: |
+    Medi Control é um sistema de controle de tratamento medicamentoso para pacientes polimedicados.
+
+    ## Autenticação
+    A API utiliza Bearer Token (JWT) para autenticação. Após fazer login, inclua o token no header:
+    ```
+    Authorization: Bearer {access_token}
+    ```
+  version: 1.0.0
+  contact:
+    name: Medi Control Support
+
+servers:
+  - url: http://localhost:8000
+    description: Servidor de Desenvolvimento
+  - url: https://medi-control.fly.dev
+    description: Servidor de Produção
+
+tags:
+  - name: Autenticação
+    description: Endpoints para autenticação e gerenciamento de usuários
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Autenticação
+      summary: Autenticação de usuário
+      description: Realiza a autenticação do usuário e retorna um token JWT
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Email do usuário
+                  example: usuario@exemplo.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  description: Senha do usuário (mínimo 8 caracteres)
+                  example: senha123456
+      responses:
+        "200":
+          description: Login realizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: Token JWT de acesso
+                    example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+                  token_type:
+                    type: string
+                    description: Tipo do token
+                    example: bearer
+                  expires_in:
+                    type: integer
+                    description: Tempo de expiração do token em segundos
+                    example: 3600
+              examples:
+                success:
+                  summary: Login bem-sucedido
+                  value:
+                    access_token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0L2FwaS9hdXRoL2xvZ2luIiwiaWF0IjoxNjk2MzU4NDAwLCJleHAiOjE2OTYzNjIwMDAsIm5iZiI6MTY5NjM1ODQwMCwianRpIjoiYWJjZGVmMTIzNDU2Iiwic3ViIjoiMSIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.signature
+                    token_type: bearer
+                    expires_in: 3600
+        "422":
+          description: Credenciais inválidas ou dados de validação incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                invalid_credentials:
+                  summary: Credenciais inválidas
+                  value:
+                    message: As credenciais fornecidas estão incorretas
+                    code: INVALID_CREDENTIALS
+                validation_error:
+                  summary: Erro de validação
+                  value:
+                    message: Os dados fornecidos são inválidos
+                    errors:
+                      email:
+                        - O campo email é obrigatório
+                      password:
+                        - O campo password deve ter no mínimo 8 caracteres
+        "500":
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      tags:
+        - Autenticação
+      summary: Obter usuário autenticado
+      description: Retorna os dados do usuário atualmente autenticado
+      operationId: me
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Dados do usuário retornados com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+              examples:
+                user:
+                  summary: Usuário autenticado
+                  value:
+                    id: 1
+                    name: João Silva
+                    email: joao.silva@exemplo.com
+                    email_verified_at: "2024-01-15T10:30:00.000000Z"
+                    created_at: "2024-01-01T00:00:00.000000Z"
+                    updated_at: "2024-01-15T10:30:00.000000Z"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                unauthorized:
+                  summary: Token inválido ou ausente
+                  value:
+                    message: Token inválido ou não fornecido
+                    code: UNAUTHORIZED
+        "500":
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      tags:
+        - Autenticação
+      summary: Logout do usuário
+      description: Invalida o token JWT atual do usuário
+      operationId: logout
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Logout realizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Mensagem de confirmação
+                    example: Logout realizado com sucesso
+              examples:
+                success:
+                  summary: Logout bem-sucedido
+                  value:
+                    message: Logout realizado com sucesso
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/refresh:
+    post:
+      tags:
+        - Autenticação
+      summary: Atualizar token
+      description: Gera um novo token JWT usando o token atual
+      operationId: refresh
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Token atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: Novo token JWT de acesso
+                    example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+                  token_type:
+                    type: string
+                    description: Tipo do token
+                    example: bearer
+                  expires_in:
+                    type: integer
+                    description: Tempo de expiração do token em segundos
+                    example: 3600
+              examples:
+                success:
+                  summary: Token atualizado
+                  value:
+                    access_token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0L2FwaS9hdXRoL3JlZnJlc2giLCJpYXQiOjE2OTYzNjIwMDAsImV4cCI6MTY5NjM2NTYwMCwibmJmIjoxNjk2MzYyMDAwLCJqdGkiOiJ4eXoxMjM0NTYiLCJzdWIiOiIxIiwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyJ9.signature
+                    token_type: bearer
+                    expires_in: 3600
+        "401":
+          description: Token inválido ou expirado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Insira o token JWT obtido através do endpoint de login.
+        Exemplo: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID único do usuário
+          example: 1
+        name:
+          type: string
+          description: Nome completo do usuário
+          example: João Silva
+        email:
+          type: string
+          format: email
+          description: Email do usuário
+          example: joao.silva@exemplo.com
+        email_verified_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Data e hora da verificação do email
+          example: "2024-01-15T10:30:00.000000Z"
+        created_at:
+          type: string
+          format: date-time
+          description: Data e hora de criação do usuário
+          example: "2024-01-01T00:00:00.000000Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Data e hora da última atualização
+          example: "2024-01-15T10:30:00.000000Z"
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Mensagem descritiva do erro
+          example: Ocorreu um erro ao processar a solicitação
+        code:
+          type: string
+          description: Código de erro para identificação
+          example: ERROR_CODE
+        errors:
+          type: object
+          description: Objeto contendo erros de validação por campo
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            email:
+              - O campo email é obrigatório
+            password:
+              - O campo password deve ter no mínimo 8 caracteres
