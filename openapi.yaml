@@ -1,4 +1,4 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
   title: Medi Control API
   description: |
@@ -24,7 +24,7 @@ tags:
     description: Endpoints para autenticação e gerenciamento de usuários
 
 paths:
-  /auth/login:
+  /api/v1/auth/login:
     post:
       tags:
         - Autenticação
@@ -107,7 +107,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /auth/me:
+  /api/v1/auth/me:
     get:
       tags:
         - Autenticação
@@ -152,7 +152,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /auth/logout:
+  /api/v1/auth/logout:
     post:
       tags:
         - Autenticação
@@ -191,7 +191,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /auth/refresh:
+  /api/v1/auth/refresh:
     post:
       tags:
         - Autenticação

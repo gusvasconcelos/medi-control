@@ -32,7 +32,7 @@ class ErrorResponse implements Arrayable
         $response = [
             'req_id' => $this->reqId,
             'message' => $this->message,
-            'status' => $this->statusCode,
+            'status_code' => $this->statusCode,
             'code' => $this->errorCode,
         ];
 
