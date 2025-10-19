@@ -89,23 +89,58 @@ paths:
                 invalid_credentials:
                   summary: Credenciais inválidas
                   value:
+                    req_id: 0199efdc-ca34-7350-ba10-3f328cd4792b
                     message: As credenciais fornecidas estão incorretas
+                    status_code: 422
                     code: INVALID_CREDENTIALS
-                validation_error:
-                  summary: Erro de validação
+                validation_error_missing_fields:
+                  summary: Campos obrigatórios ausentes
                   value:
-                    message: Os dados fornecidos são inválidos
-                    errors:
+                    req_id: 0199efdc-ca34-7350-ba10-3f328cd4792c
+                    message: Erro na validação de campo.
+                    status_code: 422
+                    code: VALIDATION
+                    details:
                       email:
-                        - O campo email é obrigatório
+                        - O campo email é obrigatório.
                       password:
-                        - O campo password deve ter no mínimo 8 caracteres
+                        - O campo senha é obrigatório.
+                validation_error_invalid_email:
+                  summary: Email inválido e senha ausente
+                  value:
+                    req_id: 0199efdc-ca34-7350-ba10-3f328cd4792b
+                    message: Erro na validação de campo.
+                    status_code: 422
+                    code: VALIDATION
+                    details:
+                      email:
+                        - O campo email deve ser um endereço de e-mail válido.
+                      password:
+                        - O campo senha é obrigatório.
+                validation_error_password_too_short:
+                  summary: Senha muito curta
+                  value:
+                    req_id: 0199efdc-ca34-7350-ba10-3f328cd4792d
+                    message: Erro na validação de campo.
+                    status_code: 422
+                    code: VALIDATION
+                    details:
+                      password:
+                        - O campo senha deve ter no mínimo 8 caracteres.
         "500":
           description: Erro interno do servidor
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                internal_error:
+                  summary: Erro interno do servidor
+                  value:
+                    req_id: 0199efdc-ca34-7350-ba10-3f328cd4792f
+                    message: Ocorreu um erro interno no servidor
+                    status_code: 500
+                    code: INTERNAL_SERVER_ERROR
 
   /api/v1/auth/me:
     get:
@@ -143,7 +178,9 @@ paths:
                 unauthorized:
                   summary: Token inválido ou ausente
                   value:
+                    req_id: 0199efdc-ca34-7350-ba10-3f328cd4792e
                     message: Token inválido ou não fornecido
+                    status_code: 401
                     code: UNAUTHORIZED
         "500":
           description: Erro interno do servidor
@@ -151,6 +188,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                internal_error:
+                  summary: Erro interno do servidor
+                  value:
+                    req_id: 0199efdc-ca34-7350-ba10-3f328cd47930
+                    message: Ocorreu um erro interno no servidor
+                    status_code: 500
+                    code: INTERNAL_SERVER_ERROR
 
   /api/v1/auth/logout:
     post:
@@ -184,12 +229,28 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                unauthorized:
+                  summary: Token inválido ou ausente
+                  value:
+                    req_id: 0199efdc-ca34-7350-ba10-3f328cd47931
+                    message: Token inválido ou não fornecido
+                    status_code: 401
+                    code: UNAUTHORIZED
         "500":
           description: Erro interno do servidor
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                internal_error:
+                  summary: Erro interno do servidor
+                  value:
+                    req_id: 0199efdc-ca34-7350-ba10-3f328cd47932
+                    message: Ocorreu um erro interno no servidor
+                    status_code: 500
+                    code: INTERNAL_SERVER_ERROR
 
   /api/v1/auth/refresh:
     post:
@@ -233,12 +294,28 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                unauthorized:
+                  summary: Token inválido ou expirado
+                  value:
+                    req_id: 0199efdc-ca34-7350-ba10-3f328cd47933
+                    message: Token inválido ou expirado
+                    status_code: 401
+                    code: UNAUTHORIZED
         "500":
           description: Erro interno do servidor
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                internal_error:
+                  summary: Erro interno do servidor
+                  value:
+                    req_id: 0199efdc-ca34-7350-ba10-3f328cd47934
+                    message: Ocorreu um erro interno no servidor
+                    status_code: 500
+                    code: INTERNAL_SERVER_ERROR
 
 components:
   securitySchemes:
@@ -287,17 +364,25 @@ components:
     ErrorResponse:
       type: object
       properties:
+        req_id:
+          type: string
+          description: ID único da requisição para rastreamento
+          example: 0199efdc-ca34-7350-ba10-3f328cd4792b
         message:
           type: string
           description: Mensagem descritiva do erro
           example: Ocorreu um erro ao processar a solicitação
+        status_code:
+          type: integer
+          description: Código HTTP do status da resposta
+          example: 422
         code:
           type: string
           description: Código de erro para identificação
           example: ERROR_CODE
-        errors:
+        details:
           type: object
-          description: Objeto contendo erros de validação por campo
+          description: Objeto contendo detalhes do erro, incluindo erros de validação por campo
           additionalProperties:
             type: array
             items:
@@ -307,3 +392,10 @@ components:
               - O campo email é obrigatório
             password:
               - O campo password deve ter no mínimo 8 caracteres
+        errors:
+          type: object
+          description: (Deprecated) Use 'details' ao invés. Objeto contendo erros de validação por campo
+          additionalProperties:
+            type: array
+            items:
+              type: string
