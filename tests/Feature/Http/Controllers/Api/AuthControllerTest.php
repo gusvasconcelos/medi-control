@@ -3,6 +3,7 @@
 namespace Tests\Feature\Http\Controllers\Api;
 
 use App\Models\User;
+use Database\Factories\UserFactory;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
@@ -11,6 +12,26 @@ class AuthControllerTest extends TestCase
     use DatabaseTransactions;
 
     protected string $url = '/api/v1/auth';
+
+    public function test_register_with_successful(): void
+    {
+        $form = UserFactory::new()->unverified()->make()->setAppends([])->toArray();
+
+        $form['password'] = 'password';
+        $form['password_confirmation'] = 'password';
+
+        $response = $this->postJson("$this->url/register", $form);
+
+        $response
+            ->assertStatus(200)
+            ->assertJson([
+                'message' => __('messages.auth.register_success'),
+            ]);
+
+        $this->assertDatabaseHas('users', [
+            'email' => $form['email'],
+        ]);
+    }
 
     public function test_login_with_successful(): void
     {
@@ -57,6 +78,8 @@ class AuthControllerTest extends TestCase
         ];
 
         $response = $this->postJson("$this->url/login", $form);
+
+        dd(cast()->toJsonPretty($response->json()));
 
         $response
             ->assertStatus(422)
