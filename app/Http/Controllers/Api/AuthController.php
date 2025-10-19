@@ -2,14 +2,31 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Exceptions\UnauthorizedException;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Exceptions\UnprocessableEntityException;
 
 class AuthController extends Controller
 {
+    public function register(RegisterRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => bcrypt($validated['password']),
+        ]);
+
+        return response()->json([
+            'message' => __('messages.auth.register_success'),
+        ]);
+    }
+
     public function login(LoginRequest $request): JsonResponse
     {
         $validated = $request->validated();

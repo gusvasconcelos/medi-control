@@ -5,5 +5,6 @@ return [
         'logout' => 'Logout feito com sucesso.',
         'not_authenticated' => 'Não autenticado.',
         'invalid_credentials' => 'As credenciais estão inválidas.',
+        'register_success' => 'Registro realizado com sucesso.',
     ],
 ];
