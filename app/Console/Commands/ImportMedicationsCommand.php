@@ -27,12 +27,6 @@ class ImportMedicationsCommand extends Command
 
     private int $imported = 0;
 
-    private int $skippedTestName = 0;
-
-    private int $skippedInvalidStatus = 0;
-
-    private int $skippedDuplicateInCsv = 0;
-
     private int $skippedAlreadyExists = 0;
 
     private const MAPPED_FIELDS = [
@@ -71,7 +65,16 @@ class ImportMedicationsCommand extends Command
         $this->newLine();
 
         try {
-            $spreadsheet = IOFactory::load($filePath);
+            // Configure CSV reader to handle Windows-1252 encoding (common in Brazilian data)
+            if ($extension === 'csv') {
+                $reader = IOFactory::createReader('Csv');
+                $reader->setInputEncoding('Windows-1252');
+                $reader->setDelimiter(';');
+                $reader->setEnclosure('"');
+                $spreadsheet = $reader->load($filePath);
+            } else {
+                $spreadsheet = IOFactory::load($filePath);
+            }
 
             $worksheet = $spreadsheet->getActiveSheet();
 
@@ -91,19 +94,7 @@ class ImportMedicationsCommand extends Command
 
             $rowsHydrated = $this->hydrate($header, $rows);
 
-            dd($rowsHydrated);
-
-            if ($header !== self::EXPECTED_COLUMNS) {
-                $this->error('O arquivo não possui as colunas esperadas.');
-
-                $this->info('Colunas esperadas: '.implode(', ', self::EXPECTED_COLUMNS));
-
-                $this->info('Colunas encontradas: '.implode(', ', $header));
-
-                return Command::FAILURE;
-            }
-
-            $this->totalRecords = count($rows);
+            $this->totalRecords = count($rowsHydrated);
 
             if ($this->totalRecords === 0) {
                 $this->warn('O arquivo não contém dados para importar');
@@ -119,76 +110,31 @@ class ImportMedicationsCommand extends Command
 
             $progressBar->start();
 
-            $registrationNumbers = [];
-
-            foreach ($rows as $row) {
-                $record = array_combine($header, $row);
-
-                if (empty(trim($record['NOME_PRODUTO'] ?? ''))) {
-                    $progressBar->advance();
-
-                    continue;
-                }
-
-                $situacao = trim($record['SITUACAO_REGISTRO'] ?? '');
-
-                if (in_array($situacao, ['VÁLIDO', 'ATIVO'])) {
-                    $this->skippedInvalidStatus++;
-
-                    $progressBar->advance();
-
-                    continue;
-                }
-
-                if (stripos($record['NOME_PRODUTO'], 'teste')) {
-                    $this->skippedTestName++;
-
-                    $progressBar->advance();
-
-                    continue;
-                }
-
-                $registrationNumber = trim($record['NUMERO_REGISTRO_PRODUTO'] ?? '');
-
-                if (isset($registrationNumbers[$registrationNumber])) {
-                    $this->skippedDuplicateInCsv++;
-
-                    $progressBar->advance();
-
-                    continue;
-                }
-
-                $registrationNumbers[$registrationNumber] = true;
-
-
-
-                $medicationData = [
-                    'name' => trim($record['NOME_PRODUTO']),
-                    'active_principle' => trim($record['PRINCIPIO_ATIVO']),
-                    'manufacturer' => ! empty(trim($record['EMPRESA_DETENTORA_REGISTRO'])) ? trim($record['EMPRESA_DETENTORA_REGISTRO']) : null,
-                    'category' => ! empty(trim($record['CATEGORIA_REGULATORIA'])) ? trim($record['CATEGORIA_REGULATORIA']) : null,
-                    'therapeutic_class' => ! empty(trim($record['CLASSE_TERAPEUTICA'])) ? trim($record['CLASSE_TERAPEUTICA']) : null,
-                ];
-
-                $exists = Medication::where('name', $medicationData['name'])
-                    ->where('active_principle', $medicationData['active_principle'])
+            foreach ($rowsHydrated as $row) {
+                $exists = Medication::query()
+                    ->whereInsensitiveLike('name', $row['name'])
+                    ->whereInsensitiveLike('active_principle', $row['active_principle'])
                     ->exists();
 
                 if ($exists) {
                     $this->skippedAlreadyExists++;
+
                     $progressBar->advance();
 
                     continue;
                 }
 
-                // Inserir medicamento
                 try {
-                    Medication::create($medicationData);
+                    Medication::create($row);
+
                     $this->imported++;
-                } catch (\Exception $e) {
+                } catch (Throwable $e) {
                     $progressBar->clear();
-                    $this->error("\nErro ao importar medicamento: {$medicationData['name']}");
+
+                    $this->error("\nErro ao importar medicamento: {$row['name']}");
+
                     $this->error($e->getMessage());
+
                     $progressBar->display();
                 }
 
@@ -201,7 +147,6 @@ class ImportMedicationsCommand extends Command
 
             $this->newLine(2);
 
-            // Exibir relatório
             $this->displayReport();
 
             return Command::SUCCESS;
@@ -214,18 +159,39 @@ class ImportMedicationsCommand extends Command
 
     private function hydrate(array $header, array $rows): array
     {
-        foreach ($rows as $row) {
-            $record = array_combine(array_values($header), $row);
+        $hydrated = [];
 
-            dd($record);
+        $registeredNumbers = [];
+
+        foreach ($rows as $row) {
+            $record = collect(array_combine($header, array_map('mb_strtoupper', $row)));
+
+            if (! in_array($record->get('situacao_registro'), ['VÁLIDO', 'ATIVO'])) {
+                continue;
+            }
+
+            if (stripos($record->get('nome_produto'), 'teste')) {
+                continue;
+            }
+
+            if (in_array($record->get('numero_registro_produto'), $registeredNumbers)) {
+                continue;
+            }
+
+            $mapped = [];
+
+            $registeredNumbers[] = $record->get('numero_registro_produto');
+
+            foreach (self::MAPPED_FIELDS as $original => $target) {
+                $mapped[$target] = isset($record[$original]) ? trim($record[$original]) : null;
+            }
+
+            $hydrated[] = $mapped;
         }
 
-        return [];
+        return $hydrated;
     }
 
-    /**
-     * Exibe o relatório da importação
-     */
     private function displayReport(): void
     {
         $this->info('═══════════════════════════════════════════════════════════');
@@ -238,9 +204,6 @@ class ImportMedicationsCommand extends Command
             [
                 ['Total de registros no arquivo', $this->totalRecords],
                 ['✓ Importados com sucesso', "<fg=green>{$this->imported}</>"],
-                ['⊗ Ignorados (contêm "teste")', "<fg=yellow>{$this->skippedTestName}</>"],
-                ['⊗ Ignorados (situação inválida)', "<fg=yellow>{$this->skippedInvalidStatus}</>"],
-                ['⊗ Ignorados (duplicatas no arquivo)', "<fg=yellow>{$this->skippedDuplicateInCsv}</>"],
                 ['⊗ Ignorados (já existem no banco)', "<fg=yellow>{$this->skippedAlreadyExists}</>"],
             ]
         );
