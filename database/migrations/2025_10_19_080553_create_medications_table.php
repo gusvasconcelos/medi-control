@@ -13,7 +13,7 @@ return new class () extends Migration {
         Schema::create('medications', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('active_principle');
+            $table->string('active_principle', 1000)->nullable();
             $table->string('manufacturer')->nullable();
             $table->string('category')->nullable();
             $table->string('therapeutic_class')->nullable();
@@ -29,7 +29,7 @@ return new class () extends Migration {
                 'inhaler',
                 'patch',
                 'other',
-            ])->default('tablet');
+            ])->nullable();
             $table->text('description')->nullable();
             $table->text('warnings')->nullable();
             $table->json('interactions')->nullable();
