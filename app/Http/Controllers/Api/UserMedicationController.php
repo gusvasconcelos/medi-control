@@ -6,20 +6,38 @@ use App\Models\Medication;
 use Illuminate\Http\JsonResponse;
 use App\Models\UserMedication;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UserMedication\IndexMedicationRequest;
 use App\Http\Requests\UserMedication\SearchMedicationRequest;
 use App\Http\Requests\UserMedication\StoreUserMedicationRequest;
 use App\Http\Requests\UserMedication\UpdateUserMedicationRequest;
 
 class UserMedicationController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(IndexMedicationRequest $request): JsonResponse
     {
-        $userMedications = UserMedication::with(['medication', 'logs'])
-            ->where('active', true)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $validated = collect($request->validated());
 
-        return response()->json($userMedications);
+        $userMedicationsBuilder = UserMedication::with(['medication', 'logs'])
+            ->where('active', true)
+            ->orderBy('created_at', 'desc');
+
+        if ($validated->isEmpty()) {
+            return response()->json($userMedicationsBuilder->get());
+        }
+
+        $startDate = $validated->get('start_date');
+
+        if ($startDate) {
+            $userMedicationsBuilder->where('start_date', '>=', $startDate);
+        }
+
+        $endDate = $validated->get('end_date');
+
+        if ($endDate) {
+            $userMedicationsBuilder->where('end_date', '<=', $endDate);
+        }
+
+        return response()->json($userMedicationsBuilder->get());
     }
 
     public function store(StoreUserMedicationRequest $request): JsonResponse

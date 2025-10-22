@@ -39,7 +39,7 @@ class StoreUserMedicationRequest extends FormRequest
             'medication_name' => __('validation.attributes.medication_name'),
             'medication_active_principle' => __('validation.attributes.medication_active_principle'),
             'medication_manufacturer' => __('validation.attributes.medication_manufacturer'),
-            'medication_category' => __('validation.attributes.medication_category'),
+            'medication_category' => __('validation.attributes.category'),
             'medication_strength' => __('validation.attributes.medication_strength'),
             'medication_form' => __('validation.attributes.medication_form'),
             'dosage' => __('validation.attributes.dosage'),
