@@ -26,11 +26,27 @@ paths:
       deprecated: false
       description: >-
         Retorna todos os medicamentos ativos associados ao usuário autenticado
-        com seus respectivos logs
+        com seus respectivos logs. É possível filtrar por data de início e/ou data de término do tratamento.
       operationId: getUserMedications
       tags:
         - Medicamentos do Usuário
-      parameters: []
+      parameters:
+        - name: start_date
+          in: query
+          required: false
+          description: Filtrar medicamentos com data de início maior ou igual a esta data (formato YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+            example: "2025-10-01"
+        - name: end_date
+          in: query
+          required: false
+          description: Filtrar medicamentos com data de término menor ou igual a esta data (formato YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+            example: "2025-12-31"
       responses:
         '200':
           description: Lista de medicamentos retornada com sucesso
@@ -40,6 +56,52 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/UserMedication'
+              examples:
+                without_filters:
+                  summary: Sem filtros - retorna todos os medicamentos ativos
+                  value:
+                    - id: 1
+                      medication_id: 123
+                      dosage: "1 comprimido"
+                      frequency: "2x ao dia"
+                      time_slots: ["08:00", "20:00"]
+                      start_date: "2025-10-01"
+                      end_date: "2025-11-01"
+                      active: true
+                    - id: 2
+                      medication_id: 456
+                      dosage: "2 cápsulas"
+                      frequency: "1x ao dia"
+                      time_slots: ["08:00"]
+                      start_date: "2025-09-15"
+                      end_date: null
+                      active: true
+                with_start_date_filter:
+                  summary: Com filtro start_date - retorna medicamentos iniciados após 2025-10-01
+                  value:
+                    - id: 1
+                      medication_id: 123
+                      dosage: "1 comprimido"
+                      frequency: "2x ao dia"
+                      time_slots: ["08:00", "20:00"]
+                      start_date: "2025-10-01"
+                      end_date: "2025-11-01"
+                      active: true
+          headers: {}
+        '422':
+          description: Erro de validação nos filtros
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: "0199efdc-ca34-7350-ba10-3f328cd47999"
+                message: "Erro na validação de campo."
+                status_code: 422
+                code: "VALIDATION"
+                details:
+                  start_date:
+                    - "O campo data de início não é uma data válida."
           headers: {}
         '401':
           description: Não autenticado - Token inválido ou ausente
