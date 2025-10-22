@@ -1,38 +1,538 @@
 openapi: 3.1.0
 info:
-  title: Medi Control API
-  description: |
-    Medi Control é um sistema de controle de tratamento medicamentoso para pacientes polimedicados.
+  title: Medi Control - API
+  description: >
+    API de autenticação do sistema Medi Control usando JWT (JSON Web Tokens).
+
 
     ## Autenticação
-    A API utiliza Bearer Token (JWT) para autenticação. Após fazer login, inclua o token no header:
+
+    A API utiliza Bearer Token (JWT) para autenticação. Após fazer login, inclua
+    o token no header:
+
     ```
+
     Authorization: Bearer {access_token}
+
     ```
   version: 1.0.0
-  contact:
-    name: Medi Control Support
-
-servers:
-  - url: http://localhost:8000
-    description: Servidor de Desenvolvimento
-  - url: https://medi-control.fly.dev
-    description: Servidor de Produção
-
 tags:
+  - name: Medicamentos do Usuário
   - name: Autenticação
-    description: Endpoints para autenticação e gerenciamento de usuários
-
 paths:
+  /api/v1/user-medications:
+    get:
+      summary: Listar medicamentos ativos do usuário
+      deprecated: false
+      description: >-
+        Retorna todos os medicamentos ativos associados ao usuário autenticado
+        com seus respectivos logs
+      operationId: getUserMedications
+      tags:
+        - Medicamentos do Usuário
+      parameters: []
+      responses:
+        '200':
+          description: Lista de medicamentos retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserMedication'
+          headers: {}
+        '401':
+          description: Não autenticado - Token inválido ou ausente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47935
+                message: Token inválido ou não fornecido
+                status_code: 401
+                code: UNAUTHORIZED
+          headers: {}
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47938
+                message: Ocorreu um erro interno no servidor
+                status_code: 500
+                code: INTERNAL_SERVER_ERROR
+          headers: {}
+      security:
+        - bearerAuth: []
+    post:
+      summary: Cadastrar novo medicamento para o usuário
+      deprecated: false
+      description: >
+        Cadastra um novo medicamento para o usuário. Pode usar um medicamento
+        existente (medication_id)
+
+        ou criar um novo medicamento fornecendo os dados do medicamento
+        (medication_name, medication_active_principle, etc.)
+      operationId: storeUserMedication
+      tags:
+        - Medicamentos do Usuário
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/StoreUserMedicationWithExisting'
+                - $ref: '#/components/schemas/StoreUserMedicationWithNew'
+            examples:
+              with_existing_medication:
+                value:
+                  medication_id: 123
+                  dosage: 1 comprimido
+                  frequency: 2x ao dia
+                  time_slots:
+                    - '08:00'
+                    - '20:00'
+                  via_administration: oral
+                  start_date: '2025-10-22'
+                  initial_stock: 30
+                  current_stock: 30
+                  low_stock_threshold: 5
+                summary: Usando medicamento existente
+              with_new_medication:
+                value:
+                  medication_name: Paracetamol 500mg
+                  medication_active_principle: Paracetamol
+                  medication_manufacturer: EMS
+                  medication_strength: 500mg
+                  medication_form: tablet
+                  dosage: 1 comprimido
+                  frequency: 3x ao dia
+                  time_slots:
+                    - '08:00'
+                    - '14:00'
+                    - '20:00'
+                  via_administration: oral
+                  start_date: '2025-10-22'
+                  end_date: '2025-11-22'
+                  duration: 30
+                  initial_stock: 90
+                  current_stock: 90
+                  low_stock_threshold: 10
+                  notes: Tomar após as refeições
+                summary: Criando novo medicamento
+        required: true
+      responses:
+        '201':
+          description: Medicamento cadastrado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    examples:
+                      - Medicamento cadastrado com sucesso.
+                  data:
+                    $ref: '#/components/schemas/UserMedication'
+          headers: {}
+        '401':
+          description: Não autenticado - Token inválido ou ausente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47935
+                message: Token inválido ou não fornecido
+                status_code: 401
+                code: UNAUTHORIZED
+          headers: {}
+        '422':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47937
+                message: Erro na validação de campo.
+                status_code: 422
+                code: VALIDATION
+                details:
+                  dosage:
+                    - O campo posologia é obrigatório.
+          headers: {}
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47938
+                message: Ocorreu um erro interno no servidor
+                status_code: 500
+                code: INTERNAL_SERVER_ERROR
+          headers: {}
+      security:
+        - bearerAuth: []
+  /api/v1/user-medications/{id}:
+    get:
+      summary: Obter detalhes de um medicamento específico
+      deprecated: false
+      description: Retorna os detalhes de um medicamento do usuário incluindo seus logs
+      operationId: showUserMedication
+      tags:
+        - Medicamentos do Usuário
+      parameters:
+        - name: id
+          in: path
+          description: ID do medicamento do usuário
+          required: true
+          example: 0
+          schema:
+            type: integer
+            examples:
+              - 1
+      responses:
+        '200':
+          description: Detalhes do medicamento retornados com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserMedication'
+          headers: {}
+        '401':
+          description: Não autenticado - Token inválido ou ausente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47935
+                message: Token inválido ou não fornecido
+                status_code: 401
+                code: UNAUTHORIZED
+          headers: {}
+        '404':
+          description: Recurso não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47936
+                message: Recurso não encontrado
+                status_code: 404
+                code: RESOURCE_NOT_FOUND
+          headers: {}
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47938
+                message: Ocorreu um erro interno no servidor
+                status_code: 500
+                code: INTERNAL_SERVER_ERROR
+          headers: {}
+      security:
+        - bearerAuth: []
+    put:
+      summary: Atualizar medicamento do usuário
+      deprecated: false
+      description: Atualiza as informações de um medicamento do usuário
+      operationId: updateUserMedication
+      tags:
+        - Medicamentos do Usuário
+      parameters:
+        - name: id
+          in: path
+          description: ID do medicamento do usuário
+          required: true
+          example: 0
+          schema:
+            type: integer
+            examples:
+              - 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserMedication'
+            example:
+              dosage: 2 comprimidos
+              frequency: 2x ao dia
+              time_slots:
+                - '09:00'
+                - '21:00'
+              current_stock: 25
+              notes: Trocar horário devido a efeitos colaterais
+        required: true
+      responses:
+        '200':
+          description: Medicamento atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    examples:
+                      - Medicamento atualizado com sucesso.
+                  data:
+                    $ref: '#/components/schemas/UserMedication'
+          headers: {}
+        '401':
+          description: Não autenticado - Token inválido ou ausente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47935
+                message: Token inválido ou não fornecido
+                status_code: 401
+                code: UNAUTHORIZED
+          headers: {}
+        '404':
+          description: Recurso não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47936
+                message: Recurso não encontrado
+                status_code: 404
+                code: RESOURCE_NOT_FOUND
+          headers: {}
+        '422':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47937
+                message: Erro na validação de campo.
+                status_code: 422
+                code: VALIDATION
+                details:
+                  dosage:
+                    - O campo posologia é obrigatório.
+          headers: {}
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47938
+                message: Ocorreu um erro interno no servidor
+                status_code: 500
+                code: INTERNAL_SERVER_ERROR
+          headers: {}
+      security:
+        - bearerAuth: []
+    delete:
+      summary: Remover medicamento do usuário (soft delete)
+      deprecated: false
+      description: >
+        Marca o medicamento como inativo (soft delete). O medicamento não será
+        mais exibido
+
+        na lista de medicamentos ativos, mas permanecerá no banco de dados para
+        fins de histórico.
+      operationId: deleteUserMedication
+      tags:
+        - Medicamentos do Usuário
+      parameters:
+        - name: id
+          in: path
+          description: ID do medicamento do usuário
+          required: true
+          example: 0
+          schema:
+            type: integer
+            examples:
+              - 1
+      responses:
+        '200':
+          description: Medicamento removido com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    examples:
+                      - Medicamento removido com sucesso.
+          headers: {}
+        '401':
+          description: Não autenticado - Token inválido ou ausente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47935
+                message: Token inválido ou não fornecido
+                status_code: 401
+                code: UNAUTHORIZED
+          headers: {}
+        '404':
+          description: Recurso não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47936
+                message: Recurso não encontrado
+                status_code: 404
+                code: RESOURCE_NOT_FOUND
+          headers: {}
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47938
+                message: Ocorreu um erro interno no servidor
+                status_code: 500
+                code: INTERNAL_SERVER_ERROR
+          headers: {}
+      security:
+        - bearerAuth: []
+  /api/v1/user-medications/medications/search:
+    get:
+      summary: Buscar medicamentos
+      deprecated: false
+      description: >
+        Busca medicamentos cadastrados no sistema por nome ou princípio ativo
+        usando busca case-insensitive.
+
+        Útil para encontrar medicamentos existentes antes de cadastrar um
+        medicamento para o usuário.
+      operationId: searchMedications
+      tags:
+        - Medicamentos do Usuário
+      parameters:
+        - name: search
+          in: query
+          description: Termo de busca (mínimo 3 caracteres)
+          required: true
+          schema:
+            type: string
+            minLength: 3
+            examples:
+              - paracetamol
+        - name: limit
+          in: query
+          description: Limite de resultados (máximo 50)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+            examples:
+              - 10
+      responses:
+        '200':
+          description: Busca realizada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Medication'
+              examples:
+                '1':
+                  summary: Success
+                  value:
+                    id: 123
+                    name: Paracetamol 500mg
+                    active_principle: Paracetamol
+                    manufacturer: EMS
+                    category: Analgésico
+                    strength: 500mg
+                    form: tablet
+                '2':
+                  summary: Success
+                  value:
+                    id: 456
+                    name: Paracetamol 750mg
+                    active_principle: Paracetamol
+                    manufacturer: Medley
+                    category: Analgésico
+                    strength: 750mg
+                    form: tablet
+          headers: {}
+        '401':
+          description: Não autenticado - Token inválido ou ausente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47935
+                message: Token inválido ou não fornecido
+                status_code: 401
+                code: UNAUTHORIZED
+          headers: {}
+        '422':
+          description: Erro de validação (busca muito curta)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47999
+                message: Erro na validação de campo.
+                status_code: 422
+                code: VALIDATION
+                details:
+                  search:
+                    - O campo busca deve ter pelo menos 3 caracteres.
+          headers: {}
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47938
+                message: Ocorreu um erro interno no servidor
+                status_code: 500
+                code: INTERNAL_SERVER_ERROR
+          headers: {}
+      security:
+        - bearerAuth: []
   /api/v1/auth/login:
     post:
-      tags:
-        - Autenticação
       summary: Autenticação de usuário
+      deprecated: false
       description: Realiza a autenticação do usuário e retorna um token JWT
       operationId: login
+      tags:
+        - Autenticação
+      parameters: []
       requestBody:
-        required: true
         content:
           application/json:
             schema:
@@ -45,15 +545,18 @@ paths:
                   type: string
                   format: email
                   description: Email do usuário
-                  example: usuario@exemplo.com
+                  examples:
+                    - usuario@exemplo.com
                 password:
                   type: string
                   format: password
                   minLength: 8
                   description: Senha do usuário (mínimo 8 caracteres)
-                  example: senha123456
+                  examples:
+                    - senha123456
+        required: true
       responses:
-        "200":
+        '200':
           description: Login realizado com sucesso
           content:
             application/json:
@@ -63,37 +566,39 @@ paths:
                   access_token:
                     type: string
                     description: Token JWT de acesso
-                    example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+                    examples:
+                      - eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
                   token_type:
                     type: string
                     description: Tipo do token
-                    example: bearer
+                    examples:
+                      - bearer
                   expires_in:
                     type: integer
                     description: Tempo de expiração do token em segundos
-                    example: 3600
-              examples:
-                success:
-                  summary: Login bem-sucedido
-                  value:
-                    access_token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0L2FwaS9hdXRoL2xvZ2luIiwiaWF0IjoxNjk2MzU4NDAwLCJleHAiOjE2OTYzNjIwMDAsIm5iZiI6MTY5NjM1ODQwMCwianRpIjoiYWJjZGVmMTIzNDU2Iiwic3ViIjoiMSIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.signature
-                    token_type: bearer
-                    expires_in: 3600
-        "422":
+                    examples:
+                      - 3600
+              example:
+                access_token: >-
+                  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0L2FwaS9hdXRoL2xvZ2luIiwiaWF0IjoxNjk2MzU4NDAwLCJleHAiOjE2OTYzNjIwMDAsIm5iZiI6MTY5NjM1ODQwMCwianRpIjoiYWJjZGVmMTIzNDU2Iiwic3ViIjoiMSIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.signature
+                token_type: bearer
+                expires_in: 3600
+          headers: {}
+        '422':
           description: Credenciais inválidas ou dados de validação incorretos
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
               examples:
-                invalid_credentials:
+                '2':
                   summary: Credenciais inválidas
                   value:
                     req_id: 0199efdc-ca34-7350-ba10-3f328cd4792b
                     message: As credenciais fornecidas estão incorretas
                     status_code: 422
                     code: INVALID_CREDENTIALS
-                validation_error_missing_fields:
+                '3':
                   summary: Campos obrigatórios ausentes
                   value:
                     req_id: 0199efdc-ca34-7350-ba10-3f328cd4792c
@@ -105,7 +610,7 @@ paths:
                         - O campo email é obrigatório.
                       password:
                         - O campo senha é obrigatório.
-                validation_error_invalid_email:
+                '4':
                   summary: Email inválido e senha ausente
                   value:
                     req_id: 0199efdc-ca34-7350-ba10-3f328cd4792b
@@ -117,7 +622,7 @@ paths:
                         - O campo email deve ser um endereço de e-mail válido.
                       password:
                         - O campo senha é obrigatório.
-                validation_error_password_too_short:
+                '5':
                   summary: Senha muito curta
                   value:
                     req_id: 0199efdc-ca34-7350-ba10-3f328cd4792d
@@ -127,87 +632,81 @@ paths:
                     details:
                       password:
                         - O campo senha deve ter no mínimo 8 caracteres.
-        "500":
+          headers: {}
+        '500':
           description: Erro interno do servidor
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-              examples:
-                internal_error:
-                  summary: Erro interno do servidor
-                  value:
-                    req_id: 0199efdc-ca34-7350-ba10-3f328cd4792f
-                    message: Ocorreu um erro interno no servidor
-                    status_code: 500
-                    code: INTERNAL_SERVER_ERROR
-
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd4792f
+                message: Ocorreu um erro interno no servidor
+                status_code: 500
+                code: INTERNAL_SERVER_ERROR
+          headers: {}
+      security: []
   /api/v1/auth/me:
     get:
-      tags:
-        - Autenticação
       summary: Obter usuário autenticado
+      deprecated: false
       description: Retorna os dados do usuário atualmente autenticado
       operationId: me
-      security:
-        - bearerAuth: []
+      tags:
+        - Autenticação
+      parameters: []
       responses:
-        "200":
+        '200':
           description: Dados do usuário retornados com sucesso
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
-              examples:
-                user:
-                  summary: Usuário autenticado
-                  value:
-                    id: 1
-                    name: João Silva
-                    email: joao.silva@exemplo.com
-                    email_verified_at: "2024-01-15T10:30:00.000000Z"
-                    created_at: "2024-01-01T00:00:00.000000Z"
-                    updated_at: "2024-01-15T10:30:00.000000Z"
-        "401":
+                $ref: '#/components/schemas/User'
+              example:
+                id: 1
+                name: João Silva
+                email: joao.silva@exemplo.com
+                email_verified_at: '2024-01-15T10:30:00.000000Z'
+                created_at: '2024-01-01T00:00:00.000000Z'
+                updated_at: '2024-01-15T10:30:00.000000Z'
+          headers: {}
+        '401':
           description: Não autenticado
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-              examples:
-                unauthorized:
-                  summary: Token inválido ou ausente
-                  value:
-                    req_id: 0199efdc-ca34-7350-ba10-3f328cd4792e
-                    message: Token inválido ou não fornecido
-                    status_code: 401
-                    code: UNAUTHORIZED
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd4792e
+                message: Token inválido ou não fornecido
+                status_code: 401
+                code: UNAUTHORIZED
+          headers: {}
+        '500':
           description: Erro interno do servidor
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-              examples:
-                internal_error:
-                  summary: Erro interno do servidor
-                  value:
-                    req_id: 0199efdc-ca34-7350-ba10-3f328cd47930
-                    message: Ocorreu um erro interno no servidor
-                    status_code: 500
-                    code: INTERNAL_SERVER_ERROR
-
-  /api/v1/auth/logout:
-    post:
-      tags:
-        - Autenticação
-      summary: Logout do usuário
-      description: Invalida o token JWT atual do usuário
-      operationId: logout
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47930
+                message: Ocorreu um erro interno no servidor
+                status_code: 500
+                code: INTERNAL_SERVER_ERROR
+          headers: {}
       security:
         - bearerAuth: []
+  /api/v1/auth/logout:
+    post:
+      summary: Logout do usuário
+      deprecated: false
+      description: Invalida o token JWT atual do usuário
+      operationId: logout
+      tags:
+        - Autenticação
+      parameters: []
       responses:
-        "200":
+        '200':
           description: Logout realizado com sucesso
           content:
             application/json:
@@ -217,52 +716,48 @@ paths:
                   message:
                     type: string
                     description: Mensagem de confirmação
-                    example: Logout realizado com sucesso
-              examples:
-                success:
-                  summary: Logout bem-sucedido
-                  value:
-                    message: Logout realizado com sucesso
-        "401":
+                    examples:
+                      - Logout realizado com sucesso
+              example:
+                message: Logout realizado com sucesso
+          headers: {}
+        '401':
           description: Não autenticado
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-              examples:
-                unauthorized:
-                  summary: Token inválido ou ausente
-                  value:
-                    req_id: 0199efdc-ca34-7350-ba10-3f328cd47931
-                    message: Token inválido ou não fornecido
-                    status_code: 401
-                    code: UNAUTHORIZED
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47931
+                message: Token inválido ou não fornecido
+                status_code: 401
+                code: UNAUTHORIZED
+          headers: {}
+        '500':
           description: Erro interno do servidor
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-              examples:
-                internal_error:
-                  summary: Erro interno do servidor
-                  value:
-                    req_id: 0199efdc-ca34-7350-ba10-3f328cd47932
-                    message: Ocorreu um erro interno no servidor
-                    status_code: 500
-                    code: INTERNAL_SERVER_ERROR
-
-  /api/v1/auth/refresh:
-    post:
-      tags:
-        - Autenticação
-      summary: Atualizar token
-      description: Gera um novo token JWT usando o token atual
-      operationId: refresh
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47932
+                message: Ocorreu um erro interno no servidor
+                status_code: 500
+                code: INTERNAL_SERVER_ERROR
+          headers: {}
       security:
         - bearerAuth: []
+  /api/v1/auth/refresh:
+    post:
+      summary: Atualizar token
+      deprecated: false
+      description: Gera um novo token JWT usando o token atual
+      operationId: refresh
+      tags:
+        - Autenticação
+      parameters: []
       responses:
-        "200":
+        '200':
           description: Token atualizado com sucesso
           content:
             application/json:
@@ -272,52 +767,681 @@ paths:
                   access_token:
                     type: string
                     description: Novo token JWT de acesso
-                    example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+                    examples:
+                      - eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
                   token_type:
                     type: string
                     description: Tipo do token
-                    example: bearer
+                    examples:
+                      - bearer
                   expires_in:
                     type: integer
                     description: Tempo de expiração do token em segundos
-                    example: 3600
-              examples:
-                success:
-                  summary: Token atualizado
-                  value:
-                    access_token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0L2FwaS9hdXRoL3JlZnJlc2giLCJpYXQiOjE2OTYzNjIwMDAsImV4cCI6MTY5NjM2NTYwMCwibmJmIjoxNjk2MzYyMDAwLCJqdGkiOiJ4eXoxMjM0NTYiLCJzdWIiOiIxIiwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyJ9.signature
-                    token_type: bearer
-                    expires_in: 3600
-        "401":
+                    examples:
+                      - 3600
+              example:
+                access_token: >-
+                  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0L2FwaS9hdXRoL3JlZnJlc2giLCJpYXQiOjE2OTYzNjIwMDAsImV4cCI6MTY5NjM2NTYwMCwibmJmIjoxNjk2MzYyMDAwLCJqdGkiOiJ4eXoxMjM0NTYiLCJzdWIiOiIxIiwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyJ9.signature
+                token_type: bearer
+                expires_in: 3600
+          headers: {}
+        '401':
           description: Token inválido ou expirado
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-              examples:
-                unauthorized:
-                  summary: Token inválido ou expirado
-                  value:
-                    req_id: 0199efdc-ca34-7350-ba10-3f328cd47933
-                    message: Token inválido ou expirado
-                    status_code: 401
-                    code: UNAUTHORIZED
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47933
+                message: Token inválido ou expirado
+                status_code: 401
+                code: UNAUTHORIZED
+          headers: {}
+        '500':
           description: Erro interno do servidor
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-              examples:
-                internal_error:
-                  summary: Erro interno do servidor
-                  value:
-                    req_id: 0199efdc-ca34-7350-ba10-3f328cd47934
-                    message: Ocorreu um erro interno no servidor
-                    status_code: 500
-                    code: INTERNAL_SERVER_ERROR
-
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47934
+                message: Ocorreu um erro interno no servidor
+                status_code: 500
+                code: INTERNAL_SERVER_ERROR
+          headers: {}
+      security:
+        - bearerAuth: []
+webhooks: {}
 components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID único do usuário
+          examples:
+            - 1
+        name:
+          type: string
+          description: Nome completo do usuário
+          examples:
+            - João Silva
+        email:
+          type: string
+          format: email
+          description: Email do usuário
+          examples:
+            - joao.silva@exemplo.com
+        email_verified_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+          description: Data e hora da verificação do email
+          examples:
+            - '2024-01-15T10:30:00.000000Z'
+        created_at:
+          type: string
+          format: date-time
+          description: Data e hora de criação do usuário
+          examples:
+            - '2024-01-01T00:00:00.000000Z'
+        updated_at:
+          type: string
+          format: date-time
+          description: Data e hora da última atualização
+          examples:
+            - '2024-01-15T10:30:00.000000Z'
+    ErrorResponse:
+      type: object
+      properties:
+        req_id:
+          type: string
+          description: ID único da requisição para rastreamento
+          examples:
+            - 0199efdc-ca34-7350-ba10-3f328cd4792b
+        message:
+          type: string
+          description: Mensagem descritiva do erro
+          examples:
+            - Ocorreu um erro ao processar a solicitação
+        status_code:
+          type: integer
+          description: Código HTTP do status da resposta
+          examples:
+            - 422
+        code:
+          type: string
+          description: Código de erro para identificação
+          examples:
+            - ERROR_CODE
+        details:
+          type: object
+          description: >-
+            Objeto contendo detalhes do erro, incluindo erros de validação por
+            campo
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          examples:
+            - email:
+                - O campo email é obrigatório
+              password:
+                - O campo password deve ter no mínimo 8 caracteres
+          properties: {}
+        errors:
+          type: object
+          description: >-
+            (Deprecated) Use 'details' ao invés. Objeto contendo erros de
+            validação por campo
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          properties: {}
+    Medication:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID único do medicamento
+          examples:
+            - 123
+        name:
+          type: string
+          description: Nome comercial do medicamento
+          examples:
+            - Paracetamol 500mg
+        active_principle:
+          type:
+            - string
+            - 'null'
+          description: Princípio ativo do medicamento
+          examples:
+            - Paracetamol
+        manufacturer:
+          type:
+            - string
+            - 'null'
+          description: Fabricante do medicamento
+          examples:
+            - EMS
+        category:
+          type:
+            - string
+            - 'null'
+          description: Categoria do medicamento
+          examples:
+            - Analgésico
+        therapeutic_class:
+          type:
+            - string
+            - 'null'
+          description: Classe terapêutica
+          examples:
+            - Analgésicos e antipiréticos
+        strength:
+          type:
+            - string
+            - 'null'
+          description: Dosagem do medicamento
+          examples:
+            - 500mg
+        form:
+          type:
+            - string
+            - 'null'
+          enum:
+            - tablet
+            - capsule
+            - liquid
+            - injection
+            - cream
+            - drops
+            - spray
+            - inhaler
+            - patch
+            - other
+          description: Forma farmacêutica
+          examples:
+            - tablet
+        description:
+          type:
+            - string
+            - 'null'
+          description: Descrição do medicamento
+        warnings:
+          type:
+            - string
+            - 'null'
+          description: Avisos e advertências
+        interactions:
+          type:
+            - array
+            - 'null'
+          items:
+            type: string
+          description: Interações medicamentosas conhecidas
+        created_at:
+          type: string
+          format: date-time
+          examples:
+            - '2025-10-22T10:00:00.000000Z'
+        updated_at:
+          type: string
+          format: date-time
+          examples:
+            - '2025-10-22T10:00:00.000000Z'
+    MedicationLog:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID único do log
+          examples:
+            - 1
+        user_medication_id:
+          type: integer
+          description: ID do medicamento do usuário
+          examples:
+            - 1
+        scheduled_at:
+          type: string
+          format: date-time
+          description: Data e hora programada para tomar o medicamento
+          examples:
+            - '2025-10-22T08:00:00.000000Z'
+        taken_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+          description: Data e hora em que o medicamento foi efetivamente tomado
+          examples:
+            - '2025-10-22T08:15:00.000000Z'
+        status:
+          type: string
+          enum:
+            - pending
+            - taken
+            - missed
+            - skipped
+          description: Status da tomada do medicamento
+          examples:
+            - taken
+        notes:
+          type:
+            - string
+            - 'null'
+          description: Observações sobre a tomada
+        created_at:
+          type: string
+          format: date-time
+          examples:
+            - '2025-10-22T08:15:00.000000Z'
+    UserMedication:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID único do medicamento do usuário
+          examples:
+            - 1
+        user_id:
+          type: integer
+          description: ID do usuário
+          examples:
+            - 1
+        medication_id:
+          type: integer
+          description: ID do medicamento
+          examples:
+            - 123
+        dosage:
+          type: string
+          description: Posologia (como tomar)
+          examples:
+            - 1 comprimido
+        frequency:
+          type: string
+          description: Frequência de uso
+          examples:
+            - 2x ao dia
+        time_slots:
+          type: array
+          items:
+            type: string
+            pattern: ^\d{2}:\d{2}$
+          description: Horários para tomar o medicamento (formato HH:mm)
+          examples:
+            - - '08:00'
+              - '20:00'
+        via_administration:
+          type: string
+          enum:
+            - oral
+            - topical
+            - injection
+            - inhalation
+            - sublingual
+            - rectal
+            - other
+          description: Via de administração
+          examples:
+            - oral
+        duration:
+          type:
+            - integer
+            - 'null'
+          description: Duração do tratamento em dias
+          examples:
+            - 30
+        start_date:
+          type: string
+          format: date
+          description: Data de início do tratamento
+          examples:
+            - '2025-10-22'
+        end_date:
+          type:
+            - string
+            - 'null'
+          format: date
+          description: Data de término do tratamento
+          examples:
+            - '2025-11-22'
+        initial_stock:
+          type: integer
+          description: Estoque inicial
+          examples:
+            - 30
+        current_stock:
+          type: integer
+          description: Estoque atual
+          examples:
+            - 25
+        low_stock_threshold:
+          type: integer
+          description: Limite mínimo de estoque para alerta
+          examples:
+            - 5
+        notes:
+          type:
+            - string
+            - 'null'
+          description: Observações gerais
+          examples:
+            - Tomar após as refeições
+        active:
+          type: boolean
+          description: Indica se o medicamento está ativo
+          examples:
+            - true
+        created_at:
+          type: string
+          format: date-time
+          examples:
+            - '2025-10-22T10:00:00.000000Z'
+        updated_at:
+          type: string
+          format: date-time
+          examples:
+            - '2025-10-22T10:00:00.000000Z'
+        medication:
+          $ref: '#/components/schemas/Medication'
+        logs:
+          type: array
+          items:
+            $ref: '#/components/schemas/MedicationLog'
+    StoreUserMedicationWithExisting:
+      type: object
+      required:
+        - medication_id
+        - dosage
+        - frequency
+        - time_slots
+        - via_administration
+        - start_date
+        - initial_stock
+        - current_stock
+        - low_stock_threshold
+      properties:
+        medication_id:
+          type: integer
+          description: ID de um medicamento existente
+          examples:
+            - 123
+        dosage:
+          type: string
+          description: Posologia
+          examples:
+            - 1 comprimido
+        frequency:
+          type: string
+          description: Frequência de uso
+          examples:
+            - 2x ao dia
+        time_slots:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            pattern: ^\d{2}:\d{2}$
+          description: Horários para tomar (formato HH:mm)
+          examples:
+            - - '08:00'
+              - '20:00'
+        via_administration:
+          type: string
+          enum:
+            - oral
+            - topical
+            - injection
+            - inhalation
+            - sublingual
+            - rectal
+            - other
+          examples:
+            - oral
+        duration:
+          type:
+            - integer
+            - 'null'
+          minimum: 1
+          description: Duração do tratamento em dias
+        start_date:
+          type: string
+          format: date
+          description: Data de início (formato YYYY-MM-DD)
+          examples:
+            - '2025-10-22'
+        end_date:
+          type:
+            - string
+            - 'null'
+          format: date
+          description: Data de término (formato YYYY-MM-DD)
+          examples:
+            - '2025-11-22'
+        initial_stock:
+          type: integer
+          minimum: 0
+          examples:
+            - 30
+        current_stock:
+          type: integer
+          minimum: 0
+          examples:
+            - 30
+        low_stock_threshold:
+          type: integer
+          minimum: 0
+          examples:
+            - 5
+        notes:
+          type:
+            - string
+            - 'null'
+    StoreUserMedicationWithNew:
+      type: object
+      required:
+        - medication_name
+        - medication_active_principle
+        - dosage
+        - frequency
+        - time_slots
+        - via_administration
+        - start_date
+        - initial_stock
+        - current_stock
+        - low_stock_threshold
+      properties:
+        medication_name:
+          type: string
+          maxLength: 255
+          description: Nome do novo medicamento
+          examples:
+            - Paracetamol 500mg
+        medication_active_principle:
+          type: string
+          maxLength: 255
+          description: Princípio ativo
+          examples:
+            - Paracetamol
+        medication_manufacturer:
+          type:
+            - string
+            - 'null'
+          maxLength: 255
+          examples:
+            - EMS
+        medication_category:
+          type:
+            - string
+            - 'null'
+          maxLength: 255
+          examples:
+            - Analgésico
+        medication_strength:
+          type:
+            - string
+            - 'null'
+          maxLength: 255
+          examples:
+            - 500mg
+        medication_form:
+          type:
+            - string
+            - 'null'
+          enum:
+            - tablet
+            - capsule
+            - liquid
+            - injection
+            - cream
+            - drops
+            - spray
+            - inhaler
+            - patch
+            - other
+          examples:
+            - tablet
+        dosage:
+          type: string
+          examples:
+            - 1 comprimido
+        frequency:
+          type: string
+          examples:
+            - 3x ao dia
+        time_slots:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            pattern: ^\d{2}:\d{2}$
+          examples:
+            - - '08:00'
+              - '14:00'
+              - '20:00'
+        via_administration:
+          type: string
+          enum:
+            - oral
+            - topical
+            - injection
+            - inhalation
+            - sublingual
+            - rectal
+            - other
+          examples:
+            - oral
+        duration:
+          type:
+            - integer
+            - 'null'
+          minimum: 1
+          examples:
+            - 30
+        start_date:
+          type: string
+          format: date
+          examples:
+            - '2025-10-22'
+        end_date:
+          type:
+            - string
+            - 'null'
+          format: date
+          examples:
+            - '2025-11-22'
+        initial_stock:
+          type: integer
+          minimum: 0
+          examples:
+            - 90
+        current_stock:
+          type: integer
+          minimum: 0
+          examples:
+            - 90
+        low_stock_threshold:
+          type: integer
+          minimum: 0
+          examples:
+            - 10
+        notes:
+          type:
+            - string
+            - 'null'
+          examples:
+            - Tomar após as refeições
+    UpdateUserMedication:
+      type: object
+      properties:
+        dosage:
+          type: string
+          examples:
+            - 2 comprimidos
+        frequency:
+          type: string
+          examples:
+            - 3x ao dia
+        time_slots:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            pattern: ^\d{2}:\d{2}$
+          examples:
+            - - '08:00'
+              - '14:00'
+              - '20:00'
+        via_administration:
+          type: string
+          enum:
+            - oral
+            - topical
+            - injection
+            - inhalation
+            - sublingual
+            - rectal
+            - other
+        duration:
+          type:
+            - integer
+            - 'null'
+          minimum: 1
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type:
+            - string
+            - 'null'
+          format: date
+        initial_stock:
+          type: integer
+          minimum: 0
+        current_stock:
+          type: integer
+          minimum: 0
+        low_stock_threshold:
+          type: integer
+          minimum: 0
+        notes:
+          type:
+            - string
+            - 'null'
+        active:
+          type: boolean
+    UnauthorizedError: &ref_0
+      $ref: '#/components/schemas/ErrorResponse'
+    NotFoundError: *ref_0
+    ValidationError: *ref_0
+    InternalServerError: *ref_0
   securitySchemes:
     bearerAuth:
       type: http
@@ -326,76 +1450,5 @@ components:
       description: |
         Insira o token JWT obtido através do endpoint de login.
         Exemplo: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
-
-  schemas:
-    User:
-      type: object
-      properties:
-        id:
-          type: integer
-          description: ID único do usuário
-          example: 1
-        name:
-          type: string
-          description: Nome completo do usuário
-          example: João Silva
-        email:
-          type: string
-          format: email
-          description: Email do usuário
-          example: joao.silva@exemplo.com
-        email_verified_at:
-          type: string
-          format: date-time
-          nullable: true
-          description: Data e hora da verificação do email
-          example: "2024-01-15T10:30:00.000000Z"
-        created_at:
-          type: string
-          format: date-time
-          description: Data e hora de criação do usuário
-          example: "2024-01-01T00:00:00.000000Z"
-        updated_at:
-          type: string
-          format: date-time
-          description: Data e hora da última atualização
-          example: "2024-01-15T10:30:00.000000Z"
-
-    ErrorResponse:
-      type: object
-      properties:
-        req_id:
-          type: string
-          description: ID único da requisição para rastreamento
-          example: 0199efdc-ca34-7350-ba10-3f328cd4792b
-        message:
-          type: string
-          description: Mensagem descritiva do erro
-          example: Ocorreu um erro ao processar a solicitação
-        status_code:
-          type: integer
-          description: Código HTTP do status da resposta
-          example: 422
-        code:
-          type: string
-          description: Código de erro para identificação
-          example: ERROR_CODE
-        details:
-          type: object
-          description: Objeto contendo detalhes do erro, incluindo erros de validação por campo
-          additionalProperties:
-            type: array
-            items:
-              type: string
-          example:
-            email:
-              - O campo email é obrigatório
-            password:
-              - O campo password deve ter no mínimo 8 caracteres
-        errors:
-          type: object
-          description: (Deprecated) Use 'details' ao invés. Objeto contendo erros de validação por campo
-          additionalProperties:
-            type: array
-            items:
-              type: string
+servers: []
+security: []
