@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 abstract class Model extends EloquentModel
@@ -13,7 +13,8 @@ abstract class Model extends EloquentModel
         parent::__construct($attributes);
     }
 
-    public function scopeWhereLike(Builder $query, string $field, ?string $value): Builder
+    #[Scope]
+    public function whereLike(Builder $query, string $field, ?string $value): Builder
     {
         if (is_null($value)) {
             return $query;
@@ -22,7 +23,8 @@ abstract class Model extends EloquentModel
         return $query->where($field, 'LIKE', "%{$value}%");
     }
 
-    public function scopeOrWhereLike(Builder $query, string $field, ?string $value): Builder
+    #[Scope]
+    public function orWhereLike(Builder $query, string $field, ?string $value): Builder
     {
         if (is_null($value)) {
             return $query;
@@ -31,7 +33,8 @@ abstract class Model extends EloquentModel
         return $query->orWhere($field, 'LIKE', "%{$value}%");
     }
 
-    public function scopeWhereInsensitiveLike(Builder $query, string $field, ?string $value): Builder
+    #[Scope]
+    public function whereInsensitiveLike(Builder $query, string $field, ?string $value): Builder
     {
         if (is_null($value)) {
             return $query;
@@ -40,12 +43,27 @@ abstract class Model extends EloquentModel
         return $query->where($field, 'ILIKE', "%{$value}%");
     }
 
-    public function scopeOrWhereInsensitiveLike(Builder $query, string $field, ?string $value): Builder
+    #[Scope]
+    public function orWhereInsensitiveLike(Builder $query, string $field, ?string $value): Builder
     {
         if (is_null($value)) {
             return $query;
         }
 
         return $query->orWhere($field, 'ILIKE', "%{$value}%");
+    }
+
+    #[Scope]
+    public function searchField(Builder $query, string $field, ?string $search): Builder
+    {
+        if (is_null($search) || trim($search) === '') {
+            return $query;
+        }
+
+        $unaccented = cast()->unaccent($search);
+
+        return $query->where(function (Builder $q) use ($field, $unaccented) {
+            $q->whereRaw("UNACCENT({$field})::text ILIKE ?", ["%{$unaccented}%"]);
+        });
     }
 }

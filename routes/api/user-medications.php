@@ -1,0 +1,16 @@
+<?php
+
+use App\Http\Controllers\Api\UserMedicationController;
+use Illuminate\Support\Facades\Route;
+
+Route::group([
+    'prefix' => 'user-medications',
+    'middleware' => ['api', 'jwt'],
+], function () {
+    Route::get('medications/search', [UserMedicationController::class, 'search']);
+    Route::get('/', [UserMedicationController::class, 'index']);
+    Route::post('/', [UserMedicationController::class, 'store']);
+    Route::get('/{id}', [UserMedicationController::class, 'show']);
+    Route::put('/{id}', [UserMedicationController::class, 'update']);
+    Route::delete('/{id}', [UserMedicationController::class, 'destroy']);
+});

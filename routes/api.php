@@ -6,4 +6,5 @@ Route::group([
     'prefix' => 'v1'
 ], function () {
     require_once __DIR__ . '/api/auth.php';
+    require_once __DIR__ . '/api/user-medications.php';
 });

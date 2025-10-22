@@ -15,7 +15,6 @@ return new class () extends Migration {
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('medication_id')->constrained('medications')->restrictOnDelete();
             $table->string('dosage');
-            $table->string('frequency');
             $table->json('time_slots');
             $table->enum('via_administration', [
                 'oral',
