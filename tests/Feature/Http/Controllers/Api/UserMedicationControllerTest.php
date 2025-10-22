@@ -44,6 +44,39 @@ class UserMedicationControllerTest extends TestCase
             ]);
     }
 
+    public function test_index_returns_user_medications_with_filters(): void
+    {
+        $user = User::factory()->create();
+
+        $medication = Medication::factory()->create();
+
+        $medication2 = Medication::factory()->create();
+
+        $date = today()->addDay();
+
+        $activeUserMed = UserMedication::factory()->create([
+            'user_id' => $user->id,
+            'medication_id' => $medication->id,
+            'start_date' => $date,
+            'end_date' => $date->copy()->addDays(10),
+        ]);
+
+        UserMedication::factory()->create([
+            'user_id' => $user->id,
+            'medication_id' => $medication2->id,
+        ]);
+
+        $response = $this->actingAsUser($user)->getJson("$this->url?start_date={$date->toDateString()}");
+
+        $response
+            ->assertStatus(200)
+            ->assertJsonCount(1)
+            ->assertJsonFragment([
+                'id' => $activeUserMed->id,
+                'active' => true,
+            ]);
+    }
+
     public function test_store_with_existing_medication(): void
     {
         $user = User::factory()->create();
