@@ -26,6 +26,15 @@ console_command = 'php /var/www/html/artisan tinker'
   APP_MAINTENANCE_DRIVER="file"
   # APP_MAINTENANCE_STORE=database
 
+  DB_CONNECTION="pgsql"
+  DB_HOST="medi-control-db.internal"
+  DB_PORT="5432"
+  DB_DATABASE="postgres"
+  DB_USERNAME="postgres"
+
+  CACHE_STORE="database"
+  QUEUE_CONNECTION="database"
+
   SESSION_DRIVER="database"
   SESSION_LIFETIME=120
   SESSION_ENCRYPT="false"
@@ -55,4 +64,4 @@ console_command = 'php /var/www/html/artisan tinker'
   cpus = 1
 
 [deploy]
-  release_command = "sh -c 'php artisan migrate --force && php artisan optimize:clear'"
+  release_command = "sh -c 'php artisan migrate --force && php artisan optimize:clear && php artisan config:cache && php artisan route:cache && php artisan view:cache'"
