@@ -24,7 +24,7 @@ class StoreUserMedicationRequest extends FormRequest
             'via_administration' => ['required', Rule::in(['oral', 'topical', 'injection', 'inhalation', 'sublingual', 'rectal', 'other'])],
             'duration' => ['nullable', 'integer', 'min:1'],
             'start_date' => ['required', 'date', 'date_format:Y-m-d'],
-            'end_date' => ['nullable', 'date', 'date_format:Y-m-d', 'after:start_date'],
+            'end_date' => ['nullable', 'date', 'date_format:Y-m-d', 'after_or_equal:start_date'],
             'initial_stock' => ['required', 'integer', 'min:0'],
             'current_stock' => ['required', 'integer', 'min:0'],
             'low_stock_threshold' => ['required', 'integer', 'min:0'],
