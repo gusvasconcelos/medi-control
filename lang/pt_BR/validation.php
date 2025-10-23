@@ -161,6 +161,10 @@ return [
         ],
     ],
 
+    'medication_log' => [
+        'time_slot_format' => 'O campo time_slot deve estar no formato HH:MM (ex: 08:00, 14:30).',
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Custom Validation Attributes

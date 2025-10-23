@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\MedicationLogController;
 use App\Http\Controllers\Api\UserMedicationController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,4 +15,7 @@ Route::group([
     Route::get('/{id}', [UserMedicationController::class, 'show']);
     Route::put('/{id}', [UserMedicationController::class, 'update']);
     Route::delete('/{id}', [UserMedicationController::class, 'destroy']);
+
+    // Medication logs
+    Route::post('/{id}/log-taken', [MedicationLogController::class, 'logTaken']);
 });

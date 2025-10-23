@@ -727,6 +727,211 @@ paths:
           headers: {}
       security:
         - bearerAuth: []
+  /api/v1/user-medications/{id}/log-taken:
+    post:
+      summary: Registrar medicamento como tomado
+      deprecated: false
+      description: >
+        Registra que o usuário tomou o medicamento em um horário específico
+        (time_slot). Cria um registro de medication_log com status 'taken',
+        decrementa o estoque do medicamento e cria uma notificação de estoque
+        baixo se necessário.
+      operationId: logMedicationTaken
+      tags:
+        - Medicamentos do Usuário
+      parameters:
+        - name: id
+          in: path
+          description: ID do medicamento do usuário
+          required: true
+          schema:
+            type: integer
+            examples:
+              - 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - time_slot
+              properties:
+                time_slot:
+                  type: string
+                  pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
+                  description: >
+                    Horário programado para a tomada do medicamento (formato
+                    HH:MM). Deve ser um dos time_slots configurados no
+                    medicamento.
+                  examples:
+                    - '08:00'
+                    - '14:00'
+                    - '20:00'
+                taken_at:
+                  type: string
+                  format: date-time
+                  description: >
+                    Data/hora em que o medicamento foi tomado. Se não informado,
+                    usa a data/hora atual.
+                  examples:
+                    - '2025-10-23T20:05:00Z'
+                notes:
+                  type: string
+                  maxLength: 1000
+                  description: Observações sobre a tomada do medicamento
+                  examples:
+                    - Tomei com água
+                    - Tomei após o almoço
+            examples:
+              minimal:
+                summary: Registro mínimo (apenas time_slot)
+                value:
+                  time_slot: '20:00'
+              with_notes:
+                summary: Com observações
+                value:
+                  time_slot: '08:00'
+                  notes: Tomei após o café da manhã
+              complete:
+                summary: Completo com data/hora customizada
+                value:
+                  time_slot: '14:00'
+                  taken_at: '2025-10-23T14:05:00Z'
+                  notes: Tomei com água
+        required: true
+      responses:
+        '200':
+          description: Medicamento registrado como tomado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    examples:
+                      - Medicamento registrado como tomado com sucesso.
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        examples:
+                          - 1
+                      user_medication_id:
+                        type: integer
+                        examples:
+                          - 5
+                      scheduled_at:
+                        type: string
+                        format: date-time
+                        description: >
+                          Data/hora programada (combinação da data atual com o
+                          time_slot)
+                        examples:
+                          - '2025-10-23T20:00:00.000000Z'
+                      taken_at:
+                        type: string
+                        format: date-time
+                        description: Data/hora em que foi tomado
+                        examples:
+                          - '2025-10-23T20:05:00.000000Z'
+                      status:
+                        type: string
+                        enum:
+                          - taken
+                        examples:
+                          - taken
+                      notes:
+                        type: string
+                        nullable: true
+                        examples:
+                          - Tomei com água
+              example:
+                message: Medicamento registrado como tomado com sucesso.
+                data:
+                  id: 42
+                  user_medication_id: 5
+                  scheduled_at: '2025-10-23T20:00:00.000000Z'
+                  taken_at: '2025-10-23T20:05:00.000000Z'
+                  status: taken
+                  notes: Tomei com água
+          headers: {}
+        '401':
+          description: Não autenticado - Token inválido ou ausente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47935
+                message: Token inválido ou não fornecido
+                status_code: 401
+                code: UNAUTHORIZED
+          headers: {}
+        '404':
+          description: Medicamento do usuário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47950
+                message: No query results for model [App\Models\UserMedication]
+                status_code: 404
+                code: NOT_FOUND
+          headers: {}
+        '422':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_time_slot_format:
+                  summary: Formato de time_slot inválido
+                  value:
+                    req_id: 0199efdc-ca34-7350-ba10-3f328cd47951
+                    message: Erro na validação de campo.
+                    status_code: 422
+                    code: VALIDATION
+                    details:
+                      time_slot:
+                        - >-
+                          O campo time_slot deve estar no formato HH:MM (ex:
+                          08:00, 14:30).
+                invalid_time_slot:
+                  summary: Time_slot não configurado para o medicamento
+                  value:
+                    req_id: 0199efdc-ca34-7350-ba10-3f328cd47952
+                    message: O horário informado não está configurado para este medicamento.
+                    status_code: 422
+                    code: INVALID_TIME_SLOT
+                missing_time_slot:
+                  summary: Campo time_slot obrigatório
+                  value:
+                    req_id: 0199efdc-ca34-7350-ba10-3f328cd47953
+                    message: Erro na validação de campo.
+                    status_code: 422
+                    code: VALIDATION
+                    details:
+                      time_slot:
+                        - O campo time_slot é obrigatório.
+          headers: {}
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47954
+                message: Ocorreu um erro interno no servidor
+                status_code: 500
+                code: INTERNAL_SERVER_ERROR
+          headers: {}
+      security:
+        - bearerAuth: []
   /api/v1/auth/login:
     post:
       summary: Autenticação de usuário
