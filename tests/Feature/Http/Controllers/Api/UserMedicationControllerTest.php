@@ -66,7 +66,7 @@ class UserMedicationControllerTest extends TestCase
             'medication_id' => $medication2->id,
         ]);
 
-        $response = $this->actingAsUser($user)->getJson("$this->url?start_date={$date->toDateString()}");
+        $response = $this->actingAsUser($user)->getJson("$this->url?start_date={$date->toDateString()}&end_date={$date->toDateString()}");
 
         $response
             ->assertStatus(200)
@@ -75,6 +75,91 @@ class UserMedicationControllerTest extends TestCase
                 'id' => $activeUserMed->id,
                 'active' => true,
             ]);
+    }
+
+    public function test_index_includes_medications_with_null_end_date(): void
+    {
+        $user = User::factory()->create();
+
+        $medication = Medication::factory()->create();
+
+        $ongoingMed = UserMedication::factory()->create([
+            'user_id' => $user->id,
+            'medication_id' => $medication->id,
+            'start_date' => today()->subDays(30),
+            'end_date' => null,
+            'active' => true,
+        ]);
+
+        UserMedication::factory()->create([
+            'user_id' => $user->id,
+            'medication_id' => $medication->id,
+            'start_date' => today()->subDays(60),
+            'end_date' => today()->subDays(40),
+            'active' => true,
+        ]);
+
+        $today = today()->toDateString();
+
+        $response = $this->actingAsUser($user)->getJson("$this->url?start_date={$today}&end_date={$today}");
+
+        $response
+            ->assertStatus(200)
+            ->assertJsonCount(1)
+            ->assertJsonFragment([
+                'id' => $ongoingMed->id,
+            ]);
+    }
+
+    public function test_index_filters_correctly_with_date_ranges(): void
+    {
+        $user = User::factory()->create();
+
+        $medication = Medication::factory()->create();
+
+        // Medicação 1: Começou antes e ainda está ativa (end_date null)
+        $med1 = UserMedication::factory()->create([
+            'user_id' => $user->id,
+            'medication_id' => $medication->id,
+            'start_date' => '2025-01-01',
+            'end_date' => null,
+            'active' => true,
+        ]);
+
+        // Medicação 2: Começou antes e termina depois do período
+        $med2 = UserMedication::factory()->create([
+            'user_id' => $user->id,
+            'medication_id' => $medication->id,
+            'start_date' => '2025-01-15',
+            'end_date' => '2025-02-15',
+            'active' => true,
+        ]);
+
+        // Medicação 3: Totalmente fora do período (terminou antes)
+        UserMedication::factory()->create([
+            'user_id' => $user->id,
+            'medication_id' => $medication->id,
+            'start_date' => '2024-11-01',
+            'end_date' => '2024-12-31',
+            'active' => true,
+        ]);
+
+        // Medicação 4: Começa depois do período
+        UserMedication::factory()->create([
+            'user_id' => $user->id,
+            'medication_id' => $medication->id,
+            'start_date' => '2025-03-01',
+            'end_date' => '2025-03-31',
+            'active' => true,
+        ]);
+
+        $response = $this->actingAsUser($user)->getJson("$this->url?start_date=2025-01-20&end_date=2025-02-10");
+
+        $response
+            ->assertStatus(200)
+            ->assertJsonCount(2)
+            ->assertJsonFragment(['id' => $med1->id])
+            ->assertJsonFragment(['id' => $med2->id]);
     }
 
     public function test_store_with_existing_medication(): void

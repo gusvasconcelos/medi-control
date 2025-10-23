@@ -17,25 +17,18 @@ class UserMedicationController extends Controller
     {
         $validated = collect($request->validated());
 
+        $startDate = $validated->get('start_date', today()->format('Y-m-d'));
+
+        $endDate = $validated->get('end_date', today()->format('Y-m-d'));
+
         $userMedicationsBuilder = UserMedication::with(['medication', 'logs'])
             ->where('active', true)
+            ->where('start_date', '<=', $endDate)
+            ->where(function ($query) use ($startDate) {
+                $query->whereNull('end_date')
+                    ->orWhere('end_date', '>=', $startDate);
+            })
             ->orderBy('created_at', 'desc');
-
-        if ($validated->isEmpty()) {
-            return response()->json($userMedicationsBuilder->get());
-        }
-
-        $startDate = $validated->get('start_date');
-
-        if ($startDate) {
-            $userMedicationsBuilder->where('start_date', '>=', $startDate);
-        }
-
-        $endDate = $validated->get('end_date');
-
-        if ($endDate) {
-            $userMedicationsBuilder->where('end_date', '<=', $endDate);
-        }
 
         return response()->json($userMedicationsBuilder->get());
     }
