@@ -33,6 +33,7 @@ console_command = 'php /var/www/html/artisan tinker'
   DB_USERNAME="postgres"
 
   CACHE_STORE="database"
+  DB_CACHE_CONNECTION="pgsql"
   QUEUE_CONNECTION="database"
 
   SESSION_DRIVER="database"
