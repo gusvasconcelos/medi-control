@@ -117,7 +117,6 @@ class UserMedicationControllerTest extends TestCase
 
         $medication = Medication::factory()->create();
 
-        // Medicação 1: Começou antes e ainda está ativa (end_date null)
         $med1 = UserMedication::factory()->create([
             'user_id' => $user->id,
             'medication_id' => $medication->id,
@@ -126,7 +125,6 @@ class UserMedicationControllerTest extends TestCase
             'active' => true,
         ]);
 
-        // Medicação 2: Começou antes e termina depois do período
         $med2 = UserMedication::factory()->create([
             'user_id' => $user->id,
             'medication_id' => $medication->id,
@@ -135,7 +133,6 @@ class UserMedicationControllerTest extends TestCase
             'active' => true,
         ]);
 
-        // Medicação 3: Totalmente fora do período (terminou antes)
         UserMedication::factory()->create([
             'user_id' => $user->id,
             'medication_id' => $medication->id,
@@ -144,7 +141,6 @@ class UserMedicationControllerTest extends TestCase
             'active' => true,
         ]);
 
-        // Medicação 4: Começa depois do período
         UserMedication::factory()->create([
             'user_id' => $user->id,
             'medication_id' => $medication->id,
@@ -396,6 +392,161 @@ class UserMedicationControllerTest extends TestCase
             ->assertJsonCount(1)
             ->assertJsonMissing([
                 'id' => $user2Medication->id,
+            ]);
+    }
+
+    public function test_indicators_returns_daily_medication_counts(): void
+    {
+        $user = User::factory()->create();
+        $medication = Medication::factory()->create();
+
+        $userMedication = UserMedication::factory()->create([
+            'user_id' => $user->id,
+            'medication_id' => $medication->id,
+            'time_slots' => ['08:00', '20:00'],
+            'start_date' => '2025-10-19',
+            'end_date' => null,
+        ]);
+
+        MedicationLog::factory()->create([
+            'user_medication_id' => $userMedication->id,
+            'scheduled_at' => '2025-10-19 08:00:00',
+            'status' => 'taken',
+        ]);
+
+        MedicationLog::factory()->create([
+            'user_medication_id' => $userMedication->id,
+            'scheduled_at' => '2025-10-20 08:00:00',
+            'status' => 'taken',
+        ]);
+
+        MedicationLog::factory()->create([
+            'user_medication_id' => $userMedication->id,
+            'scheduled_at' => '2025-10-20 20:00:00',
+            'status' => 'taken',
+        ]);
+
+        $response = $this->actingAsUser($user)
+            ->getJson("{$this->url}/indicators?start_date=2025-10-19&end_date=2025-10-20");
+
+        $response
+            ->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => [
+                        'date',
+                        'total_scheduled',
+                        'total_taken',
+                    ],
+                ],
+            ])
+            ->assertJsonFragment([
+                'date' => '2025-10-19',
+                'total_scheduled' => 2,
+                'total_taken' => 1,
+            ])
+            ->assertJsonFragment([
+                'date' => '2025-10-20',
+                'total_scheduled' => 2,
+                'total_taken' => 2,
+            ]);
+    }
+
+    public function test_indicators_requires_start_and_end_date(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAsUser($user)
+            ->getJson("{$this->url}/indicators");
+
+        $response->assertStatus(422);
+    }
+
+    public function test_indicators_validates_date_format(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAsUser($user)
+            ->getJson("{$this->url}/indicators?start_date=invalid&end_date=2025-10-20");
+
+        $response->assertStatus(422);
+    }
+
+    public function test_indicators_validates_period_max_length(): void
+    {
+        $user = User::factory()->create();
+
+        $startDate = '2024-01-01';
+        $endDate = '2025-04-01';
+
+        $response = $this->actingAsUser($user)
+            ->getJson("{$this->url}/indicators?start_date={$startDate}&end_date={$endDate}");
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonFragment([
+                'code' => 'VALIDATION'
+            ]);
+    }
+
+    public function test_indicators_returns_empty_array_when_no_active_medications(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAsUser($user)
+            ->getJson("{$this->url}/indicators?start_date=2025-10-19&end_date=2025-10-20");
+
+        $response
+            ->assertStatus(200)
+            ->assertJson([
+                'data' => [],
+            ]);
+    }
+
+    public function test_indicators_only_returns_authenticated_user_data(): void
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+
+        $medication = Medication::factory()->create();
+
+        $userMed1 = UserMedication::factory()->create([
+            'user_id' => $user1->id,
+            'medication_id' => $medication->id,
+            'time_slots' => ['08:00'],
+            'start_date' => '2025-10-19',
+            'end_date' => null,
+        ]);
+
+        $userMed2 = UserMedication::factory()->create([
+            'user_id' => $user2->id,
+            'medication_id' => $medication->id,
+            'time_slots' => ['08:00', '20:00'],
+            'start_date' => '2025-10-19',
+            'end_date' => null,
+        ]);
+
+        MedicationLog::factory()->create([
+            'user_medication_id' => $userMed1->id,
+            'scheduled_at' => '2025-10-19 08:00:00',
+            'status' => 'taken',
+        ]);
+
+        MedicationLog::factory()->create([
+            'user_medication_id' => $userMed2->id,
+            'scheduled_at' => '2025-10-19 08:00:00',
+            'status' => 'taken',
+        ]);
+
+        $response = $this->actingAsUser($user1)
+            ->getJson("{$this->url}/indicators?start_date=2025-10-19&end_date=2025-10-19");
+
+        $response
+            ->assertStatus(200)
+            ->assertJsonFragment([
+                'date' => '2025-10-19',
+                'total_scheduled' => 1,
+                'total_taken' => 1,
             ]);
     }
 }

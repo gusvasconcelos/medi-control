@@ -479,6 +479,131 @@ paths:
           headers: {}
       security:
         - bearerAuth: []
+  /api/v1/user-medications/indicators:
+    get:
+      summary: Obter indicadores de medicamentos por dia
+      deprecated: false
+      description: >
+        Retorna indicadores diários de medicamentos no período especificado.
+        Para cada dia, retorna o total de medicamentos programados (scheduled)
+        e o total de medicamentos tomados (taken).
+
+
+        Este endpoint é útil para exibir calendários e gráficos de adesão ao tratamento.
+      operationId: getMedicationIndicators
+      tags:
+        - Medicamentos do Usuário
+      parameters:
+        - name: start_date
+          in: query
+          required: true
+          description: Data de início do período (formato YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+            example: "2025-10-01"
+        - name: end_date
+          in: query
+          required: true
+          description: Data de fim do período (formato YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+            example: "2025-10-31"
+      responses:
+        '200':
+          description: Indicadores retornados com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                          description: Data do dia
+                          example: "2025-10-19"
+                        total_scheduled:
+                          type: integer
+                          description: Total de medicamentos programados para o dia
+                          example: 5
+                        total_taken:
+                          type: integer
+                          description: Total de medicamentos tomados no dia
+                          example: 3
+              examples:
+                success:
+                  summary: Exemplo de resposta com dados de 3 dias
+                  value:
+                    data:
+                      - date: "2025-10-19"
+                        total_scheduled: 5
+                        total_taken: 3
+                      - date: "2025-10-20"
+                        total_scheduled: 5
+                        total_taken: 5
+                      - date: "2025-10-21"
+                        total_scheduled: 5
+                        total_taken: 0
+          headers: {}
+        '401':
+          description: Não autenticado - Token inválido ou ausente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: "0199efdc-ca34-7350-ba10-3f328cd47935"
+                message: "Token inválido ou não fornecido"
+                status_code: 401
+                code: "UNAUTHORIZED"
+          headers: {}
+        '422':
+          description: Erro de validação - Datas inválidas ou período muito longo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing_dates:
+                  summary: Datas obrigatórias não fornecidas
+                  value:
+                    req_id: "0199efdc-ca34-7350-ba10-3f328cd47999"
+                    message: "Erro na validação de campo."
+                    status_code: 422
+                    code: "VALIDATION"
+                    details:
+                      start_date:
+                        - "O campo data de início é obrigatório."
+                      end_date:
+                        - "O campo data de fim é obrigatório."
+                period_too_long:
+                  summary: Período maior que 365 dias
+                  value:
+                    req_id: "0199efdc-ca34-7350-ba10-3f328cd48000"
+                    message: "O período máximo permitido é de 365 dias."
+                    status_code: 422
+                    code: "PERIOD_TOO_LONG"
+          headers: {}
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: "0199efdc-ca34-7350-ba10-3f328cd47945"
+                message: "Erro interno do servidor"
+                status_code: 500
+                code: "INTERNAL_SERVER_ERROR"
+          headers: {}
+      security:
+        - bearerAuth: []
   /api/v1/user-medications/medications/search:
     get:
       summary: Buscar medicamentos

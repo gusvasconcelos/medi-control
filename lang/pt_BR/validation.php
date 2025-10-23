@@ -155,6 +155,10 @@ return [
         'attribute-name' => [
             'rule-name' => 'custom-message',
         ],
+
+        'date_range' => [
+            'exceeded_max_days' => 'O intervalo entre :start_date e :end_date não pode exceder :days dias.',
+        ],
     ],
 
     /*

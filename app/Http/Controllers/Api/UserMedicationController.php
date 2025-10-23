@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Medication;
-use Illuminate\Http\JsonResponse;
+use App\Models\MedicationLog;
 use App\Models\UserMedication;
+use Illuminate\Support\Carbon;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserMedication\IndexMedicationRequest;
 use App\Http\Requests\UserMedication\SearchMedicationRequest;
 use App\Http\Requests\UserMedication\StoreUserMedicationRequest;
+use App\Http\Requests\UserMedication\IndicatorsMedicationRequest;
 use App\Http\Requests\UserMedication\UpdateUserMedicationRequest;
 
 class UserMedicationController extends Controller
@@ -21,16 +24,85 @@ class UserMedicationController extends Controller
 
         $endDate = $validated->get('end_date', today()->format('Y-m-d'));
 
-        $userMedicationsBuilder = UserMedication::with(['medication', 'logs'])
+        $userMedications = UserMedication::with(['medication', 'logs'])
             ->where('active', true)
             ->where('start_date', '<=', $endDate)
             ->where(function ($query) use ($startDate) {
                 $query->whereNull('end_date')
                     ->orWhere('end_date', '>=', $startDate);
             })
-            ->orderBy('created_at', 'desc');
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        return response()->json($userMedicationsBuilder->get());
+        return response()->json($userMedications);
+    }
+
+    public function indicators(IndicatorsMedicationRequest $request): JsonResponse
+    {
+        $validated = collect($request->validated());
+
+        $startDate = $validated->get('start_date');
+        $endDate = $validated->get('end_date');
+
+        $userMedications = UserMedication::where('active', true)
+            ->where('start_date', '<=', $endDate)
+            ->where(function ($query) use ($startDate) {
+                $query->whereNull('end_date')
+                    ->orWhere('end_date', '>=', $startDate);
+            })
+            ->get();
+
+        $start = Carbon::parse($startDate);
+        $end = Carbon::parse($endDate);
+
+        $dateRange = [];
+
+        for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+            $dateRange[] = $date->format('Y-m-d');
+        }
+
+        $indicators = [];
+
+        foreach ($dateRange as $date) {
+            $totalScheduled = 0;
+            $totalTaken = 0;
+
+            foreach ($userMedications as $userMed) {
+                $medStartDate = $userMed->start_date;
+                $medEndDate = $userMed->end_date;
+
+                if ($date < $medStartDate->format('Y-m-d')) {
+                    continue;
+                }
+
+                if ($medEndDate && $date > $medEndDate->format('Y-m-d')) {
+                    continue;
+                }
+
+                $timeSlots = $userMed->time_slots ?? [];
+                $totalScheduled += count($timeSlots);
+
+                $taken = MedicationLog::query()
+                    ->where('user_medication_id', $userMed->id)
+                    ->whereRaw('DATE(scheduled_at) = ?', [$date])
+                    ->where('status', 'taken')
+                    ->count();
+
+                $totalTaken += $taken;
+            }
+
+            if ($totalScheduled > 0) {
+                $indicators[] = [
+                    'date' => $date,
+                    'total_scheduled' => $totalScheduled,
+                    'total_taken' => $totalTaken,
+                ];
+            }
+        }
+
+        return response()->json([
+            'data' => $indicators,
+        ]);
     }
 
     public function store(StoreUserMedicationRequest $request): JsonResponse

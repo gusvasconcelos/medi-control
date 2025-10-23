@@ -8,6 +8,7 @@ Route::group([
     'middleware' => ['api', 'jwt'],
 ], function () {
     Route::get('medications/search', [UserMedicationController::class, 'search']);
+    Route::get('indicators', [UserMedicationController::class, 'indicators']);
     Route::get('/', [UserMedicationController::class, 'index']);
     Route::post('/', [UserMedicationController::class, 'store']);
     Route::get('/{id}', [UserMedicationController::class, 'show']);
