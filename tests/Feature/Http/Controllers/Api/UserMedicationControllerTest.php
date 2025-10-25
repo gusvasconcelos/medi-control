@@ -15,7 +15,7 @@ class UserMedicationControllerTest extends TestCase
 
     protected string $url = '/api/v1/user-medications';
 
-    public function test_index_returns_active_user_medications(): void
+    public function test_get_user_medications_returns_active_user_medications(): void
     {
         $user = User::factory()->create();
 
@@ -25,6 +25,8 @@ class UserMedicationControllerTest extends TestCase
             'user_id' => $user->id,
             'medication_id' => $medication->id,
             'active' => true,
+            'start_date' => today()->subDays(30),
+            'end_date' => null,
         ]);
 
         UserMedication::factory()->create([
@@ -44,7 +46,7 @@ class UserMedicationControllerTest extends TestCase
             ]);
     }
 
-    public function test_index_returns_user_medications_with_filters(): void
+    public function test_get_user_medications_returns_user_medications_with_filters(): void
     {
         $user = User::factory()->create();
 
@@ -77,7 +79,7 @@ class UserMedicationControllerTest extends TestCase
             ]);
     }
 
-    public function test_index_includes_medications_with_null_end_date(): void
+    public function test_get_user_medications_includes_medications_with_null_end_date(): void
     {
         $user = User::factory()->create();
 
@@ -111,7 +113,7 @@ class UserMedicationControllerTest extends TestCase
             ]);
     }
 
-    public function test_index_filters_correctly_with_date_ranges(): void
+    public function test_get_user_medications_filters_correctly_with_date_ranges(): void
     {
         $user = User::factory()->create();
 
@@ -153,7 +155,7 @@ class UserMedicationControllerTest extends TestCase
 
         $response
             ->assertStatus(200)
-            ->assertJsonCount(2)
+            ->assertJsonCount(2, 'data')
             ->assertJsonFragment(['id' => $med1->id])
             ->assertJsonFragment(['id' => $med2->id]);
     }
@@ -183,53 +185,25 @@ class UserMedicationControllerTest extends TestCase
                 'message',
                 'data' => [
                     'id',
+                    'user_id',
                     'medication_id',
                     'dosage',
                     'time_slots',
                     'via_administration',
-                    'medication',
+                    'duration',
+                    'start_date',
+                    'end_date',
+                    'initial_stock',
+                    'current_stock',
+                    'low_stock_threshold',
+                    'notes',
+                    'active',
                 ],
             ]);
 
         $this->assertDatabaseHas('user_medications', [
             'user_id' => $user->id,
             'medication_id' => $medication->id,
-            'dosage' => '1 comprimido',
-            'active' => true,
-        ]);
-    }
-
-    public function test_store_creates_new_medication_when_not_exists(): void
-    {
-        $user = User::factory()->create();
-
-        $form = [
-            'medication_name' => 'Novo Medicamento',
-            'medication_active_principle' => 'Princípio Ativo Teste',
-            'medication_manufacturer' => 'Fabricante Teste',
-            'medication_category' => 'Categoria Teste',
-            'medication_strength' => '500mg',
-            'medication_form' => 'tablet',
-            'dosage' => '1 comprimido',
-            'time_slots' => ['08:00'],
-            'via_administration' => 'oral',
-            'start_date' => '2025-10-21',
-            'initial_stock' => 20,
-            'current_stock' => 20,
-            'low_stock_threshold' => 3,
-        ];
-
-        $response = $this->actingAsUser($user)->postJson($this->url, $form);
-
-        $response->assertStatus(200);
-
-        $this->assertDatabaseHas('medications', [
-            'name' => 'Novo Medicamento',
-            'active_principle' => 'Princípio Ativo Teste',
-        ]);
-
-        $this->assertDatabaseHas('user_medications', [
-            'user_id' => $user->id,
             'dosage' => '1 comprimido',
             'active' => true,
         ]);
@@ -271,13 +245,15 @@ class UserMedicationControllerTest extends TestCase
         $response
             ->assertStatus(200)
             ->assertJsonStructure([
-                'id',
-                'medication',
-                'logs' => [
-                    '*' => [
-                        'id',
-                        'scheduled_at',
-                        'status',
+                'data' => [
+                    'id',
+                    'medication',
+                    'logs' => [
+                        '*' => [
+                            'id',
+                            'scheduled_at',
+                            'status',
+                        ],
                     ],
                 ],
             ]);
@@ -334,31 +310,6 @@ class UserMedicationControllerTest extends TestCase
         ]);
     }
 
-    public function test_search_medications_by_name(): void
-    {
-        $user = User::factory()->create();
-
-        Medication::factory()->create(['name' => 'Laravel']);
-
-        $response = $this->actingAsUser($user)->getJson("{$this->url}/medications/search?search=ravel");
-
-        $response
-            ->assertStatus(200)
-            ->assertJsonCount(1)
-            ->assertJsonFragment([
-                'name' => 'Laravel',
-            ]);
-    }
-
-    public function test_search_medications_requires_minimum_length(): void
-    {
-        $user = User::factory()->create();
-
-        $response = $this->actingAsUser($user)->getJson("{$this->url}/medications/search?search=pa");
-
-        $response->assertStatus(422);
-    }
-
     public function test_unauthenticated_user_cannot_access_endpoints(): void
     {
         $response = $this->getJson($this->url);
@@ -398,6 +349,7 @@ class UserMedicationControllerTest extends TestCase
     public function test_indicators_returns_daily_medication_counts(): void
     {
         $user = User::factory()->create();
+
         $medication = Medication::factory()->create();
 
         $userMedication = UserMedication::factory()->create([
@@ -426,8 +378,13 @@ class UserMedicationControllerTest extends TestCase
             'status' => 'taken',
         ]);
 
+        $queryParams = [
+            'start_date' => '2025-10-19',
+            'end_date' => '2025-10-20',
+        ];
+
         $response = $this->actingAsUser($user)
-            ->getJson("{$this->url}/indicators?start_date=2025-10-19&end_date=2025-10-20");
+            ->getJson("{$this->url}/{$userMedication->id}/indicators?" . http_build_query($queryParams));
 
         $response
             ->assertStatus(200)
@@ -456,8 +413,15 @@ class UserMedicationControllerTest extends TestCase
     {
         $user = User::factory()->create();
 
+        $medication = Medication::factory()->create();
+
+        $userMedication = UserMedication::factory()->create([
+            'user_id' => $user->id,
+            'medication_id' => $medication->id,
+        ]);
+
         $response = $this->actingAsUser($user)
-            ->getJson("{$this->url}/indicators");
+            ->getJson("{$this->url}/{$userMedication->id}/indicators");
 
         $response->assertStatus(422);
     }
@@ -466,8 +430,20 @@ class UserMedicationControllerTest extends TestCase
     {
         $user = User::factory()->create();
 
+        $medication = Medication::factory()->create();
+
+        $userMedication = UserMedication::factory()->create([
+            'user_id' => $user->id,
+            'medication_id' => $medication->id,
+        ]);
+
+        $queryParams = [
+            'start_date' => 'invalid',
+            'end_date' => '2025-10-20',
+        ];
+
         $response = $this->actingAsUser($user)
-            ->getJson("{$this->url}/indicators?start_date=invalid&end_date=2025-10-20");
+            ->getJson("{$this->url}/{$userMedication->id}/indicators?" . http_build_query($queryParams));
 
         $response->assertStatus(422);
     }
@@ -476,11 +452,20 @@ class UserMedicationControllerTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $startDate = '2024-01-01';
-        $endDate = '2025-04-01';
+        $medication = Medication::factory()->create();
+
+        $userMedication = UserMedication::factory()->create([
+            'user_id' => $user->id,
+            'medication_id' => $medication->id,
+        ]);
+
+        $queryParams = [
+            'start_date' => '2024-01-01',
+            'end_date' => '2025-04-01',
+        ];
 
         $response = $this->actingAsUser($user)
-            ->getJson("{$this->url}/indicators?start_date={$startDate}&end_date={$endDate}");
+            ->getJson("{$this->url}/{$userMedication->id}/indicators?" . http_build_query($queryParams));
 
         $response
             ->assertStatus(422)
@@ -493,8 +478,16 @@ class UserMedicationControllerTest extends TestCase
     {
         $user = User::factory()->create();
 
+        $medication = Medication::factory()->create();
+
+        $userMedication = UserMedication::factory()->create([
+            'user_id' => $user->id,
+            'medication_id' => $medication->id,
+
+        ]);
+
         $response = $this->actingAsUser($user)
-            ->getJson("{$this->url}/indicators?start_date=2025-10-19&end_date=2025-10-20");
+            ->getJson("{$this->url}/{$userMedication->id}/indicators?start_date=2025-10-19&end_date=2025-10-20");
 
         $response
             ->assertStatus(200)
@@ -538,8 +531,13 @@ class UserMedicationControllerTest extends TestCase
             'status' => 'taken',
         ]);
 
+        $queryParams = [
+            'start_date' => '2025-10-19',
+            'end_date' => '2025-10-19',
+        ];
+
         $response = $this->actingAsUser($user1)
-            ->getJson("{$this->url}/indicators?start_date=2025-10-19&end_date=2025-10-19");
+            ->getJson("{$this->url}/{$userMed1->id}/indicators?" . http_build_query($queryParams));
 
         $response
             ->assertStatus(200)

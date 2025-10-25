@@ -37,21 +37,8 @@ class MedicationLogControllerTest extends TestCase
 
         $response
             ->assertStatus(200)
-            ->assertJsonStructure([
-                'message',
-                'data' => [
-                    'id',
-                    'user_medication_id',
-                    'scheduled_at',
-                    'taken_at',
-                    'status',
-                    'notes',
-                ],
-            ])
-            ->assertJsonFragment([
-                'status' => 'taken',
-                'notes' => 'Tomei com água',
-            ]);
+            ->assertJsonStructure(['message'])
+            ->assertJson(['message' => __('messages.medication_log.taken')]);
 
         $this->assertDatabaseHas('medication_logs', [
             'user_medication_id' => $userMedication->id,

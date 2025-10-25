@@ -10,14 +10,7 @@ class StoreUserMedicationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'medication_id' => ['nullable', 'exists:medications,id', 'required_without_all:medication_name,medication_active_principle'],
-            'medication_name' => ['nullable', 'string', 'max:255', 'required_without:medication_id'],
-            'medication_active_principle' => ['nullable', 'string', 'max:255', 'required_with:medication_name'],
-            'medication_manufacturer' => ['nullable', 'string', 'max:255'],
-            'medication_category' => ['nullable', 'string', 'max:255'],
-            'medication_strength' => ['nullable', 'string', 'max:255'],
-            'medication_form' => ['nullable', Rule::in(['tablet', 'capsule', 'liquid', 'injection', 'cream', 'drops', 'spray', 'inhaler', 'patch', 'other'])],
-
+            'medication_id' => ['required', 'exists:medications,id'],
             'dosage' => ['required', 'string', 'max:255'],
             'time_slots' => ['required', 'array', 'min:1'],
             'time_slots.*' => ['required', 'string', 'date_format:H:i'],
@@ -36,12 +29,6 @@ class StoreUserMedicationRequest extends FormRequest
     {
         return [
             'medication_id' => __('validation.attributes.medication_id'),
-            'medication_name' => __('validation.attributes.medication_name'),
-            'medication_active_principle' => __('validation.attributes.medication_active_principle'),
-            'medication_manufacturer' => __('validation.attributes.medication_manufacturer'),
-            'medication_category' => __('validation.attributes.category'),
-            'medication_strength' => __('validation.attributes.medication_strength'),
-            'medication_form' => __('validation.attributes.medication_form'),
             'dosage' => __('validation.attributes.dosage'),
             'time_slots' => __('validation.attributes.time_slots'),
             'via_administration' => __('validation.attributes.via_administration'),

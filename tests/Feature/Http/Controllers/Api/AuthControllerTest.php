@@ -66,7 +66,7 @@ class AuthControllerTest extends TestCase
             ->assertStatus(422)
             ->assertJson([
                 'message' => __('messages.auth.invalid_credentials'),
-                'status' => 422,
+                'status_code' => 422,
                 'code' => 'INVALID_CREDENTIALS'
             ]);
     }
@@ -79,13 +79,11 @@ class AuthControllerTest extends TestCase
 
         $response = $this->postJson("$this->url/login", $form);
 
-        dd(cast()->toJsonPretty($response->json()));
-
         $response
             ->assertStatus(422)
             ->assertJson([
                 'message' => __('errors.validation'),
-                'status' => 422,
+                'status_code' => 422,
                 'code' => 'VALIDATION',
                 'details' => [
                     'email' => [
@@ -121,7 +119,7 @@ class AuthControllerTest extends TestCase
             ->assertStatus(401)
             ->assertJson([
                 'message' => __('errors.auth_jwt_error'),
-                'status' => 401,
+                'status_code' => 401,
                 'code' => 'AUTH_JWT_ERROR',
             ]);
     }
@@ -147,7 +145,7 @@ class AuthControllerTest extends TestCase
             ->assertStatus(401)
             ->assertJson([
                 'message' => __('errors.auth_jwt_error'),
-                'status' => 401,
+                'status_code' => 401,
                 'code' => 'AUTH_JWT_ERROR'
             ]);
     }
@@ -175,7 +173,7 @@ class AuthControllerTest extends TestCase
             ->assertStatus(401)
             ->assertJson([
                 'message' => __('errors.auth_jwt_error'),
-                'status' => 401,
+                'status_code' => 401,
                 'code' => 'AUTH_JWT_ERROR'
             ]);
     }

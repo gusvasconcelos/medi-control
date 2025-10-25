@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Support\Carbon;
 
 abstract class Model extends EloquentModel
 {
@@ -13,6 +14,12 @@ abstract class Model extends EloquentModel
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
+    }
+
+    #[Scope]
+    public function scopeWhereDate(Builder $query, string $field, Carbon $value): Builder
+    {
+        return $query->whereRaw("DATE({$field}) = ?", [$value->toDateString()]);
     }
 
     #[Scope]

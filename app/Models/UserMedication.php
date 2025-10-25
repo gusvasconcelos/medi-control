@@ -45,14 +45,4 @@ class UserMedication extends Model
     {
         return $this->hasMany(MedicationLog::class);
     }
-
-    public function sideEffects(): HasMany
-    {
-        return $this->hasMany(SideEffect::class);
-    }
-
-    public function notifications(): HasMany
-    {
-        return $this->hasMany(Notification::class);
-    }
 }

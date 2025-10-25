@@ -27,6 +27,7 @@ class MedicationFactory extends Factory
             'manufacturer' => fake()->company(),
             'category' => fake()->randomElement(['Antibiótico', 'Analgésico', 'Anti-inflamatório', 'Anti-hipertensivo']),
             'therapeutic_class' => fake()->randomElement(['Classe A', 'Classe B', 'Classe C']),
+            'registration_number' => fake()->unique()->numerify('####-####-####'),
             'strength' => fake()->randomElement(['100mg', '250mg', '500mg', '1g']),
             'form' => fake()->randomElement($forms),
             'description' => fake()->sentence(),
