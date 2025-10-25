@@ -18,6 +18,7 @@ info:
   version: 1.0.0
 tags:
   - name: Medicamentos do Usuário
+  - name: Medicamentos
   - name: Autenticação
 paths:
   /api/v1/user-medications:
@@ -60,47 +61,52 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserMedication'
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserMedication'
               examples:
                 '1':
                   summary: Sem filtros - retorna todos os medicamentos ativos
                   value:
-                    - id: 1
-                      medication_id: 123
-                      dosage: 1 comprimido
-                      frequency: 2x ao dia
-                      time_slots:
-                        - '08:00'
-                        - '20:00'
-                      start_date: '2025-10-01'
-                      end_date: '2025-11-01'
-                      active: true
-                    - id: 2
-                      medication_id: 456
-                      dosage: 2 cápsulas
-                      frequency: 1x ao dia
-                      time_slots:
-                        - '08:00'
-                      start_date: '2025-09-15'
-                      end_date: null
-                      active: true
+                    data:
+                      - id: 1
+                        medication_id: 123
+                        dosage: 1 comprimido
+                        frequency: 2x ao dia
+                        time_slots:
+                          - '08:00'
+                          - '20:00'
+                        start_date: '2025-10-01'
+                        end_date: '2025-11-01'
+                        active: true
+                      - id: 2
+                        medication_id: 456
+                        dosage: 2 cápsulas
+                        frequency: 1x ao dia
+                        time_slots:
+                          - '08:00'
+                        start_date: '2025-09-15'
+                        end_date: null
+                        active: true
                 '2':
                   summary: >-
                     Com filtro start_date - retorna medicamentos iniciados após
                     2025-10-01
                   value:
-                    - id: 1
-                      medication_id: 123
-                      dosage: 1 comprimido
-                      frequency: 2x ao dia
-                      time_slots:
-                        - '08:00'
-                        - '20:00'
-                      start_date: '2025-10-01'
-                      end_date: '2025-11-01'
-                      active: true
+                    data:
+                      - id: 1
+                        medication_id: 123
+                        dosage: 1 comprimido
+                        frequency: 2x ao dia
+                        time_slots:
+                          - '08:00'
+                          - '20:00'
+                        start_date: '2025-10-01'
+                        end_date: '2025-11-01'
+                        active: true
           headers: {}
         '401':
           description: Não autenticado - Token inválido ou ausente
@@ -112,7 +118,7 @@ paths:
                 req_id: 0199efdc-ca34-7350-ba10-3f328cd47935
                 message: Token inválido ou não fornecido
                 status_code: 401
-                code: UNAUTHORIZED
+                code: AUTH_JWT_ERROR
           headers: {}
         '422':
           description: Erro de validação nos filtros
@@ -202,7 +208,7 @@ paths:
                 summary: Criando novo medicamento
         required: true
       responses:
-        '201':
+        '200':
           description: Medicamento cadastrado com sucesso
           content:
             application/json:
@@ -226,7 +232,7 @@ paths:
                 req_id: 0199efdc-ca34-7350-ba10-3f328cd47935
                 message: Token inválido ou não fornecido
                 status_code: 401
-                code: UNAUTHORIZED
+                code: AUTH_JWT_ERROR
           headers: {}
         '422':
           description: Erro de validação
@@ -281,7 +287,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserMedication'
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserMedication'
           headers: {}
         '401':
           description: Não autenticado - Token inválido ou ausente
@@ -293,7 +302,7 @@ paths:
                 req_id: 0199efdc-ca34-7350-ba10-3f328cd47935
                 message: Token inválido ou não fornecido
                 status_code: 401
-                code: UNAUTHORIZED
+                code: AUTH_JWT_ERROR
           headers: {}
         '404':
           description: Recurso não encontrado
@@ -377,7 +386,7 @@ paths:
                 req_id: 0199efdc-ca34-7350-ba10-3f328cd47935
                 message: Token inválido ou não fornecido
                 status_code: 401
-                code: UNAUTHORIZED
+                code: AUTH_JWT_ERROR
           headers: {}
         '404':
           description: Recurso não encontrado
@@ -465,7 +474,7 @@ paths:
                 req_id: 0199efdc-ca34-7350-ba10-3f328cd47935
                 message: Token inválido ou não fornecido
                 status_code: 401
-                code: UNAUTHORIZED
+                code: AUTH_JWT_ERROR
           headers: {}
         '404':
           description: Recurso não encontrado
@@ -493,19 +502,20 @@ paths:
           headers: {}
       security:
         - bearerAuth: []
-  /api/v1/user-medications/medications/search:
+  /api/v1/medications/search:
     get:
       summary: Buscar medicamentos
       deprecated: false
       description: >
-        Busca medicamentos cadastrados no sistema por nome ou princípio ativo
+        Busca medicamentos cadastrados no sistema por nome, princípio ativo,
+        fabricante, categoria, classe terapêutica ou número de registro
         usando busca case-insensitive.
 
         Útil para encontrar medicamentos existentes antes de cadastrar um
         medicamento para o usuário.
       operationId: searchMedications
       tags:
-        - Medicamentos do Usuário
+        - Medicamentos
       parameters:
         - name: search
           in: query
@@ -568,7 +578,7 @@ paths:
                 req_id: 0199efdc-ca34-7350-ba10-3f328cd47935
                 message: Token inválido ou não fornecido
                 status_code: 401
-                code: UNAUTHORIZED
+                code: AUTH_JWT_ERROR
           headers: {}
         '422':
           description: Erro de validação (busca muito curta)
@@ -599,12 +609,13 @@ paths:
           headers: {}
       security:
         - bearerAuth: []
-  /api/v1/user-medications/indicators:
+  /api/v1/user-medications/{id}/indicators:
     get:
       summary: Obter indicadores de medicamentos por dia
       deprecated: false
       description: >
-        Retorna indicadores diários de medicamentos no período especificado.
+        Retorna indicadores diários de medicamentos no período especificado para
+        um medicamento específico do usuário.
         Para cada dia, retorna o total de medicamentos programados (scheduled) e
         o total de medicamentos tomados (taken).
 
@@ -615,6 +626,14 @@ paths:
       tags:
         - Medicamentos do Usuário
       parameters:
+        - name: id
+          in: path
+          description: ID do medicamento do usuário
+          required: true
+          schema:
+            type: integer
+            examples:
+              - 1
         - name: start_date
           in: query
           description: Data de início do período (formato YYYY-MM-DD)
@@ -684,7 +703,7 @@ paths:
                 req_id: 0199efdc-ca34-7350-ba10-3f328cd47935
                 message: Token inválido ou não fornecido
                 status_code: 401
-                code: UNAUTHORIZED
+                code: AUTH_JWT_ERROR
           headers: {}
         '422':
           description: Erro de validação - Datas inválidas ou período muito longo
@@ -867,7 +886,7 @@ paths:
                 req_id: 0199efdc-ca34-7350-ba10-3f328cd47935
                 message: Token inválido ou não fornecido
                 status_code: 401
-                code: UNAUTHORIZED
+                code: AUTH_JWT_ERROR
           headers: {}
         '404':
           description: Medicamento do usuário não encontrado
@@ -932,6 +951,122 @@ paths:
           headers: {}
       security:
         - bearerAuth: []
+  /api/v1/auth/register:
+    post:
+      summary: Cadastro de novo usuário
+      deprecated: false
+      description: Registra um novo usuário no sistema
+      operationId: register
+      tags:
+        - Autenticação
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+                - password_confirmation
+              properties:
+                name:
+                  type: string
+                  description: Nome completo do usuário
+                  examples:
+                    - João Silva
+                email:
+                  type: string
+                  format: email
+                  description: Email do usuário
+                  examples:
+                    - usuario@exemplo.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  description: Senha do usuário (mínimo 8 caracteres)
+                  examples:
+                    - senha123456
+                password_confirmation:
+                  type: string
+                  format: password
+                  description: Confirmação da senha
+                  examples:
+                    - senha123456
+        required: true
+      responses:
+        '200':
+          description: Usuário registrado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Mensagem de sucesso
+                    examples:
+                      - Usuário cadastrado com sucesso
+              example:
+                message: Usuário cadastrado com sucesso
+          headers: {}
+        '422':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                '1':
+                  summary: Campos obrigatórios ausentes
+                  value:
+                    req_id: 0199efdc-ca34-7350-ba10-3f328cd47940
+                    message: Erro na validação de campo.
+                    status_code: 422
+                    code: VALIDATION
+                    details:
+                      name:
+                        - O campo nome é obrigatório.
+                      email:
+                        - O campo email é obrigatório.
+                      password:
+                        - O campo senha é obrigatório.
+                '2':
+                  summary: Email inválido
+                  value:
+                    req_id: 0199efdc-ca34-7350-ba10-3f328cd47941
+                    message: Erro na validação de campo.
+                    status_code: 422
+                    code: VALIDATION
+                    details:
+                      email:
+                        - O campo email deve ser um endereço de e-mail válido.
+                '3':
+                  summary: Senha e confirmação não coincidem
+                  value:
+                    req_id: 0199efdc-ca34-7350-ba10-3f328cd47942
+                    message: Erro na validação de campo.
+                    status_code: 422
+                    code: VALIDATION
+                    details:
+                      password:
+                        - O campo senha de confirmação não confere.
+          headers: {}
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                req_id: 0199efdc-ca34-7350-ba10-3f328cd47943
+                message: Ocorreu um erro interno no servidor
+                status_code: 500
+                code: INTERNAL_SERVER_ERROR
+          headers: {}
+      security: []
   /api/v1/auth/login:
     post:
       summary: Autenticação de usuário
@@ -1089,7 +1224,7 @@ paths:
                 req_id: 0199efdc-ca34-7350-ba10-3f328cd4792e
                 message: Token inválido ou não fornecido
                 status_code: 401
-                code: UNAUTHORIZED
+                code: AUTH_JWT_ERROR
           headers: {}
         '500':
           description: Erro interno do servidor
@@ -1140,7 +1275,7 @@ paths:
                 req_id: 0199efdc-ca34-7350-ba10-3f328cd47931
                 message: Token inválido ou não fornecido
                 status_code: 401
-                code: UNAUTHORIZED
+                code: AUTH_JWT_ERROR
           headers: {}
         '500':
           description: Erro interno do servidor
@@ -1204,7 +1339,7 @@ paths:
                 req_id: 0199efdc-ca34-7350-ba10-3f328cd47933
                 message: Token inválido ou expirado
                 status_code: 401
-                code: UNAUTHORIZED
+                code: AUTH_JWT_ERROR
           headers: {}
         '500':
           description: Erro interno do servidor
