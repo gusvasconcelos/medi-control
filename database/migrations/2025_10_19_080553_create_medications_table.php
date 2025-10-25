@@ -17,6 +17,7 @@ return new class () extends Migration {
             $table->string('manufacturer')->nullable();
             $table->string('category')->nullable();
             $table->string('therapeutic_class')->nullable();
+            $table->string('registration_number')->unique();
             $table->string('strength')->nullable(); // ex: "500mg", "10mg/ml"
             $table->enum('form', [
                 'tablet',
@@ -39,6 +40,7 @@ return new class () extends Migration {
             $table->index('active_principle');
             $table->index('category');
             $table->index('therapeutic_class');
+            $table->index('registration_number');
         });
     }
 
