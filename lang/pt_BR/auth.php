@@ -17,4 +17,10 @@ return [
     'password' => 'A senha informada está incorreta.',
     'throttle' => 'Muitas tentativas de login. Tente novamente em :seconds segundos.',
 
+    // Custom authentication messages
+    'logout' => 'Logout feito com sucesso.',
+    'not_authenticated' => 'Não autenticado.',
+    'invalid_credentials' => 'As credenciais estão inválidas.',
+    'register_success' => 'Registro realizado com sucesso.',
+
 ];

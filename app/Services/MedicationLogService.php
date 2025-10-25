@@ -26,7 +26,7 @@ class MedicationLogService
 
         ! in_array($timeSlot, $userMedicationTimeSlots)
             && throw new UnprocessableEntityException(
-                __('messages.medication_log.invalid_time_slot'),
+                __('medications.medication_log.invalid_time_slot'),
                 'INVALID_TIME_SLOT'
             );
 

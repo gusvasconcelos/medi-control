@@ -166,7 +166,12 @@ The application uses Portuguese (Brazil) locale by default:
 - `APP_FALLBACK_LOCALE=pt`
 - `APP_TIMEZONE="America/Sao_Paulo"`
 
-Translation files should use the `messages` domain (e.g., `__('messages.auth.login_success')`).
+Translation files are organized by domain:
+- `auth.*`: Authentication messages (e.g., `__('auth.logout')`)
+- `errors.*`: System error messages (e.g., `__('errors.unauthorized')`)
+- `medications.*`: Medication-related messages (e.g., `__('medications.user_medication.created')`)
+- `validation.*`: Laravel validation messages
+- `passwords.*`: Laravel password reset messages
 
 ## Deployment
 

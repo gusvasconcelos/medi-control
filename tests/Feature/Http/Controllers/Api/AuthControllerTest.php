@@ -25,7 +25,7 @@ class AuthControllerTest extends TestCase
         $response
             ->assertStatus(200)
             ->assertJson([
-                'message' => __('messages.auth.register_success'),
+                'message' => __('auth.register_success'),
             ]);
 
         $this->assertDatabaseHas('users', [
@@ -65,7 +65,7 @@ class AuthControllerTest extends TestCase
         $response
             ->assertStatus(422)
             ->assertJson([
-                'message' => __('messages.auth.invalid_credentials'),
+                'message' => __('auth.invalid_credentials'),
                 'status_code' => 422,
                 'code' => 'INVALID_CREDENTIALS'
             ]);
@@ -133,7 +133,7 @@ class AuthControllerTest extends TestCase
         $response
             ->assertStatus(200)
             ->assertJson([
-                'message' => __('messages.auth.logout')
+                'message' => __('auth.logout')
             ]);
     }
 

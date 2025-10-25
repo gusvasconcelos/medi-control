@@ -21,6 +21,6 @@ class MedicationLogController extends Controller
 
         $this->medicationLogService->logTaken(collect($validated), $userMedicationId);
 
-        return response()->json(['message' => __('messages.medication_log.taken')]);
+        return response()->json(['message' => __('medications.medication_log.taken')]);
     }
 }

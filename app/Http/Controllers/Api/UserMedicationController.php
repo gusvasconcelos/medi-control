@@ -44,7 +44,7 @@ class UserMedicationController extends Controller
         $userMedication = $this->userMedicationService->store(collect($validated));
 
         return response()->json([
-            'message' => __('messages.user_medication.created'),
+            'message' => __('medications.user_medication.created'),
             'data' => $userMedication,
         ]);
     }
@@ -63,7 +63,7 @@ class UserMedicationController extends Controller
         $userMedication = $this->userMedicationService->update(collect($validated), $id);
 
         return response()->json([
-            'message' => __('messages.user_medication.updated'),
+            'message' => __('medications.user_medication.updated'),
             'data' => $userMedication,
         ]);
     }
@@ -73,7 +73,7 @@ class UserMedicationController extends Controller
         $this->userMedicationService->destroy($id);
 
         return response()->json([
-            'message' => __('messages.user_medication.deleted'),
+            'message' => __('medications.user_medication.deleted'),
         ]);
     }
 }

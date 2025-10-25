@@ -38,7 +38,7 @@ class MedicationLogControllerTest extends TestCase
         $response
             ->assertStatus(200)
             ->assertJsonStructure(['message'])
-            ->assertJson(['message' => __('messages.medication_log.taken')]);
+            ->assertJson(['message' => __('medications.medication_log.taken')]);
 
         $this->assertDatabaseHas('medication_logs', [
             'user_medication_id' => $userMedication->id,

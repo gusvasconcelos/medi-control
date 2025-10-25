@@ -23,7 +23,7 @@ class AuthController extends Controller
         ]);
 
         return response()->json([
-            'message' => __('messages.auth.register_success'),
+            'message' => __('auth.register_success'),
         ]);
     }
 
@@ -34,7 +34,7 @@ class AuthController extends Controller
         $token = auth('api')->attempt($validated);
 
         if (! $token) {
-            throw new UnprocessableEntityException(__('messages.auth.invalid_credentials'), 'INVALID_CREDENTIALS');
+            throw new UnprocessableEntityException(__('auth.invalid_credentials'), 'INVALID_CREDENTIALS');
         }
 
         return response()->json([
@@ -49,7 +49,7 @@ class AuthController extends Controller
         $user = auth('api')->user();
 
         if (! $user) {
-            throw new UnauthorizedException(__('messages.auth.not_authenticated'));
+            throw new UnauthorizedException(__('auth.not_authenticated'));
         }
 
         return response()->json($user);
@@ -60,7 +60,7 @@ class AuthController extends Controller
         auth('api')->logout();
 
         return response()->json([
-            'message' => __('messages.auth.logout')
+            'message' => __('auth.logout')
         ]);
     }
 
