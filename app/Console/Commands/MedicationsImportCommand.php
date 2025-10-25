@@ -7,21 +7,21 @@ use App\Models\Medication;
 use Illuminate\Console\Command;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
-class ImportMedicationsCommand extends Command
+class MedicationsImportCommand extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'medications:import {file : Caminho para o arquivo (CSV, XLS ou XLSX)}';
+    protected $signature = 'medications:import {file : Path to the file (CSV, XLS or XLSX)}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Importa medicamentos de um arquivo CSV, XLS ou XLSX';
+    protected $description = 'Import medicaments from a CSV, XLS or XLSX file';
 
     private int $totalRecords = 0;
 
@@ -35,6 +35,7 @@ class ImportMedicationsCommand extends Command
         'empresa_detentora_registro' => 'manufacturer',
         'categoria_regulatoria' => 'category',
         'classe_terapeutica' => 'therapeutic_class',
+        'numero_registro_produto' => 'registration_number',
     ];
 
     /**
@@ -45,7 +46,7 @@ class ImportMedicationsCommand extends Command
         $filePath = $this->argument('file');
 
         if (! file_exists($filePath)) {
-            $this->error("Arquivo não encontrado: {$filePath}");
+            $this->error("File not found: {$filePath}");
 
             return Command::FAILURE;
         }
@@ -53,19 +54,18 @@ class ImportMedicationsCommand extends Command
         $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
 
         if (! in_array($extension, ['csv', 'xls', 'xlsx'])) {
-            $this->error('O arquivo deve ter extensão .csv, .xls ou .xlsx');
+            $this->error('The file must have a .csv, .xls or .xlsx extension');
 
             return Command::FAILURE;
         }
 
-        $this->info('Iniciando importação de medicamentos...');
+        $this->info('Starting medication import...');
 
-        $this->info("Formato detectado: {$extension}");
+        $this->info("Detected format: {$extension}");
 
         $this->newLine();
 
         try {
-            // Configure CSV reader to handle Windows-1252 encoding (common in Brazilian data)
             if ($extension === 'csv') {
                 $reader = IOFactory::createReader('Csv');
                 $reader->setInputEncoding('Windows-1252');
@@ -81,7 +81,7 @@ class ImportMedicationsCommand extends Command
             $data = $worksheet->toArray();
 
             if (empty($data)) {
-                $this->error('O arquivo está vazio');
+                $this->error('The file is empty');
 
                 return Command::FAILURE;
             }
@@ -97,7 +97,7 @@ class ImportMedicationsCommand extends Command
             $this->totalRecords = count($rowsHydrated);
 
             if ($this->totalRecords === 0) {
-                $this->warn('O arquivo não contém dados para importar');
+                $this->warn('The file does not contain data to import');
 
                 return Command::SUCCESS;
             }
@@ -106,14 +106,13 @@ class ImportMedicationsCommand extends Command
 
             $progressBar->setFormat(' %current%/%max% [%bar%] %percent:3s%% %message%');
 
-            $progressBar->setMessage('Processando...');
+            $progressBar->setMessage('Processing...');
 
             $progressBar->start();
 
             foreach ($rowsHydrated as $row) {
                 $exists = Medication::query()
-                    ->whereInsensitiveLike('name', $row['name'])
-                    ->whereInsensitiveLike('active_principle', $row['active_principle'])
+                    ->where('registration_number', $row['registration_number'])
                     ->exists();
 
                 if ($exists) {
@@ -131,7 +130,7 @@ class ImportMedicationsCommand extends Command
                 } catch (Throwable $e) {
                     $progressBar->clear();
 
-                    $this->error("\nErro ao importar medicamento: {$row['name']}");
+                    $this->error("\nError importing medication: {$row['name']}");
 
                     $this->error($e->getMessage());
 
@@ -141,7 +140,7 @@ class ImportMedicationsCommand extends Command
                 $progressBar->advance();
             }
 
-            $progressBar->setMessage('Concluído!');
+            $progressBar->setMessage('Completed!');
 
             $progressBar->finish();
 
@@ -151,7 +150,7 @@ class ImportMedicationsCommand extends Command
 
             return Command::SUCCESS;
         } catch (Throwable $e) {
-            $this->error('Erro ao processar o arquivo: '.$e->getMessage());
+            $this->error('Error processing the file: '.$e->getMessage());
 
             return Command::FAILURE;
         }
@@ -159,12 +158,21 @@ class ImportMedicationsCommand extends Command
 
     private function hydrate(array $header, array $rows): array
     {
+
+
         $hydrated = [];
 
         $registeredNumbers = [];
 
         foreach ($rows as $row) {
             $record = collect(array_combine($header, array_map('mb_strtoupper', $row)));
+
+            if (
+                is_null($record->get('numero_registro_produto'))
+                || trim($record->get('numero_registro_produto')) === ''
+            ) {
+                continue;
+            }
 
             if (! in_array($record->get('situacao_registro'), ['VÁLIDO', 'ATIVO'])) {
                 continue;
@@ -195,27 +203,27 @@ class ImportMedicationsCommand extends Command
     private function displayReport(): void
     {
         $this->info('═══════════════════════════════════════════════════════════');
-        $this->info('              RELATÓRIO DE IMPORTAÇÃO                      ');
+        $this->info('              IMPORT REPORT                      ');
         $this->info('═══════════════════════════════════════════════════════════');
         $this->newLine();
 
         $this->table(
-            ['Métrica', 'Quantidade'],
+            ['Metric', 'Quantity'],
             [
-                ['Total de registros no arquivo', $this->totalRecords],
-                ['✓ Importados com sucesso', "<fg=green>{$this->imported}</>"],
-                ['⊗ Ignorados (já existem no banco)', "<fg=yellow>{$this->skippedAlreadyExists}</>"],
+                ['Total records in the file', $this->totalRecords],
+                ['✓ Imported successfully', "<fg=green>{$this->imported}</>"],
+                ['⊗ Ignored (already exist in the database)', "<fg=yellow>{$this->skippedAlreadyExists}</>"],
             ]
         );
 
         $this->newLine();
 
         if ($this->imported > 0) {
-            $this->info("✓ {$this->imported} medicamentos foram importados com sucesso!");
+            $this->info("✓ {$this->imported} medications were imported successfully!");
         }
 
         if ($this->imported === 0 && $this->totalRecords > 0) {
-            $this->warn('⚠ Nenhum medicamento foi importado. Verifique os critérios de validação.');
+            $this->warn('⚠ No medication was imported. Verify the validation criteria.');
         }
 
         $this->newLine();
