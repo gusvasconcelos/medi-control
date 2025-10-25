@@ -8,62 +8,40 @@ use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 abstract class Model extends EloquentModel
 {
+    protected $searchable = [];
+
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
     }
 
     #[Scope]
-    public function whereLike(Builder $query, string $field, ?string $value): Builder
+    public function whereFullText(Builder $query, string $field, ?string $value): Builder
     {
-        if (is_null($value)) {
+        if (is_null($value) || trim($value) === '') {
             return $query;
         }
 
-        return $query->where($field, 'LIKE', "%{$value}%");
+        $unaccented = cast()->unaccent($value);
+
+        return $query->orWhereRaw("UNACCENT({$field})::text ILIKE ?", ["%{$unaccented}%"]);
     }
 
     #[Scope]
-    public function orWhereLike(Builder $query, string $field, ?string $value): Builder
+    public function search(Builder $query, ?string $value): Builder
     {
-        if (is_null($value)) {
+        if (is_null($value) || trim($value) === '') {
             return $query;
         }
 
-        return $query->orWhere($field, 'LIKE', "%{$value}%");
-    }
+        $searchable = $this->searchable ?: $this->getFillable();
 
-    #[Scope]
-    public function whereInsensitiveLike(Builder $query, string $field, ?string $value): Builder
-    {
-        if (is_null($value)) {
-            return $query;
-        }
-
-        return $query->where($field, 'ILIKE', "%{$value}%");
-    }
-
-    #[Scope]
-    public function orWhereInsensitiveLike(Builder $query, string $field, ?string $value): Builder
-    {
-        if (is_null($value)) {
-            return $query;
-        }
-
-        return $query->orWhere($field, 'ILIKE', "%{$value}%");
-    }
-
-    #[Scope]
-    public function searchField(Builder $query, string $field, ?string $search): Builder
-    {
-        if (is_null($search) || trim($search) === '') {
-            return $query;
-        }
-
-        $unaccented = cast()->unaccent($search);
-
-        return $query->where(function (Builder $q) use ($field, $unaccented) {
-            $q->whereRaw("UNACCENT({$field})::text ILIKE ?", ["%{$unaccented}%"]);
+        $query->where(function (Builder $q) use ($searchable, $value) {
+            foreach ($searchable as $field) {
+                $q->whereFullText($field, $value);
+            }
         });
+
+        return $query;
     }
 }
