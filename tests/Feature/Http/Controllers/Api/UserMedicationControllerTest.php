@@ -384,7 +384,7 @@ class UserMedicationControllerTest extends TestCase
         ];
 
         $response = $this->actingAsUser($user)
-            ->getJson("{$this->url}/{$userMedication->id}/indicators?" . http_build_query($queryParams));
+            ->getJson("{$this->url}/indicators?" . http_build_query($queryParams));
 
         $response
             ->assertStatus(200)
@@ -421,7 +421,7 @@ class UserMedicationControllerTest extends TestCase
         ]);
 
         $response = $this->actingAsUser($user)
-            ->getJson("{$this->url}/{$userMedication->id}/indicators");
+            ->getJson("{$this->url}/indicators");
 
         $response->assertStatus(422);
     }
@@ -443,7 +443,7 @@ class UserMedicationControllerTest extends TestCase
         ];
 
         $response = $this->actingAsUser($user)
-            ->getJson("{$this->url}/{$userMedication->id}/indicators?" . http_build_query($queryParams));
+            ->getJson("{$this->url}/indicators?" . http_build_query($queryParams));
 
         $response->assertStatus(422);
     }
@@ -465,7 +465,7 @@ class UserMedicationControllerTest extends TestCase
         ];
 
         $response = $this->actingAsUser($user)
-            ->getJson("{$this->url}/{$userMedication->id}/indicators?" . http_build_query($queryParams));
+            ->getJson("{$this->url}/indicators?" . http_build_query($queryParams));
 
         $response
             ->assertStatus(422)
@@ -487,7 +487,7 @@ class UserMedicationControllerTest extends TestCase
         ]);
 
         $response = $this->actingAsUser($user)
-            ->getJson("{$this->url}/{$userMedication->id}/indicators?start_date=2025-10-19&end_date=2025-10-20");
+            ->getJson("{$this->url}/indicators?start_date=2025-10-19&end_date=2025-10-20");
 
         $response
             ->assertStatus(200)
@@ -537,7 +537,7 @@ class UserMedicationControllerTest extends TestCase
         ];
 
         $response = $this->actingAsUser($user1)
-            ->getJson("{$this->url}/{$userMed1->id}/indicators?" . http_build_query($queryParams));
+            ->getJson("{$this->url}/indicators?" . http_build_query($queryParams));
 
         $response
             ->assertStatus(200)

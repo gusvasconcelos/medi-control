@@ -33,26 +33,21 @@ class UserMedicationService
             ->get();
     }
 
-    public function getIndicators(Collection $data, int $id): Collection
+    public function getIndicators(Collection $data): Collection
     {
         $startDate = Carbon::parse($data->get('start_date'));
 
         $endDate = Carbon::parse($data->get('end_date'));
 
-        $userMedication = $this->userMedication
+        $userMedications = $this->userMedication
             ->with(['logs'])
-            ->where('id', $id)
             ->where('active', true)
             ->where('start_date', '<=', $endDate)
             ->where(function ($query) use ($startDate) {
                 $query->whereNull('end_date')
                     ->orWhere('end_date', '>=', $startDate);
             })
-            ->first();
-
-        if (!$userMedication) {
-            return collect();
-        }
+            ->get();
 
         $dateRange = Carbon::parse($startDate->format('Y-m-d'))
             ->daysUntil($endDate->format('Y-m-d'))
@@ -65,34 +60,37 @@ class UserMedicationService
 
             $totalTaken = 0;
 
-            $medStartDate = $userMedication->start_date;
-            $medEndDate = $userMedication->end_date;
+            foreach ($userMedications as $userMedication) {
+                $medStartDate = $userMedication->start_date;
 
-            if ($date < $medStartDate) {
+                $medEndDate = $userMedication->end_date;
+
+                if ($date < $medStartDate) {
                     continue;
-            }
+                }
 
-            if ($medEndDate && $date > $medEndDate) {
+                if ($medEndDate && $date > $medEndDate) {
                     continue;
-            }
+                }
 
-            $timeSlots = $userMedication->time_slots ?? [];
+                $timeSlots = $userMedication->time_slots ?? [];
 
-            $totalScheduled += count($timeSlots);
+                $totalScheduled += count($timeSlots);
 
-            $taken = $userMedication->logs()
-                ->whereDate('scheduled_at', $date)
-                ->where('status', 'taken')
-                ->count();
+                $taken = $userMedication->logs()
+                    ->whereDate('scheduled_at', $date)
+                    ->where('status', 'taken')
+                    ->count();
 
-            $totalTaken += $taken;
+                $totalTaken += $taken;
 
-            if ($totalScheduled > 0) {
-                $indicators->push([
-                    'date' => $date->toDateString(),
-                    'total_scheduled' => $totalScheduled,
-                    'total_taken' => $totalTaken,
-                ]);
+                if ($totalScheduled > 0) {
+                    $indicators->push([
+                        'date' => $date->toDateString(),
+                        'total_scheduled' => $totalScheduled,
+                        'total_taken' => $totalTaken,
+                    ]);
+                }
             }
         }
 

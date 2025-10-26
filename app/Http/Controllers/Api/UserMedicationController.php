@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Medication;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserMedication\GetUserMedicationsRequest;
@@ -28,11 +27,11 @@ class UserMedicationController extends Controller
         return response()->json(['data' => $userMedications]);
     }
 
-    public function indicators(IndicatorsMedicationRequest $request, int $id): JsonResponse
+    public function indicators(IndicatorsMedicationRequest $request): JsonResponse
     {
         $validated = $request->validated();
 
-        $indicators = $this->userMedicationService->getIndicators(collect($validated), $id);
+        $indicators = $this->userMedicationService->getIndicators(collect($validated));
 
         return response()->json(['data' => $indicators]);
     }
