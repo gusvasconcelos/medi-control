@@ -17,7 +17,7 @@ class MedicationService
     {
         return $this->medication
             ->query()
-            ->search($data->get('search'))
+            ->whereFullText('name', $data->get('search'))
             ->limit($data->get('limit', 10))
             ->get();
     }
