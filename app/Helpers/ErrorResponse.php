@@ -53,7 +53,7 @@ class ErrorResponse implements Arrayable
         return $response;
     }
 
-    public function showStackTrace(): static
+    public function showStackTrace(): self
     {
         $this->showStackTrace = true;
 
