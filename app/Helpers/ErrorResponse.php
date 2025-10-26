@@ -11,6 +11,8 @@ use Illuminate\Contracts\Support\Arrayable;
 
 class ErrorResponse implements Arrayable
 {
+    protected bool $showStackTrace = false;
+
     public function __construct(
         protected Throwable $exception,
         protected string $message,
@@ -51,9 +53,16 @@ class ErrorResponse implements Arrayable
         return $response;
     }
 
+    public function showStackTrace(): static
+    {
+        $this->showStackTrace = true;
+
+        return $this;
+    }
+
     private function getStack(): array
     {
-        if (! config('app.debug')) {
+        if (! $this->showStackTrace() && ! config('app.debug')) {
             return [];
         }
 

@@ -240,7 +240,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             Log::critical(
                 message: $message,
-                context: $errorResponse->toArray()
+                context: $errorResponse->showStackTrace()->toArray()
             );
 
             return $errorResponse->toJsonResponse();
