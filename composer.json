@@ -12,6 +12,7 @@
         "laravel/tinker": "^2.10.1",
         "marvinlabs/laravel-discord-logger": "^1.4",
         "phpoffice/phpspreadsheet": "^5.1",
+        "resend/resend-laravel": "^0.23.0",
         "spatie/laravel-permission": "^6.21",
         "tymon/jwt-auth": "^2.2"
     },
