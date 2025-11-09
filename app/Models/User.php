@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Traits\HasFiles;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -18,6 +19,7 @@ class User extends Authenticatable implements JWTSubject
 {
     use HasFactory;
     use HasRoles;
+    use HasFiles;
     use Notifiable;
 
     protected $table = 'users';
