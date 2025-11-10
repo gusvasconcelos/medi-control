@@ -2,34 +2,32 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\File\IndexFilesRequest;
-use App\Http\Requests\File\StoreFileRequest;
-use App\Http\Requests\File\UpdateFileRequest;
+use App\Models\File;
 use App\Services\FileService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Controller;
+use Illuminate\Database\Eloquent\Model;
+use App\Http\Requests\File\StoreFileRequest;
+use App\Http\Requests\File\UpdateFileRequest;
 
 class FileController extends Controller
 {
     public function __construct(
         protected FileService $fileService
-    ) {
-        $this->fileService = $fileService;
-    }
+    ) {}
 
-    public function index(int $fileableId): JsonResponse
+    public function index(Model $fileable): JsonResponse
     {
-        $filePaginator = $this->fileService->index($fileableId);
+        $filePaginator = $this->fileService->index($fileable);
 
         return response()->json($filePaginator);
     }
 
-    public function store(StoreFileRequest $request, int $fileableId): JsonResponse
+    public function store(StoreFileRequest $request, Model $fileable): JsonResponse
     {
         $validated = $request->validated();
 
-        $file = $this->fileService->store(collect($validated), $fileableId);
+        $file = $this->fileService->store(collect($validated), $fileable);
 
         return response()->json([
             'message' => __('files.created'),
@@ -37,18 +35,16 @@ class FileController extends Controller
         ]);
     }
 
-    public function show(int $fileableId, int $fileId): JsonResponse
+    public function show(Model $fileable, File $file): JsonResponse
     {
-        $file = $this->fileService->show($fileableId, $fileId);
-
         return response()->json(['data' => $file]);
     }
 
-    public function update(UpdateFileRequest $request, int $fileableId, int $id): JsonResponse
+    public function update(UpdateFileRequest $request, Model $fileable, File $file): JsonResponse
     {
         $validated = $request->validated();
 
-        $file = $this->fileService->update($id, collect($validated));
+        $file = $this->fileService->update(collect($validated), $file);
 
         return response()->json([
             'message' => __('files.updated'),
@@ -56,9 +52,9 @@ class FileController extends Controller
         ]);
     }
 
-    public function destroy(int $fileableId, int $id): JsonResponse
+    public function destroy(Model $fileable, File $file): JsonResponse
     {
-        $this->fileService->destroy($fileableId, $id);
+        $this->fileService->destroy($file);
 
         return response()->json([
             'message' => __('files.deleted'),
