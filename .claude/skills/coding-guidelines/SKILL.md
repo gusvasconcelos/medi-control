@@ -29,6 +29,7 @@ Apply these standards to all PHP 8.2 and Laravel 12 code. Focus on type-safety, 
 -   Don’t Use The ELSE Keyword, use early returns instead
 -   Prefer using Illuminate Collections instead of arrays
 -   Prefer using readonly properties instead of public properties
+-   Only use try-catch blocks in batch operations, prefer to use exceptions for global error handling
 
 ## Development Commands
 

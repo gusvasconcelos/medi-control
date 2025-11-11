@@ -3,98 +3,62 @@
 namespace App\Services;
 
 use App\Models\File;
-use Illuminate\Support\Str;
 use App\Packages\Filter\FilterQ;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Route;
+use App\Services\FileStorageService;
+use Illuminate\Database\Eloquent\Model;
 use App\Services\FileUpload\AdapterFactory;
 use Illuminate\Pagination\LengthAwarePaginator;
-use App\Services\FileStorageService;
 
 class FileService
 {
-    /**
-     * The class name of the fileable model.
-     *
-     * @var string
-     */
-    protected string $fileableClass;
-
-    public function __construct()
+    public function index(Model $fileable): LengthAwarePaginator
     {
-        $this->fileableClass = Route::current()->defaults['modelClass'];
-    }
-
-    public function index(int $fileableId): LengthAwarePaginator
-    {
-        $fileable = $this->fileableClass::findOrFail($fileableId);
-
-        $query = File::active()->byFileable($fileable);
+        $query = $fileable->files()->active()->getQuery();
 
         return FilterQ::applyWithPagination($query);
     }
 
-    public function show(int $fileableId, int $fileId): File
+    public function store(Collection $data, Model $fileable): File
     {
-        return File::active()
-            ->where('fileable_id', $fileableId)
-            ->where('fileable_type', $this->fileableClass)
-            ->findOrFail($fileId);
-    }
-
-    public function store(Collection $data, int $fileableId): File
-    {
-        $fileable = $this->fileableClass::findOrFail($fileableId);
-
         $fileData = $data->toArray();
 
         $adapter = AdapterFactory::make($fileData);
 
         $uploadedFileData = $adapter->upload($fileData);
 
-        return DB::transaction(function () use ($data, $fileableId) {
-            $fileable = $this->fileableClass::findOrFail($fileableId);
+        $storageResult = FileStorageService::put(
+            tempPath: $uploadedFileData->tempPath,
+            uploadedBy: auth('api')->id(),
+            fileableType: get_class($fileable),
+            originalName: $uploadedFileData->originalName,
+            disk: $data->get('disk', 's3')
+        );
 
-            $adapter = AdapterFactory::make($data->toArray());
-            $uploadedFileInfo = $adapter->upload($data->toArray());
+        $metadata = array_merge(
+            $uploadedFileData->metadata ?? [],
+            $data->get('metadata', [])
+        );
 
-            $storageResult = FileStorageService::put(
-                tempPath: $uploadedFileInfo->tempPath,
-                uploadedBy: auth('api')->id(),
-                fileableType: $this->fileableClass,
-                originalName: $uploadedFileInfo->originalName,
-                disk: $data->get('disk', 's3')
-            );
+        $file = $fileable->files()->create([
+            'uploaded_by' => auth('api')->id(),
+            'original_name' => $uploadedFileData->originalName,
+            'stored_name' => $storageResult['stored_name'],
+            'path' => $storageResult['path'],
+            'disk' => $data->get('disk', 's3'),
+            'mime_type' => $uploadedFileData->mimeType,
+            'size' => $uploadedFileData->size,
+            'visibility' => $data->get('visibility', 'private'),
+            'metadata' => $metadata,
+        ]);
 
-            $metadata = array_merge(
-                $uploadedFileInfo->metadata ?? [],
-                $data->get('metadata', [])
-            );
+        $this->cleanupTempFile($uploadedFileData->tempPath);
 
-            $file = $fileable->files()->create([
-                'uploaded_by' => auth('api')->id(),
-                'original_name' => $uploadedFileInfo->originalName,
-                'stored_name' => $storageResult['stored_name'],
-                'path' => $storageResult['path'],
-                'disk' => $data->get('disk', 's3'),
-                'mime_type' => $uploadedFileInfo->mimeType,
-                'size' => $uploadedFileInfo->size,
-                'visibility' => $data->get('visibility', 'private'),
-                'metadata' => $metadata,
-            ]);
-
-            $this->cleanupTempFile($uploadedFileInfo->tempPath);
-
-            return $file;
-        });
+        return $file;
     }
 
-    public function update(int $id, Collection $data): File
+    public function update(Collection $data, File $file): File
     {
-        $file = File::active()->findOrFail($id);
-
         $updateData = [];
 
         if ($data->has('visibility')) {
@@ -108,19 +72,15 @@ class FileService
             );
         }
 
-        if (!empty($updateData)) {
+        if (! empty($updateData)) {
             $file->update($updateData);
         }
 
         return $file->fresh();
     }
 
-    public function destroy(int $fileableId, int $id): void
+    public function destroy(File $file): void
     {
-        $fileable = $this->fileableClass::findOrFail($fileableId);
-
-        $file = $fileable->files()->active()->findOrFail($id);
-
         $file->update(['active' => false]);
 
         FileStorageService::delete($file->path, $file->disk);
