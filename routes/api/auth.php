@@ -15,6 +15,6 @@ Route::group([
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::get('me', [AuthController::class, 'me']);
 
-    Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLink']);
-    Route::post('reset-password', [ResetPasswordController::class, 'resetPassword']);
+    Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLink'])->withoutMiddleware(['jwt']);
+    Route::post('reset-password', [ResetPasswordController::class, 'resetPassword'])->withoutMiddleware(['jwt']);
 });
