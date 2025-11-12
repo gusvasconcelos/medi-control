@@ -40,7 +40,6 @@ return new class () extends Migration {
             $table->index('active_principle');
             $table->index('category');
             $table->index('therapeutic_class');
-            $table->index('registration_number');
         });
     }
 

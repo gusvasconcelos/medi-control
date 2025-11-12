@@ -67,6 +67,7 @@ class MedicationsImportCommand extends Command
 
         try {
             if ($extension === 'csv') {
+                /** @var \PhpOffice\PhpSpreadsheet\Reader\Csv $reader */
                 $reader = IOFactory::createReader('Csv');
                 $reader->setInputEncoding('Windows-1252');
                 $reader->setDelimiter(';');
@@ -78,21 +79,26 @@ class MedicationsImportCommand extends Command
 
             $worksheet = $spreadsheet->getActiveSheet();
 
-            $data = $worksheet->toArray();
+            $headerRow = $worksheet->getRowIterator()->current();
+            $header = [];
+            foreach ($headerRow->getCellIterator() as $cell) {
+                $header[] = trim(mb_strtolower($cell->getValue()));
+            }
 
-            if (empty($data)) {
+            if (empty($header)) {
                 $this->error('The file is empty');
 
                 return Command::FAILURE;
             }
 
-            $header = array_map(function ($column) {
-                return trim(mb_strtolower($column));
-            }, array_first($data));
+            $this->info('Loading existing medications from database...');
 
-            $rows = array_slice($data, 1);
+            $existingRegistrationNumbers = Medication::query()
+                ->pluck('registration_number')
+                ->flip()
+                ->toArray();
 
-            $rowsHydrated = $this->hydrate($header, $rows);
+            $rowsHydrated = $this->hydrateFromIterator($worksheet, $header, $existingRegistrationNumbers);
 
             $this->totalRecords = count($rowsHydrated);
 
@@ -106,38 +112,18 @@ class MedicationsImportCommand extends Command
 
             $progressBar->setFormat(' %current%/%max% [%bar%] %percent:3s%% %message%');
 
-            $progressBar->setMessage('Processing...');
+            $progressBar->setMessage('Inserting into database...');
 
             $progressBar->start();
 
-            foreach ($rowsHydrated as $row) {
-                $exists = Medication::query()
-                    ->where('registration_number', $row['registration_number'])
-                    ->exists();
+            $rowsHydratedChunked = array_chunk($rowsHydrated, 1000);
 
-                if ($exists) {
-                    $this->skippedAlreadyExists++;
-
-                    $progressBar->advance();
-
-                    continue;
+            foreach ($rowsHydratedChunked as $chunk) {
+                if (!empty($chunk)) {
+                    Medication::insert($chunk);
+                    $this->imported += count($chunk);
+                    $progressBar->advance(count($chunk));
                 }
-
-                try {
-                    Medication::create($row);
-
-                    $this->imported++;
-                } catch (Throwable $e) {
-                    $progressBar->clear();
-
-                    $this->error("\nError importing medication: {$row['name']}");
-
-                    $this->error($e->getMessage());
-
-                    $progressBar->display();
-                }
-
-                $progressBar->advance();
             }
 
             $progressBar->setMessage('Completed!');
@@ -156,45 +142,77 @@ class MedicationsImportCommand extends Command
         }
     }
 
-    private function hydrate(array $header, array $rows): array
+    /**
+     * Hydrate the rows from the worksheet using RowIterator.
+     */
+    private function hydrateFromIterator($worksheet, array $header, array $existingRegistrationNumbers): array
     {
-
-
         $hydrated = [];
-
         $registeredNumbers = [];
 
-        foreach ($rows as $row) {
-            $record = collect(array_combine($header, array_map('mb_strtoupper', $row)));
+        $rowIterator = $worksheet->getRowIterator();
+        $rowIterator->next();
+
+        while ($rowIterator->valid()) {
+            $row = $rowIterator->current();
+            $cellIterator = $row->getCellIterator();
+            $cellIterator->setIterateOnlyExistingCells(false);
+
+            $rowData = [];
+            foreach ($cellIterator as $cell) {
+                $rowData[] = $cell->getValue();
+            }
+
+            $rowData = array_slice(array_pad($rowData, count($header), null), 0, count($header));
+
+            $record = array_combine($header, array_map('mb_strtoupper', $rowData));
 
             if (
-                is_null($record->get('numero_registro_produto'))
-                || trim($record->get('numero_registro_produto')) === ''
+                !isset($record['numero_registro_produto'])
+                || trim($record['numero_registro_produto']) === ''
             ) {
+                $rowIterator->next();
                 continue;
             }
 
-            if (! in_array($record->get('situacao_registro'), ['VÁLIDO', 'ATIVO'])) {
+            if (
+                !isset($record['situacao_registro'])
+                || !in_array($record['situacao_registro'], ['VÁLIDO', 'ATIVO'], true)
+            ) {
+                $rowIterator->next();
                 continue;
             }
 
-            if (stripos($record->get('nome_produto'), 'teste')) {
+            if (
+                isset($record['nome_produto'])
+                && stripos($record['nome_produto'], 'teste') !== false
+            ) {
+                $rowIterator->next();
                 continue;
             }
 
-            if (in_array($record->get('numero_registro_produto'), $registeredNumbers)) {
+            $regNumber = $record['numero_registro_produto'];
+
+            if (isset($registeredNumbers[$regNumber])) {
+                $rowIterator->next();
                 continue;
             }
+
+            if (isset($existingRegistrationNumbers[$regNumber])) {
+                $this->skippedAlreadyExists++;
+                $rowIterator->next();
+                continue;
+            }
+
+            $registeredNumbers[$regNumber] = true;
 
             $mapped = [];
-
-            $registeredNumbers[] = $record->get('numero_registro_produto');
-
             foreach (self::MAPPED_FIELDS as $original => $target) {
                 $mapped[$target] = isset($record[$original]) ? trim($record[$original]) : null;
             }
 
             $hydrated[] = $mapped;
+            $rowIterator->next();
         }
 
         return $hydrated;
@@ -203,7 +221,7 @@ class MedicationsImportCommand extends Command
     private function displayReport(): void
     {
         $this->info('═══════════════════════════════════════════════════════════');
-        $this->info('              IMPORT REPORT                      ');
+        $this->info('                        IMPORT REPORT                      ');
         $this->info('═══════════════════════════════════════════════════════════');
         $this->newLine();
 
