@@ -1,0 +1,75 @@
+# Version Control
+.git
+.gitignore
+.gitattributes
+
+# Environment files
+.env
+.env.backup
+.env.production
+
+# Dependencies
+/node_modules
+/vendor
+
+# Build artifacts
+/public/hot
+/public/storage
+/public/build
+
+# Storage (will be mounted as volumes)
+/storage/app/*
+!/storage/app/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/logs/*
+!/storage/logs/.gitignore
+
+# Bootstrap cache (will be mounted as volume)
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# Testing
+.phpunit.result.cache
+/tests/**/.env
+/coverage
+
+# Documentation
+README.md
+CONTRIBUTING.md
+CHANGELOG.md
+
+# Docker
+docker-compose.yml
+docker-compose.*.yml
+Dockerfile
+.dockerignore
+
+# CI/CD
+.github
+.gitlab-ci.yml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Laravel specific
+/database/*.sqlite
+/database/*.sqlite-journal
+
+# Misc
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
