@@ -237,6 +237,7 @@ return [
         'limit' => 'limite',
 
         // Atributos relacionados a medicamentos
+        'medications' => 'medicamentos',
         'medication_id' => 'medicamento',
         'medication_name' => 'nome do medicamento',
         'medication_active_principle' => 'princípio ativo',
