@@ -4,7 +4,6 @@ namespace Tests\Feature\Http\Controllers\Api;
 
 use App\Models\Medication;
 use App\Models\MedicationLog;
-use App\Models\Notification;
 use App\Models\User;
 use App\Models\UserMedication;
 use Illuminate\Foundation\Testing\DatabaseTransactions;

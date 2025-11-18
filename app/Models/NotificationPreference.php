@@ -26,9 +26,6 @@ class NotificationPreference extends Model
         'whatsapp_enabled' => 'boolean',
     ];
 
-    /**
-     * Usuário dono das preferências
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

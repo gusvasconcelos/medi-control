@@ -29,25 +29,16 @@ class InteractionAlert extends Model
         'created_at' => 'datetime',
     ];
 
-    /**
-     * Usuário que recebeu o alerta
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Primeiro medicamento da interação
-     */
     public function medication1(): BelongsTo
     {
         return $this->belongsTo(Medication::class, 'medication_1_id');
     }
 
-    /**
-     * Segundo medicamento da interação
-     */
     public function medication2(): BelongsTo
     {
         return $this->belongsTo(Medication::class, 'medication_2_id');
