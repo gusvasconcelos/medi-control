@@ -9,14 +9,17 @@
         "php": "^8.2",
         "gusvasconcelos/markdown-converter": "^2.0",
         "laravel/framework": "^12.0",
+        "laravel/horizon": "^5.40",
         "laravel/octane": "^2.13",
         "laravel/tinker": "^2.10.1",
         "marvinlabs/laravel-discord-logger": "^1.4",
         "openai-php/client": "^0.18.0",
         "phpoffice/phpspreadsheet": "^5.1",
+        "predis/predis": "^3.2",
         "resend/resend-laravel": "^0.23.0",
         "spatie/laravel-permission": "^6.21",
-        "tymon/jwt-auth": "^2.2"
+        "tymon/jwt-auth": "^2.2",
+        "vladimir-yuldashev/laravel-queue-rabbitmq": "^14.4"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

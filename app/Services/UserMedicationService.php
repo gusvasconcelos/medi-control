@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\UserMedicationCreated;
 use App\Models\Medication;
 use App\Models\UserMedication;
 use Illuminate\Support\Carbon;
@@ -115,6 +116,8 @@ class UserMedicationService
             'notes' => $data->get('notes'),
             'active' => true,
         ]);
+
+        UserMedicationCreated::dispatch($userMedication);
 
         return $userMedication;
     }

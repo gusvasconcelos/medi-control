@@ -28,17 +28,11 @@ class ChatSession extends Model
         'created_at' => 'datetime',
     ];
 
-    /**
-     * Usuário dono da sessão
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Mensagens desta sessão
-     */
     public function messages(): HasMany
     {
         return $this->hasMany(Message::class);

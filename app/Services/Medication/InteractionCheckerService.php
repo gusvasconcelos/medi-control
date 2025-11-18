@@ -9,7 +9,7 @@ use App\Packages\OpenAI\DTOs\InteractionResult;
 use App\Packages\OpenAI\Prompts\CheckInteractionPrompt;
 use App\Packages\OpenAI\Contracts\OpenAIClientInterface;
 
-final class InteractionCheckerService
+class InteractionCheckerService
 {
     public function __construct(
         private OpenAIClientInterface $openAIClient,

@@ -34,17 +34,11 @@ class Notification extends Model
         'metadata' => 'array',
     ];
 
-    /**
-     * Usuário que receberá a notificação
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Medicamento relacionado (opcional)
-     */
     public function userMedication(): BelongsTo
     {
         return $this->belongsTo(UserMedication::class);
