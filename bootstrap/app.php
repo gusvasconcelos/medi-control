@@ -9,6 +9,7 @@ use App\Http\Middleware\JWTMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Database\QueryException;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -28,6 +29,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->web(append: [
+            HandleInertiaRequests::class,
+        ]);
+
         $middleware->alias([
             'jwt' => JWTMiddleware::class,
         ]);
