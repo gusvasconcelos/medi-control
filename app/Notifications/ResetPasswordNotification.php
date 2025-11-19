@@ -38,10 +38,14 @@ class ResetPasswordNotification extends Notification
 
     private function buildResetPasswordUrl(object $notifiable): string
     {
-        return sprintf(
-            'medi-control://reset-password?token=%s&email=%s',
-            urlencode($this->token),
-            urlencode($notifiable->email)
-        );
+        $baseUrl = config('app.url');
+
+        $safeToken = urlencode($this->token);
+
+        $safeEmail = urlencode($notifiable->email);
+
+        $url = "{$baseUrl}/reset-password?token={$safeToken}&email={$safeEmail}";
+
+        return $url;
     }
 }
