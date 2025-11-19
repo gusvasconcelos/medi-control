@@ -4,22 +4,22 @@ import axios from 'axios';
 import { AuthCard } from '@/Components/Auth/AuthCard';
 import { InputField } from '@/Components/Auth/InputField';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/useToast';
 import type { PageProps, LoginCredentials, AuthResponse } from '@/types';
 
 export default function Login({ }: PageProps) {
     const { saveAuthData } = useAuth();
+    const { showError } = useToast();
     const [formData, setFormData] = useState<LoginCredentials>({
         email: '',
         password: '',
     });
     const [errors, setErrors] = useState<Partial<LoginCredentials>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [generalError, setGeneralError] = useState<string>('');
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setErrors({});
-        setGeneralError('');
         setIsSubmitting(true);
 
         try {
@@ -29,11 +29,11 @@ export default function Login({ }: PageProps) {
         } catch (error: any) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.details || {});
-                setGeneralError(error.response.data.message);
+                showError(error.response.data.message);
             } else if (error.response?.status === 401) {
-                setGeneralError('Email ou senha inválidos.');
+                showError('Email ou senha inválidos.');
             } else {
-                setGeneralError('Ocorreu um erro ao fazer login. Tente novamente.');
+                showError('Ocorreu um erro ao fazer login. Tente novamente.');
             }
         } finally {
             setIsSubmitting(false);
@@ -49,12 +49,6 @@ export default function Login({ }: PageProps) {
                 subtitle="Olá, bem-vindo de volta 👋"
             >
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    {generalError && (
-                        <div className="alert alert-error">
-                            <span>{generalError}</span>
-                        </div>
-                    )}
-
                         <InputField
                             label="Email"
                             type="email"

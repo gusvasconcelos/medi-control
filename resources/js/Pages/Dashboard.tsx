@@ -1,9 +1,11 @@
 import { Head } from '@inertiajs/react';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/useToast';
 import type { PageProps } from '@/types';
 
 export default function Dashboard({ }: PageProps) {
     const { user, logout, isLoading } = useAuth();
+    const { showSuccess, showError, showWarning, showInfo } = useToast();
 
     if (isLoading) {
         return (
@@ -96,6 +98,65 @@ export default function Dashboard({ }: PageProps) {
                                 <li>Configure lembretes para não esquecer de tomar seus remédios</li>
                                 <li>Explore as funcionalidades do sistema</li>
                             </ul>
+                        </div>
+                    </div>
+
+                    <div className="mt-8 card bg-base-100 shadow-xl">
+                        <div className="card-body">
+                            <h2 className="card-title">🎨 Testar Sistema de Toast</h2>
+                            <p className="text-sm text-base-content/70 mb-4">
+                                Clique nos botões abaixo para testar as notificações toast.
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    onClick={() => showSuccess('Operação realizada com sucesso!')}
+                                    className="btn btn-success btn-sm"
+                                >
+                                    Sucesso
+                                </button>
+                                <button
+                                    onClick={() => showError('Ocorreu um erro ao processar sua solicitação.')}
+                                    className="btn btn-error btn-sm"
+                                >
+                                    Erro
+                                </button>
+                                <button
+                                    onClick={() => showWarning('Atenção: verifique os dados antes de continuar.')}
+                                    className="btn btn-warning btn-sm"
+                                >
+                                    Aviso
+                                </button>
+                                <button
+                                    onClick={() => showInfo('Esta é uma mensagem informativa.')}
+                                    className="btn btn-info btn-sm"
+                                >
+                                    Info
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        showSuccess('Toast 1');
+                                        showError('Toast 2');
+                                        showWarning('Toast 3');
+                                        showInfo('Toast 4');
+                                        showSuccess('Toast 5');
+                                    }}
+                                    className="btn btn-neutral btn-sm"
+                                >
+                                    Múltiplos (5x)
+                                </button>
+                                <button
+                                    onClick={() => showSuccess('Mensagem rápida (3s)', { duration: 3000 })}
+                                    className="btn btn-ghost btn-sm"
+                                >
+                                    Rápido (3s)
+                                </button>
+                                <button
+                                    onClick={() => showError('Mensagem permanente - feche manualmente', { duration: 0 })}
+                                    className="btn btn-ghost btn-sm"
+                                >
+                                    Permanente
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

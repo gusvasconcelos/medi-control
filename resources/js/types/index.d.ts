@@ -39,7 +39,35 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     auth?: {
         user: User;
     };
+    flash?: {
+        success?: string;
+        error?: string;
+        warning?: string;
+        info?: string;
+    };
 };
+
+export type ToastType = 'success' | 'error' | 'warning' | 'info';
+
+export interface Toast {
+    id: string;
+    type: ToastType;
+    message: string;
+    duration?: number;
+}
+
+export interface ToastOptions {
+    duration?: number;
+}
+
+export interface ToastContextType {
+    toasts: Toast[];
+    showSuccess: (message: string, options?: ToastOptions) => void;
+    showError: (message: string, options?: ToastOptions) => void;
+    showWarning: (message: string, options?: ToastOptions) => void;
+    showInfo: (message: string, options?: ToastOptions) => void;
+    removeToast: (toastId: string) => void;
+}
 
 declare global {
     interface Window {

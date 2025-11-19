@@ -10,7 +10,9 @@ export default function Welcome({ auth }: PageProps) {
                 {/* Navigation */}
                 <div className="navbar bg-base-100 shadow-sm px-4 lg:px-8">
                     <div className="navbar-start">
-                        <img src="/storage/logo.svg" alt="Logo do MediControl" className="w-40 h-16" />
+                        <a href="/">
+                            <img src="/storage/logo.svg" alt="Logo do MediControl" className="w-40 h-16" />
+                        </a>
                     </div>
                     <div className="navbar-end">
                         {auth?.user ? (

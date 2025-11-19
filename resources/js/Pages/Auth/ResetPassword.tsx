@@ -3,6 +3,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import axios from 'axios';
 import { AuthCard } from '@/Components/Auth/AuthCard';
 import { InputField } from '@/Components/Auth/InputField';
+import { useToast } from '@/hooks/useToast';
 import type { PageProps, ResetPasswordData } from '@/types';
 
 interface ResetPasswordProps extends PageProps {
@@ -11,6 +12,7 @@ interface ResetPasswordProps extends PageProps {
 }
 
 export default function ResetPassword({ token, email }: ResetPasswordProps) {
+    const { showSuccess, showError } = useToast();
     const [formData, setFormData] = useState<ResetPasswordData>({
         email: email || '',
         password: '',
@@ -19,27 +21,24 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
     });
     const [errors, setErrors] = useState<Partial<ResetPasswordData>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [generalError, setGeneralError] = useState<string>('');
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setErrors({});
-        setGeneralError('');
         setIsSubmitting(true);
 
         try {
             await axios.post<{ message: string }>('/reset-password', formData);
-            router.visit('/login', {
-                onSuccess: () => {
-                    alert('Senha redefinida com sucesso! Faça login com sua nova senha.');
-                },
-            });
+            showSuccess('Senha redefinida com sucesso! Faça login com sua nova senha.');
+            setTimeout(() => {
+                router.visit('/login');
+            }, 1500);
         } catch (error: any) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.details || {});
-                setGeneralError(error.response.data.message || 'Verifique os campos e tente novamente.');
+                showError(error.response.data.message || 'Verifique os campos e tente novamente.');
             } else {
-                setGeneralError('Ocorreu um erro ao redefinir sua senha. O link pode ter expirado.');
+                showError('Ocorreu um erro ao redefinir sua senha. O link pode ter expirado.');
             }
         } finally {
             setIsSubmitting(false);
@@ -56,12 +55,6 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    {generalError && (
-                        <div className="alert alert-error">
-                            <span>{generalError}</span>
-                        </div>
-                    )}
-
                     <InputField
                         label="Email"
                         type="email"
