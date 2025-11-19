@@ -28,7 +28,7 @@ export default function Login({ }: PageProps) {
             router.visit('/dashboard');
         } catch (error: any) {
             if (error.response?.status === 422) {
-                setErrors(error.response.data.errors || {});
+                setErrors(error.response.data.details || {});
                 setGeneralError(error.response.data.message);
             } else if (error.response?.status === 401) {
                 setGeneralError('Email ou senha inválidos.');

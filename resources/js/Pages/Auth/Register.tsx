@@ -30,7 +30,7 @@ export default function Register({ }: PageProps) {
             router.visit('/dashboard');
         } catch (error: any) {
             if (error.response?.status === 422) {
-                setErrors(error.response.data.errors || {});
+                setErrors(error.response.data.details || {});
                 setGeneralError(error.response.data.message);
             } else {
                 setGeneralError('Ocorreu um erro ao criar sua conta. Tente novamente.');

@@ -31,13 +31,12 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
             await axios.post<{ message: string }>('/reset-password', formData);
             router.visit('/login', {
                 onSuccess: () => {
-                    // Show success message via toast or alert
                     alert('Senha redefinida com sucesso! Faça login com sua nova senha.');
                 },
             });
         } catch (error: any) {
             if (error.response?.status === 422) {
-                setErrors(error.response.data.errors || {});
+                setErrors(error.response.data.details || {});
                 setGeneralError(error.response.data.message || 'Verifique os campos e tente novamente.');
             } else {
                 setGeneralError('Ocorreu um erro ao redefinir sua senha. O link pode ter expirado.');
@@ -85,7 +84,6 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         error={errors.password}
                         placeholder="••••••••"
-                        helperText="Mínimo de 8 caracteres"
                     />
 
                     <InputField

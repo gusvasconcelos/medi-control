@@ -27,7 +27,7 @@ export default function ForgotPassword({ }: PageProps) {
             setFormData({ email: '' });
         } catch (error: any) {
             if (error.response?.status === 422) {
-                setErrors(error.response.data.errors || {});
+                setErrors(error.response.data.details || {});
                 setErrorMessage(error.response.data.message);
             } else {
                 setErrorMessage('Ocorreu um erro ao enviar o link de recuperação. Tente novamente.');
@@ -41,8 +41,8 @@ export default function ForgotPassword({ }: PageProps) {
         <>
             <Head title="Esqueci Minha Senha" />
 
-            <AuthCard 
-                title="Esqueceu a senha?" 
+            <AuthCard
+                title="Esqueceu a senha?"
                 subtitle="Sem problemas! Vamos te ajudar a recuperar 🔐"
             >
                 <form onSubmit={handleSubmit} className="space-y-4">
