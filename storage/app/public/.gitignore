@@ -1,2 +1,7 @@
-*
 !.gitignore
+
+!*.svg
+!*.png
+!*.jpg
+!*.jpeg
+!*.ico
