@@ -1,19 +1,26 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Web\Auth;
 
+use Inertia\Inertia;
+use Inertia\Response;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Services\PasswordResetService;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 
-class ForgotPasswordController extends Controller
+final class ForgotPasswordController extends Controller
 {
     public function __construct(
         private readonly PasswordResetService $passwordResetService
     ) {}
 
-    public function sendResetLink(ForgotPasswordRequest $request): JsonResponse
+    public function create(): Response
+    {
+        return Inertia::render('Auth/ForgotPassword');
+    }
+
+    public function store(ForgotPasswordRequest $request): JsonResponse
     {
         $validated = $request->validated();
 

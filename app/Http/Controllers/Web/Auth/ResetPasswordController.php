@@ -1,19 +1,30 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Web\Auth;
 
+use Inertia\Inertia;
+use Inertia\Response;
+use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Services\PasswordResetService;
 use App\Http\Requests\Auth\ResetPasswordRequest;
 
-class ResetPasswordController extends Controller
+final class ResetPasswordController extends Controller
 {
     public function __construct(
         private readonly PasswordResetService $passwordResetService
     ) {}
 
-    public function resetPassword(ResetPasswordRequest $request): JsonResponse
+    public function create(Request $request): Response
+    {
+        return Inertia::render('Auth/ResetPassword', [
+            'token' => $request->route('token'),
+            'email' => $request->query('email'),
+        ]);
+    }
+
+    public function store(ResetPasswordRequest $request): JsonResponse
     {
         $validated = $request->validated();
 
