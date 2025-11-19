@@ -15,4 +15,3 @@ final class Pagination
         return $builder->paginate($perPage, ['*'], 'page', $page);
     }
 }
-

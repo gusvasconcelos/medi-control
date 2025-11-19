@@ -14,7 +14,8 @@ class FileController extends Controller
 {
     public function __construct(
         protected FileService $fileService
-    ) {}
+    ) {
+    }
 
     public function index(Model $fileable): JsonResponse
     {

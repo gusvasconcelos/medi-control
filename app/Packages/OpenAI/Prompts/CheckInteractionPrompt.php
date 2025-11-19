@@ -78,7 +78,7 @@ final class CheckInteractionPrompt
     private static function buildUserPrompt(string $mainMedicationName, Collection $medicationsToCheck): string
     {
         $medicationsList = $medicationsToCheck
-            ->map(fn(array $med) => sprintf('- ID %d: %s', $med['id'], $med['name']))
+            ->map(fn (array $med) => sprintf('- ID %d: %s', $med['id'], $med['name']))
             ->implode("\n");
 
         return <<<PROMPT

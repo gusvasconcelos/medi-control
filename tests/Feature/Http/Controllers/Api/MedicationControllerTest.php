@@ -81,7 +81,7 @@ class MedicationControllerTest extends TestCase
         $checkMedications = $medications->slice(1);
 
         $mainMedication->update([
-            'interactions' => $checkMedications->map(fn($med) => [
+            'interactions' => $checkMedications->map(fn ($med) => [
                 'medication_id' => $med->id,
                 'has_interaction' => true,
                 'severity' => 'moderate',

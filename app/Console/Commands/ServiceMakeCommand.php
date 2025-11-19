@@ -3,10 +3,10 @@
 namespace App\Console\Commands;
 
 use InvalidArgumentException;
-use function Laravel\Prompts\confirm;
-
 use Illuminate\Console\GeneratorCommand;
 use Symfony\Component\Console\Input\InputOption;
+
+use function Laravel\Prompts\confirm;
 
 class ServiceMakeCommand extends GeneratorCommand
 {

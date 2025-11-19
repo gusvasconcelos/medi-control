@@ -156,4 +156,3 @@ class FilterQueryBuilder
         return $this;
     }
 }
-

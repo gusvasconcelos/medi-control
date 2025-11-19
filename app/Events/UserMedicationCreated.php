@@ -16,5 +16,6 @@ final class UserMedicationCreated implements ShouldDispatchAfterCommit
 
     public function __construct(
         public readonly UserMedication $userMedication
-    ) {}
+    ) {
+    }
 }

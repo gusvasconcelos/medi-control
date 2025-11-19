@@ -34,7 +34,7 @@ class InteractionCheckerService
 
         $messages = CheckInteractionPrompt::build(
             $mainMedication->name,
-            $medicationsToCheck->map(fn(Medication $med) => [
+            $medicationsToCheck->map(fn (Medication $med) => [
                 'id' => $med->id,
                 'name' => $med->name,
             ])
@@ -54,7 +54,7 @@ class InteractionCheckerService
         }
 
         return collect($parsedResponse['interactions'])
-            ->map(fn(array $interaction) => InteractionResult::fromArray($interaction));
+            ->map(fn (array $interaction) => InteractionResult::fromArray($interaction));
     }
 
     /**
@@ -75,7 +75,7 @@ class InteractionCheckerService
             ->toArray();
 
         return $requestedMedicationIds->reject(
-            fn(int $id) => in_array($id, $checkedMedicationIds, true)
+            fn (int $id) => in_array($id, $checkedMedicationIds, true)
         )->values();
     }
 
@@ -90,7 +90,7 @@ class InteractionCheckerService
 
             $updatedInteractions = array_merge(
                 $existingInteractions,
-                $newInteractions->map(fn(InteractionResult $result) => $result->toStorageFormat())->toArray()
+                $newInteractions->map(fn (InteractionResult $result) => $result->toStorageFormat())->toArray()
             );
 
             $mainMedication->update(['interactions' => $updatedInteractions]);
@@ -112,7 +112,7 @@ class InteractionCheckerService
                 ];
 
                 $alreadyExists = collect($targetExistingInteractions)
-                    ->contains(fn(array $existing) => $existing['medication_id'] === $mainMedication->id);
+                    ->contains(fn (array $existing) => $existing['medication_id'] === $mainMedication->id);
 
                 if (!$alreadyExists) {
                     $targetMedication->update([
@@ -130,7 +130,7 @@ class InteractionCheckerService
     public function buildInteractionResponse(Collection $interactions): array
     {
         return [
-            'interactions' => $interactions->map(fn(InteractionResult $result) => $result->toArray())->toArray(),
+            'interactions' => $interactions->map(fn (InteractionResult $result) => $result->toArray())->toArray(),
         ];
     }
 }

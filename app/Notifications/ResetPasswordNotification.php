@@ -12,7 +12,8 @@ class ResetPasswordNotification extends Notification
 
     public function __construct(
         #[\SensitiveParameter] private string $token,
-    ) {}
+    ) {
+    }
 
     public function via(object $notifiable): array
     {
@@ -21,7 +22,7 @@ class ResetPasswordNotification extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
+        return (new MailMessage())
             ->subject('Solicitação de Redefinição de Senha - ' . config('app.name'))
             ->greeting('Olá, ' . $notifiable->name . '!')
             ->line('Recebemos uma solicitação para redefinir a senha da sua conta no ' . config('app.name') . '.')

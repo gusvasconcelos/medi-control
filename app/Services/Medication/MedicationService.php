@@ -38,7 +38,7 @@ class MedicationService
             $alreadyCheckedIds = $existingInteractions->pluck('medication_id');
 
             $allChecked = $requestedIds->every(
-                fn(int $id) => $alreadyCheckedIds->contains($id)
+                fn (int $id) => $alreadyCheckedIds->contains($id)
             );
 
             if ($allChecked) {
