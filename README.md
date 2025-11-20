@@ -1,6 +1,6 @@
-# Medi Control
+# MediControl
 
-Medi Control é um sistema de controle de tratamento medicamentoso para pacientes polimedicados.
+MediControl é um sistema de controle de tratamento medicamentoso para pacientes polimedicados.
 
 ## Tecnologias
 

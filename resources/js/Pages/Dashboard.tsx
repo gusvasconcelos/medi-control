@@ -57,7 +57,7 @@ export default function Dashboard({}: PageProps) {
 
     return (
         <>
-            <Head title="Dashboard - Medi Control" />
+            <Head title="Dashboard - MediControl" />
 
             <AuthenticatedLayout navItems={getNavigationItems('/dashboard')}>
                 <div className="bg-base-100 min-h-screen">

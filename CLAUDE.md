@@ -1,6 +1,6 @@
 ## Project Overview
 
-Medi Control is a medication treatment control system for polymedicated patients, built with Laravel 12, PostgreSQL. The application is API-first with JWT authentication.
+MediControl is a medication treatment control system for polymedicated patients, built with Laravel 12, PostgreSQL. The application is API-first with JWT authentication.
 
 ## Git Workflow
 

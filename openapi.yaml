@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Default module
   description: >
-    API de autenticação do sistema Medi Control usando JWT (JSON Web Tokens).
+    API de autenticação do sistema MediControl usando JWT (JSON Web Tokens).
 
 
     ## Autenticação
