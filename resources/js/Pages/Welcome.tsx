@@ -1,45 +1,36 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
+import { useEffect } from 'react';
 import { PageProps } from '@/types';
+import { Navbar } from '@/Components/Layout/Navbar';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Welcome({ auth }: PageProps) {
+    const { isAuthenticated, isLoading } = useAuth();
+
+    useEffect(() => {
+        if (!isLoading && isAuthenticated) {
+            router.visit('/dashboard');
+        }
+    }, [isLoading, isAuthenticated]);
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-base-200">
+                <span className="loading loading-spinner loading-lg text-primary" />
+            </div>
+        );
+    }
+
+    if (isAuthenticated) {
+        return null;
+    }
+
     return (
         <>
             <Head title="Bem-vindo" />
 
             <div className="min-h-screen bg-base-100">
-                {/* Navigation */}
-                <div className="navbar bg-base-100 shadow-sm px-4 lg:px-8">
-                    <div className="navbar-start">
-                        <a href="/">
-                            <img src="/storage/logo.svg" alt="Logo do MediControl" className="w-40 h-16" />
-                        </a>
-                    </div>
-                    <div className="navbar-end">
-                        {auth?.user ? (
-                            <a
-                                href="/dashboard"
-                                className="btn btn-primary"
-                            >
-                                Dashboard
-                            </a>
-                        ) : (
-                            <div className="gap-2 flex">
-                                <a
-                                    href="/login"
-                                    className="btn btn-ghost"
-                                >
-                                    Entrar
-                                </a>
-                                <a
-                                    href="/register"
-                                    className="btn btn-primary"
-                                >
-                                    Cadastrar
-                                </a>
-                            </div>
-                        )}
-                    </div>
-                </div>
+                <Navbar variant="public" auth={auth} />
 
                 {/* Hero Section */}
                 <div className="hero min-h-[70vh] bg-base-200">

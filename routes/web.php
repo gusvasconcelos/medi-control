@@ -23,7 +23,6 @@ Route::middleware('guest')->group(function () {
     Route::post('/reset-password', [ResetPasswordController::class, 'store'])->name('password.update');
 });
 
-Route::middleware('auth:api')->group(function () {
-    Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
-    Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
-});
+// Remove auth:api middleware from Inertia pages
+// Frontend will handle JWT authentication via useAuth hook
+Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
