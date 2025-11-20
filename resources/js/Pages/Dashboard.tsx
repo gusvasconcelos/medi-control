@@ -15,7 +15,7 @@ function formatDateForAPI(date: Date): string {
     return date.toISOString().split('T')[0];
 }
 
-export default function MedicationsDashboard({}: PageProps) {
+export default function Dashboard({}: PageProps) {
     const { user, isLoading: authLoading } = useAuth();
     const { showInfo, showWarning } = useToast();
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());

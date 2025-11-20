@@ -25,4 +25,4 @@ Route::middleware('guest')->group(function () {
 
 // Remove auth:api middleware from Inertia pages
 // Frontend will handle JWT authentication via useAuth hook
-Route::get('/dashboard', fn () => Inertia::render('MedicationsDashboard'))->name('dashboard');
+Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
