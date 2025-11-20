@@ -13,8 +13,9 @@ export function useAuth() {
 
     useEffect(() => {
         const token = getToken();
+        const expired = isTokenExpired();
 
-        if (token && !isTokenExpired()) {
+        if (token && !expired) {
             setupAxiosInterceptor(token);
             fetchAuthenticatedUser();
         } else {
@@ -32,8 +33,16 @@ export function useAuth() {
             const response = await axios.get<User>('/api/v1/auth/me');
             setUser(response.data);
             setIsAuthenticated(true);
-        } catch (error) {
+        } catch (error: any) {
             clearAuth();
+            // Redirect to login if on a protected route
+            if (!window.location.pathname.startsWith('/login') &&
+                !window.location.pathname.startsWith('/register') &&
+                !window.location.pathname.startsWith('/forgot-password') &&
+                !window.location.pathname.startsWith('/reset-password') &&
+                window.location.pathname !== '/') {
+                router.visit('/login');
+            }
         } finally {
             setIsLoading(false);
         }
@@ -70,9 +79,8 @@ export function useAuth() {
 
     const logout = async () => {
         try {
-            await axios.post('/logout');
+            await axios.post('/api/v1/auth/logout');
         } catch (error) {
-            console.error('Logout error:', error);
         } finally {
             clearAuth();
             router.visit('/login');

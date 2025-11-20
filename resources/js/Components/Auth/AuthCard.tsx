@@ -1,4 +1,6 @@
 import { ReactNode } from 'react';
+import { Navbar } from '@/Components/Layout/Navbar';
+import { Link } from '@inertiajs/react';
 
 interface AuthCardProps {
     title: string;
@@ -9,28 +11,18 @@ interface AuthCardProps {
 export function AuthCard({ title, subtitle, children }: AuthCardProps) {
     return (
         <>
-            {/* Navigation */}
-            <nav className="navbar px-4 lg:px-8 border-b border-base-300">
-                <div className="navbar-start">
-                    <a href="/">
-                        <img
-                            src="/storage/logo.svg"
-                            alt="MediControl"
-                            className="w-40 h-16"
-                        />
-                    </a>
-                </div>
-            </nav>
-
             {/* Main Content */}
             <div className="flex items-center justify-center min-h-[calc(100vh-128px)] p-4">
-                <div className="w-full max-w-md">
+                <div className="w-full max-w-md p-8 rounded-lg">
+                    <Link href="/">
+                        <img src="/storage/logo2.svg" alt="Logo do MediControl" className="w-24 h-auto mb-8 self-start mx-auto hover:opacity-80 transition-opacity" />
+                    </Link>
                     {/* Title */}
-                    <h1 className="text-3xl font-bold mb-2">{title}</h1>
+                    <h1 className="text-3xl font-bold mb-2 text-center">{title}</h1>
 
                     {/* Subtitle */}
                     {subtitle && (
-                        <p className="text-base-content/70 mb-6">{subtitle}</p>
+                        <p className="text-base-content/70 mb-6 text-center">{subtitle}</p>
                     )}
 
                     {/* Content */}

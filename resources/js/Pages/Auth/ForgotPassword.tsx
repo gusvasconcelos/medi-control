@@ -20,7 +20,7 @@ export default function ForgotPassword({ }: PageProps) {
         setIsSubmitting(true);
 
         try {
-            const response = await axios.post<{ message: string }>('/forgot-password', formData);
+            const response = await axios.post<{ message: string }>('/api/v1/auth/forgot-password', formData);
             showSuccess(response.data.message);
             setFormData({ email: '' });
         } catch (error: any) {

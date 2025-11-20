@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import axios from 'axios';
 import { AuthCard } from '@/Components/Auth/AuthCard';
@@ -8,8 +8,15 @@ import { useToast } from '@/hooks/useToast';
 import type { PageProps, RegisterData, AuthResponse } from '@/types';
 
 export default function Register({ }: PageProps) {
-    const { saveAuthData } = useAuth();
+    const { saveAuthData, isAuthenticated, isLoading } = useAuth();
     const { showError } = useToast();
+
+    useEffect(() => {
+        if (!isLoading && isAuthenticated) {
+            router.visit('/dashboard');
+        }
+    }, [isLoading, isAuthenticated]);
+
     const [formData, setFormData] = useState<RegisterData>({
         name: '',
         email: '',
@@ -19,13 +26,25 @@ export default function Register({ }: PageProps) {
     const [errors, setErrors] = useState<Partial<RegisterData>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-base-200">
+                <span className="loading loading-spinner loading-lg text-primary" />
+            </div>
+        );
+    }
+
+    if (isAuthenticated) {
+        return null;
+    }
+
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setErrors({});
         setIsSubmitting(true);
 
         try {
-            const response = await axios.post<AuthResponse>('/register', formData);
+            const response = await axios.post<AuthResponse>('/api/v1/auth/register', formData);
             saveAuthData(response.data);
             router.visit('/dashboard');
         } catch (error: any) {

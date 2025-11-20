@@ -28,7 +28,7 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
         setIsSubmitting(true);
 
         try {
-            await axios.post<{ message: string }>('/reset-password', formData);
+            await axios.post<{ message: string }>('/api/v1/auth/reset-password', formData);
             showSuccess('Senha redefinida com sucesso! Faça login com sua nova senha.');
             setTimeout(() => {
                 router.visit('/login');
