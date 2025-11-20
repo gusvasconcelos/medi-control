@@ -8,12 +8,12 @@ interface MetricsCardsProps {
 export const MetricsCards: React.FC<MetricsCardsProps> = ({ metrics }) => {
     const metricItems = [
         {
-            label: 'Total de medicamentos',
+            label: 'Doses programadas',
             value: metrics.totalMedications.toString(),
             icon: '/storage/medication.png',
         },
         {
-            label: 'Medicamentos tomados',
+            label: 'Doses tomadas',
             value: metrics.medicationsTaken.toString(),
             icon: '/storage/checkmark.png',
         },

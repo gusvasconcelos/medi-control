@@ -32,17 +32,43 @@ export const MedicationCard: React.FC<MedicationCardProps> = ({
         return MEDICATION_COLORS[id % MEDICATION_COLORS.length];
     };
 
-    const getMedicationStatus = (): 'taken' | 'pending' | 'missed' => {
+    const getMedicationStatus = (): 'taken' | 'pending' | 'missed' | 'partial' => {
         if (!medication.logs || medication.logs.length === 0) {
             return 'pending';
         }
 
-        const hasTaken = medication.logs.some((log) => log.status === 'taken');
-        if (hasTaken) {
+        // Get today's date range (start and end of day)
+        const today = new Date();
+        const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+
+        // Filter logs scheduled for today
+        const todayLogs = medication.logs.filter((log) => {
+            const scheduledDate = new Date(log.scheduled_at);
+            return scheduledDate >= startOfDay && scheduledDate <= endOfDay;
+        });
+
+        // If no logs for today, return pending
+        if (todayLogs.length === 0) {
+            return 'pending';
+        }
+
+        // Count doses taken today
+        const takenCount = todayLogs.filter((log) => log.status === 'taken').length;
+        const totalTimeSlots = medication.time_slots.length;
+
+        // Check for missed doses
+        const hasMissed = todayLogs.some((log) => log.status === 'missed');
+
+        // Determine status based on doses taken vs total time slots
+        if (takenCount === totalTimeSlots) {
             return 'taken';
         }
 
-        const hasMissed = medication.logs.some((log) => log.status === 'missed');
+        if (takenCount > 0) {
+            return 'partial';
+        }
+
         if (hasMissed) {
             return 'missed';
         }
@@ -94,6 +120,12 @@ export const MedicationCard: React.FC<MedicationCardProps> = ({
                                     <div className="badge badge-warning badge-sm gap-1 mt-2">
                                         <AlertCircle className="w-3 h-3" />
                                         Pendente
+                                    </div>
+                                )}
+                                {status === 'partial' && (
+                                    <div className="badge badge-info badge-sm gap-1 mt-2">
+                                        <Clock className="w-3 h-3" />
+                                        Parcialmente tomado
                                     </div>
                                 )}
                             </div>

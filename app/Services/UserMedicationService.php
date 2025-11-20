@@ -23,7 +23,13 @@ class UserMedicationService
         $endDate = $data->get('end_date', today()->format('Y-m-d'));
 
         return $this->userMedication
-            ->with(['medication', 'logs'])
+            ->with([
+                'medication',
+                'logs' => function ($query) use ($startDate, $endDate) {
+                    $query->whereDate('scheduled_at', '>=', $startDate)
+                        ->whereDate('scheduled_at', '<=', $endDate);
+                }
+            ])
             ->where('active', true)
             ->where('start_date', '<=', $endDate)
             ->where(function ($query) use ($startDate) {
@@ -90,6 +96,9 @@ class UserMedicationService
                         'date' => $date->toDateString(),
                         'total_scheduled' => $totalScheduled,
                         'total_taken' => $totalTaken,
+                        'adherence_percentage' => $totalScheduled > 0
+                            ? round(($totalTaken / $totalScheduled) * 100)
+                            : 0,
                     ]);
                 }
             }
