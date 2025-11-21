@@ -105,7 +105,7 @@ export function MedicationCard({
                     />
 
                     <div className="min-w-0 flex-1">
-                        <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center justify-between gap-3">
                             <div className="min-w-0 flex-1">
                                 <h3 className="truncate text-base font-semibold text-base-content sm:text-lg">
                                     {medication.medication?.name ||
@@ -135,7 +135,7 @@ export function MedicationCard({
                                         role="status"
                                         aria-label="Medicamento tomado"
                                     >
-                                        <CheckCircle2 className="h-6 w-6" />
+                                        <CheckCircle2 className="size-8" />
                                     </div>
                                 ) : (
                                     <div className="dropdown dropdown-end">
@@ -145,7 +145,7 @@ export function MedicationCard({
                                             className="btn btn-circle btn-ghost btn-sm"
                                             aria-label="Ações do medicamento"
                                         >
-                                            <MoreVertical className="h-5 w-5" />
+                                            <MoreVertical className="size-8" />
                                         </button>
                                         <ul
                                             tabIndex={0}
@@ -161,7 +161,7 @@ export function MedicationCard({
                                                     {isMarking ? (
                                                         <span className="loading loading-spinner loading-xs" />
                                                     ) : (
-                                                        <CheckCircle2 className="h-4 w-4 text-success" />
+                                                        <CheckCircle2 className="size-8 text-success" />
                                                     )}
                                                     <span>Marcar como tomado</span>
                                                 </button>
@@ -174,7 +174,7 @@ export function MedicationCard({
                                                     }
                                                     className="flex items-center gap-2"
                                                 >
-                                                    <Clock className="h-4 w-4 text-warning" />
+                                                    <Clock className="size-8 text-warning" />
                                                     <span>Adiar</span>
                                                 </button>
                                             </li>
@@ -186,7 +186,7 @@ export function MedicationCard({
                                                     }
                                                     className="flex items-center gap-2"
                                                 >
-                                                    <Info className="h-4 w-4 text-info" />
+                                                    <Info className="size-8 text-info" />
                                                     <span>Ver detalhes</span>
                                                 </button>
                                             </li>
@@ -195,14 +195,14 @@ export function MedicationCard({
                                 )}
                             </div>
 
-                            <div className="hidden items-center gap-2 sm:flex">
+                            <div className="hidden items-center gap-4 sm:flex">
                                 {status === 'taken' ? (
                                     <div
-                                        className="flex items-center gap-1 text-success"
+                                        className="flex items-center gap-2 text-success"
                                         role="status"
                                         aria-label="Medicamento tomado"
                                     >
-                                        <CheckCircle2 className="h-5 w-5" />
+                                        <CheckCircle2 className="size-8" />
                                         <span className="text-sm font-medium">
                                             Tomado
                                         </span>
@@ -219,7 +219,7 @@ export function MedicationCard({
                                             {isMarking ? (
                                                 <span className="loading loading-spinner loading-xs" />
                                             ) : (
-                                                <CheckCircle2 className="h-5 w-5" />
+                                                <CheckCircle2 className="size-8" />
                                             )}
                                         </button>
 
@@ -231,7 +231,7 @@ export function MedicationCard({
                                             className="btn btn-circle btn-ghost btn-sm text-warning hover:bg-warning/10"
                                             aria-label="Adiar medicamento"
                                         >
-                                            <Clock className="h-5 w-5" />
+                                            <Clock className="size-8" />
                                         </button>
 
                                         <button
@@ -242,7 +242,7 @@ export function MedicationCard({
                                             className="btn btn-circle btn-ghost btn-sm text-info hover:bg-info/10"
                                             aria-label="Ver detalhes do medicamento"
                                         >
-                                            <Info className="h-5 w-5" />
+                                            <Info className="size-8" />
                                         </button>
                                     </>
                                 )}
