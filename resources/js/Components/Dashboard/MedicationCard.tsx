@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { AlertCircle, CheckCircle2, Clock, Info, MoreVertical } from 'lucide-react';
 
 import type { UserMedication } from '@/types';
@@ -6,8 +5,7 @@ import { endOfDay, fromUTC, startOfDay } from '@/utils/dateUtils';
 
 interface MedicationCardProps {
     medication: UserMedication;
-    onMarkAsTaken: (id: number) => Promise<void>;
-    onSnooze: (id: number) => void;
+    onMarkAsTaken: (medication: UserMedication, scheduledTime: string) => void;
     onViewDetails: (id: number) => void;
 }
 
@@ -27,11 +25,8 @@ const MEDICATION_COLORS = [
 export function MedicationCard({
     medication,
     onMarkAsTaken,
-    onSnooze,
     onViewDetails,
 }: MedicationCardProps) {
-    const [isMarking, setIsMarking] = useState(false);
-
     const getColorForMedication = (id: number): string => {
         return MEDICATION_COLORS[id % MEDICATION_COLORS.length];
     };
@@ -77,13 +72,34 @@ export function MedicationCard({
 
     const status = getMedicationStatus();
 
-    const handleMarkAsTaken = async () => {
-        setIsMarking(true);
-        try {
-            await onMarkAsTaken(medication.id);
-        } finally {
-            setIsMarking(false);
+    const getNextPendingTime = (): string => {
+        if (!medication.logs || medication.logs.length === 0) {
+            return medication.time_slots[0] || '';
         }
+
+        const todayStart = startOfDay(new Date());
+        const todayEnd = endOfDay(new Date());
+
+        const pendingLog = medication.logs.find((log) => {
+            const scheduledDate = fromUTC(log.scheduled_at);
+            return (
+                scheduledDate >= todayStart &&
+                scheduledDate <= todayEnd &&
+                log.status === 'pending'
+            );
+        });
+
+        if (pendingLog) {
+            const scheduledDate = fromUTC(pendingLog.scheduled_at);
+            return `${String(scheduledDate.getHours()).padStart(2, '0')}:${String(scheduledDate.getMinutes()).padStart(2, '0')}`;
+        }
+
+        return medication.time_slots[0] || '';
+    };
+
+    const handleMarkAsTaken = () => {
+        const scheduledTime = getNextPendingTime();
+        onMarkAsTaken(medication, scheduledTime);
     };
 
     const formatTimeSlots = (): string => {
@@ -116,13 +132,13 @@ export function MedicationCard({
                                 </p>
                                 {status === 'pending' && (
                                     <div className="badge badge-warning badge-sm mt-2 gap-1">
-                                        <AlertCircle className="h-3 w-3" />
+                                        <AlertCircle className="size-4" />
                                         Pendente
                                     </div>
                                 )}
                                 {status === 'partial' && (
                                     <div className="badge badge-info badge-sm mt-2 gap-1">
-                                        <Clock className="h-3 w-3" />
+                                        <Clock className="size-4" />
                                         Parcialmente tomado
                                     </div>
                                 )}
@@ -135,7 +151,7 @@ export function MedicationCard({
                                         role="status"
                                         aria-label="Medicamento tomado"
                                     >
-                                        <CheckCircle2 className="size-8" />
+                                        <CheckCircle2 className="size-6" />
                                     </div>
                                 ) : (
                                     <div className="dropdown dropdown-end">
@@ -145,7 +161,7 @@ export function MedicationCard({
                                             className="btn btn-circle btn-ghost btn-sm"
                                             aria-label="Ações do medicamento"
                                         >
-                                            <MoreVertical className="size-8" />
+                                            <MoreVertical className="size-6" />
                                         </button>
                                         <ul
                                             tabIndex={0}
@@ -155,27 +171,10 @@ export function MedicationCard({
                                                 <button
                                                     type="button"
                                                     onClick={handleMarkAsTaken}
-                                                    disabled={isMarking}
                                                     className="flex items-center gap-2"
                                                 >
-                                                    {isMarking ? (
-                                                        <span className="loading loading-spinner loading-xs" />
-                                                    ) : (
-                                                        <CheckCircle2 className="size-8 text-success" />
-                                                    )}
+                                                    <CheckCircle2 className="size-6 text-success" />
                                                     <span>Marcar como tomado</span>
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        onSnooze(medication.id)
-                                                    }
-                                                    className="flex items-center gap-2"
-                                                >
-                                                    <Clock className="size-8 text-warning" />
-                                                    <span>Adiar</span>
                                                 </button>
                                             </li>
                                             <li>
@@ -186,7 +185,7 @@ export function MedicationCard({
                                                     }
                                                     className="flex items-center gap-2"
                                                 >
-                                                    <Info className="size-8 text-info" />
+                                                    <Info className="size-6 text-info" />
                                                     <span>Ver detalhes</span>
                                                 </button>
                                             </li>
@@ -202,8 +201,8 @@ export function MedicationCard({
                                         role="status"
                                         aria-label="Medicamento tomado"
                                     >
-                                        <CheckCircle2 className="size-8" />
-                                        <span className="text-sm font-medium">
+                                        <CheckCircle2 className="size-6" />
+                                        <span className="text-lg font-medium">
                                             Tomado
                                         </span>
                                     </div>
@@ -212,26 +211,10 @@ export function MedicationCard({
                                         <button
                                             type="button"
                                             onClick={handleMarkAsTaken}
-                                            disabled={isMarking}
                                             className="btn btn-circle btn-ghost btn-sm text-success hover:bg-success/10"
                                             aria-label="Marcar como tomado"
                                         >
-                                            {isMarking ? (
-                                                <span className="loading loading-spinner loading-xs" />
-                                            ) : (
-                                                <CheckCircle2 className="size-8" />
-                                            )}
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                onSnooze(medication.id)
-                                            }
-                                            className="btn btn-circle btn-ghost btn-sm text-warning hover:bg-warning/10"
-                                            aria-label="Adiar medicamento"
-                                        >
-                                            <Clock className="size-8" />
+                                            <CheckCircle2 className="size-4 sm:size-6" />
                                         </button>
 
                                         <button
@@ -242,7 +225,7 @@ export function MedicationCard({
                                             className="btn btn-circle btn-ghost btn-sm text-info hover:bg-info/10"
                                             aria-label="Ver detalhes do medicamento"
                                         >
-                                            <Info className="size-8" />
+                                            <Info className="size-4 sm:size-6" />
                                         </button>
                                     </>
                                 )}

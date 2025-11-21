@@ -3,13 +3,18 @@ import { medicationService } from '@/services/medicationService';
 import { useToast } from '@/hooks/useToast';
 import type { UserMedication, DailyMetrics } from '@/types';
 
+export interface LogMedicationData {
+    takenAt?: string;
+    notes?: string;
+}
+
 interface UseMedicationsReturn {
     medications: UserMedication[];
     metrics: DailyMetrics;
     isLoading: boolean;
     error: string | null;
     refetch: () => Promise<void>;
-    markAsTaken: (medicationId: number) => Promise<void>;
+    markAsTaken: (medicationId: number, data?: LogMedicationData) => Promise<void>;
 }
 
 export const useMedications = (selectedDate: string): UseMedicationsReturn => {
@@ -89,15 +94,19 @@ export const useMedications = (selectedDate: string): UseMedicationsReturn => {
     }, [fetchData]);
 
     const markAsTaken = useCallback(
-        async (medicationId: number) => {
+        async (medicationId: number, data?: LogMedicationData) => {
             try {
-                await medicationService.logMedicationTaken(medicationId);
+                await medicationService.logMedicationTaken(medicationId, {
+                    taken_at: data?.takenAt,
+                    notes: data?.notes,
+                });
                 showSuccess('Medicamento marcado como tomado!');
                 await fetchData();
             } catch (err: any) {
                 const errorMessage =
                     err.response?.data?.message || 'Erro ao marcar medicamento como tomado';
                 showError(errorMessage);
+                throw err;
             }
         },
         [fetchData, showSuccess, showError]

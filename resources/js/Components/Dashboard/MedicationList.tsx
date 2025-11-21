@@ -6,8 +6,7 @@ import type { UserMedication } from '@/types';
 interface MedicationListProps {
     medications: UserMedication[];
     isLoading: boolean;
-    onMarkAsTaken: (id: number) => Promise<void>;
-    onSnooze: (id: number) => void;
+    onMarkAsTaken: (medication: UserMedication, scheduledTime: string) => void;
     onViewDetails: (id: number) => void;
 }
 
@@ -15,7 +14,6 @@ export const MedicationList: React.FC<MedicationListProps> = ({
     medications,
     isLoading,
     onMarkAsTaken,
-    onSnooze,
     onViewDetails,
 }) => {
     if (isLoading) {
@@ -68,7 +66,6 @@ export const MedicationList: React.FC<MedicationListProps> = ({
                     key={medication.id}
                     medication={medication}
                     onMarkAsTaken={onMarkAsTaken}
-                    onSnooze={onSnooze}
                     onViewDetails={onViewDetails}
                 />
             ))}

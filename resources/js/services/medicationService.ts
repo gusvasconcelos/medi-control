@@ -52,9 +52,13 @@ export const medicationService = {
     /**
      * Log a medication as taken
      */
-    async logMedicationTaken(medicationId: number): Promise<void> {
+    async logMedicationTaken(
+        medicationId: number,
+        data?: { taken_at?: string; notes?: string }
+    ): Promise<void> {
         await axios.post(
-            `${API_BASE}/user-medications/${medicationId}/log-taken`
+            `${API_BASE}/user-medications/${medicationId}/log-taken`,
+            data
         );
     },
 

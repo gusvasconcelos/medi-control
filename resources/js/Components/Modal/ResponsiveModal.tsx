@@ -62,7 +62,7 @@ export function ResponsiveModal({
                 }
             `}</style>
 
-            <div className="bg-base-100 sm:rounded-2xl flex flex-col h-full sm:h-auto">
+            <div className="bg-base-100 sm:rounded-2xl flex flex-col h-full sm:max-h-[calc(100vh-6rem)]">
                 {/* Header */}
                 <div className="flex-shrink-0 bg-base-100 border-b border-base-300 px-4 sm:px-6 py-4 flex items-center justify-between z-10">
                     <h2 className="text-xl font-bold">{title}</h2>
@@ -77,7 +77,7 @@ export function ResponsiveModal({
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 sm:flex-none overflow-y-auto overflow-x-hidden px-4 sm:px-6 py-6">
+                <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 sm:px-6 py-6">
                     {children}
                 </div>
 

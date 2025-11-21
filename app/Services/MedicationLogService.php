@@ -20,17 +20,7 @@ class MedicationLogService
     {
         $userMedication = UserMedication::findOrFail($userMedicationId);
 
-        $timeSlot = $data->get('time_slot');
-
-        $userMedicationTimeSlots = $userMedication->time_slots ?? [];
-
-        ! in_array($timeSlot, $userMedicationTimeSlots)
-            && throw new UnprocessableEntityException(
-                __('medications.medication_log.invalid_time_slot'),
-                'INVALID_TIME_SLOT'
-            );
-
-        $scheduledAt = today()->setTimeFromTimeString($timeSlot);
+        $scheduledAt = today()->setTimeFromTimeString($userMedication->time_slots[0]);
 
         $takenAt = $data->get('taken_at')
             ? Carbon::parse($data->get('taken_at'))
