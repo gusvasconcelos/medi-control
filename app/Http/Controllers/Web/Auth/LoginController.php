@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\Web\Auth;
 
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Services\AuthService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Services\AuthService;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\JsonResponse;
-use App\Http\Requests\Auth\LoginRequest;
-use Illuminate\Support\Facades\Session;
 
 final class LoginController extends Controller
 {
@@ -27,6 +28,8 @@ final class LoginController extends Controller
         $validated = $request->validated();
 
         $token = $this->authService->attemptLogin($validated);
+
+        Auth::guard('web')->login(auth('api')->user());
 
         return response()->json(
             $this->authService->respondWithToken($token)
