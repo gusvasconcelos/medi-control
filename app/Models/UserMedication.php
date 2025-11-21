@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property-read Medication|null $medication
+ * @property-read User $user
+ */
 class UserMedication extends Model
 {
     use HasFactory;

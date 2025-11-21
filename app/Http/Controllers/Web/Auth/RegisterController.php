@@ -13,7 +13,8 @@ final class RegisterController extends Controller
 {
     public function __construct(
         private readonly AuthService $authService
-    ) {}
+    ) {
+    }
 
     public function create(): Response
     {

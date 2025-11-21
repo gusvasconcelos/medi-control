@@ -52,7 +52,7 @@ class MedicationService
                 $enrichedResults = $cachedResults->map(function ($interaction) use ($medications) {
                     $medication = $medications->get($interaction['medication_id']);
                     return array_merge($interaction, [
-                        'medication_name' => $medication?->name ?? 'Unknown',
+                        'medication_name' => $medication->name ?? 'Unknown',
                     ]);
                 });
 
@@ -69,16 +69,16 @@ class MedicationService
             return ['interactions' => []];
         }
 
-        $newInteractions = $this->interactionChecker->checkInteractionsWithOpenAI(
+        $checkResult = $this->interactionChecker->checkInteractionsWithOpenAI(
             $mainMedication,
             $uncheckedMedicationIds
         );
 
         $this->interactionChecker->persistInteractionsBidirectionally(
             $mainMedication,
-            $newInteractions
+            $checkResult->interactions
         );
 
-        return $this->interactionChecker->buildInteractionResponse($newInteractions);
+        return $this->interactionChecker->buildInteractionResponse($checkResult->interactions);
     }
 }

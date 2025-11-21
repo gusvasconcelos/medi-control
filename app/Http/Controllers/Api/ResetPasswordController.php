@@ -11,7 +11,8 @@ class ResetPasswordController extends Controller
 {
     public function __construct(
         private readonly PasswordResetService $passwordResetService
-    ) {}
+    ) {
+    }
 
     public function resetPassword(ResetPasswordRequest $request): JsonResponse
     {

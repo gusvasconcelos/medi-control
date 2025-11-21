@@ -2,17 +2,18 @@
 
 namespace Tests\Unit\Jobs;
 
-use App\Jobs\CheckUserMedicationInteractionsJob;
-use App\Models\Medication;
-use App\Models\User;
-use App\Models\UserMedication;
-use App\Packages\OpenAI\DTOs\InteractionResult;
-use App\Services\InteractionAlertService;
-use App\Services\Medication\InteractionCheckerService;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Support\Collection;
 use Mockery;
 use Tests\TestCase;
+use App\Models\User;
+use App\Models\Medication;
+use App\Models\UserMedication;
+use Illuminate\Support\Collection;
+use App\Services\InteractionAlertService;
+use App\Packages\OpenAI\DTOs\InteractionResult;
+use App\Jobs\CheckUserMedicationInteractionsJob;
+use App\Services\Monitoring\DiscordMonitoringService;
+use App\Services\Medication\InteractionCheckerService;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 final class CheckUserMedicationInteractionsJobTest extends TestCase
 {
@@ -20,19 +21,27 @@ final class CheckUserMedicationInteractionsJobTest extends TestCase
 
     public function test_job_handles_nonexistent_user_medication(): void
     {
+        /** @var User $user */
+        $user = User::factory()->create();
+
+        $this->actingAs($user, 'api');
+
         $interactionChecker = Mockery::mock(InteractionCheckerService::class);
         $alertService = Mockery::mock(InteractionAlertService::class);
+        $discordMonitoring = Mockery::mock(DiscordMonitoringService::class);
 
         $interactionChecker->shouldNotReceive('checkInteractionsWithOpenAI');
         $alertService->shouldNotReceive('createAlertsForInteractions');
 
         $job = new CheckUserMedicationInteractionsJob(999999);
-        $job->handle($interactionChecker, $alertService);
+        $job->handle($interactionChecker, $alertService, $discordMonitoring);
     }
 
     public function test_job_skips_when_no_other_active_medications(): void
     {
+        /** @var User $user */
         $user = User::factory()->create();
+
         $medication = Medication::factory()->create();
 
         $userMedication = UserMedication::factory()->create([
@@ -43,16 +52,18 @@ final class CheckUserMedicationInteractionsJobTest extends TestCase
 
         $interactionChecker = Mockery::mock(InteractionCheckerService::class);
         $alertService = Mockery::mock(InteractionAlertService::class);
+        $discordMonitoring = Mockery::mock(DiscordMonitoringService::class);
 
         $interactionChecker->shouldNotReceive('checkInteractionsWithOpenAI');
         $alertService->shouldNotReceive('createAlertsForInteractions');
 
         $job = new CheckUserMedicationInteractionsJob($userMedication->id);
-        $job->handle($interactionChecker, $alertService);
+        $job->handle($interactionChecker, $alertService, $discordMonitoring);
     }
 
     public function test_job_checks_interactions_with_other_active_medications(): void
     {
+        /** @var User $user */
         $user = User::factory()->create();
 
         $this->actingAs($user, 'api');
@@ -81,6 +92,7 @@ final class CheckUserMedicationInteractionsJobTest extends TestCase
 
         $interactionChecker = Mockery::mock(InteractionCheckerService::class);
         $alertService = Mockery::mock(InteractionAlertService::class);
+        $discordMonitoring = Mockery::mock(DiscordMonitoringService::class);
 
         $interactionChecker
             ->shouldReceive('filterAlreadyChecked')
@@ -119,11 +131,12 @@ final class CheckUserMedicationInteractionsJobTest extends TestCase
             ->andReturn(1);
 
         $job = new CheckUserMedicationInteractionsJob($userMedication->id);
-        $job->handle($interactionChecker, $alertService);
+        $job->handle($interactionChecker, $alertService, $discordMonitoring);
     }
 
     public function test_job_skips_openai_call_when_all_interactions_already_checked(): void
     {
+        /** @var User $user */
         $user = User::factory()->create();
 
         $this->actingAs($user, 'api');
@@ -156,6 +169,7 @@ final class CheckUserMedicationInteractionsJobTest extends TestCase
 
         $interactionChecker = Mockery::mock(InteractionCheckerService::class);
         $alertService = Mockery::mock(InteractionAlertService::class);
+        $discordMonitoring = Mockery::mock(DiscordMonitoringService::class);
 
         $interactionChecker
             ->shouldReceive('filterAlreadyChecked')
@@ -169,11 +183,12 @@ final class CheckUserMedicationInteractionsJobTest extends TestCase
             ->shouldNotReceive('createAlertsForInteractions');
 
         $job = new CheckUserMedicationInteractionsJob($userMedication->id);
-        $job->handle($interactionChecker, $alertService);
+        $job->handle($interactionChecker, $alertService, $discordMonitoring);
     }
 
     public function test_job_only_checks_active_medications(): void
     {
+        /** @var User $user */
         $user = User::factory()->create();
 
         $this->actingAs($user, 'api');
@@ -202,6 +217,7 @@ final class CheckUserMedicationInteractionsJobTest extends TestCase
 
         $interactionChecker = Mockery::mock(InteractionCheckerService::class);
         $alertService = Mockery::mock(InteractionAlertService::class);
+        $discordMonitoring = Mockery::mock(DiscordMonitoringService::class);
 
         $interactionChecker
             ->shouldReceive('filterAlreadyChecked')
@@ -216,11 +232,12 @@ final class CheckUserMedicationInteractionsJobTest extends TestCase
         $alertService->shouldNotReceive('createAlertsForInteractions');
 
         $job = new CheckUserMedicationInteractionsJob($userMedication->id);
-        $job->handle($interactionChecker, $alertService);
+        $job->handle($interactionChecker, $alertService, $discordMonitoring);
     }
 
     public function test_job_excludes_current_medication_from_check(): void
     {
+        /** @var User $user */
         $user = User::factory()->create();
 
         $this->actingAs($user, 'api');
@@ -242,6 +259,7 @@ final class CheckUserMedicationInteractionsJobTest extends TestCase
 
         $interactionChecker = Mockery::mock(InteractionCheckerService::class);
         $alertService = Mockery::mock(InteractionAlertService::class);
+        $discordMonitoring = Mockery::mock(DiscordMonitoringService::class);
 
         $interactionChecker
             ->shouldReceive('filterAlreadyChecked')
@@ -255,6 +273,6 @@ final class CheckUserMedicationInteractionsJobTest extends TestCase
         $alertService->shouldNotReceive('createAlertsForInteractions');
 
         $job = new CheckUserMedicationInteractionsJob($userMedication->id);
-        $job->handle($interactionChecker, $alertService);
+        $job->handle($interactionChecker, $alertService, $discordMonitoring);
     }
 }

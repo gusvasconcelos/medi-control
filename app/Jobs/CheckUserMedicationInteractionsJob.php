@@ -2,14 +2,18 @@
 
 namespace App\Jobs;
 
-use App\Models\UserMedication;
-use App\Services\InteractionAlertService;
-use App\Services\Medication\InteractionCheckerService;
 use Illuminate\Bus\Queueable;
+use App\Models\UserMedication;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Queue\InteractsWithQueue;
+use App\Services\InteractionAlertService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
+use App\Packages\OpenAI\DTOs\InteractionResult;
+use App\Services\Monitoring\DiscordMonitoringService;
+use App\Services\Medication\InteractionCheckerService;
+use App\Packages\Monitoring\DTOs\InteractionCheckResult;
+use App\Packages\Monitoring\DTOs\InteractionCheckMetrics;
 
 final class CheckUserMedicationInteractionsJob implements ShouldQueue
 {
@@ -33,13 +37,15 @@ final class CheckUserMedicationInteractionsJob implements ShouldQueue
 
     public function handle(
         InteractionCheckerService $interactionChecker,
-        InteractionAlertService $alertService
+        InteractionAlertService $alertService,
+        DiscordMonitoringService $discordMonitoring
     ): void {
+        /** @var UserMedication|null $userMedication */
         $userMedication = UserMedication::query()
             ->with(['medication', 'user'])
             ->find($this->userMedicationId);
 
-        if (! $userMedication) {
+        if ($userMedication === null) {
             return;
         }
 
@@ -52,6 +58,11 @@ final class CheckUserMedicationInteractionsJob implements ShouldQueue
             ->pluck('medication_id');
 
         if ($activeUserMedications->isEmpty()) {
+            $discordMonitoring->notifyInteractionCheckSkipped(
+                $userMedication->medication->name,
+                'Nenhum outro medicamento ativo'
+            );
+
             return;
         }
 
@@ -61,22 +72,70 @@ final class CheckUserMedicationInteractionsJob implements ShouldQueue
         );
 
         if ($medicationIdsToCheck->isEmpty()) {
+            $discordMonitoring->notifyInteractionCheckSkipped(
+                $userMedication->medication->name,
+                'Todas as interações já foram checadas'
+            );
+
             return;
         }
 
-        $newInteractions = $interactionChecker->checkInteractionsWithOpenAI(
-            $userMedication->medication,
-            $medicationIdsToCheck
+        try {
+            $checkResult = $interactionChecker->checkInteractionsWithOpenAI(
+                $userMedication->medication,
+                $medicationIdsToCheck
+            );
+
+            $interactionChecker->persistInteractionsBidirectionally(
+                $userMedication->medication,
+                $checkResult->interactions
+            );
+
+            $alertsCreated = $alertService->createAlertsForInteractions(
+                $userMedication,
+                $checkResult->interactions->toArray()
+            );
+
+            $this->sendSuccessNotification(
+                $discordMonitoring,
+                $userMedication->medication->name,
+                $medicationIdsToCheck->count(),
+                $checkResult,
+                $alertsCreated
+            );
+        } catch (\Throwable $e) {
+            $discordMonitoring->notifyInteractionCheckFailed(
+                $userMedication->medication->name,
+                $e->getMessage(),
+                $medicationIdsToCheck->count()
+            );
+
+            throw $e;
+        }
+    }
+
+    private function sendSuccessNotification(
+        DiscordMonitoringService $discordMonitoring,
+        string $medicationName,
+        int $medicationsCheckedCount,
+        InteractionCheckResult $checkResult,
+        int $alertsCreated
+    ): void {
+        $interactions = $checkResult->interactions;
+        $interactionsWithIssues = $interactions->filter(fn (InteractionResult $i) => $i->hasInteraction);
+
+        $metrics = new InteractionCheckMetrics(
+            medicationName: $medicationName,
+            medicationsCheckedCount: $medicationsCheckedCount,
+            interactionsFoundCount: $interactionsWithIssues->count(),
+            severeInteractionsCount: $interactionsWithIssues->filter(fn (InteractionResult $i) => $i->severity === 'severe')->count(),
+            moderateInteractionsCount: $interactionsWithIssues->filter(fn (InteractionResult $i) => $i->severity === 'moderate')->count(),
+            alertsCreatedCount: $alertsCreated,
+            tokenUsage: $checkResult->tokenUsage,
+            durationInSeconds: $checkResult->durationInSeconds,
+            model: $checkResult->model
         );
 
-        $interactionChecker->persistInteractionsBidirectionally(
-            $userMedication->medication,
-            $newInteractions
-        );
-
-        $alertService->createAlertsForInteractions(
-            $userMedication,
-            $newInteractions->toArray()
-        );
+        $discordMonitoring->notifyInteractionCheckCompleted($metrics);
     }
 }

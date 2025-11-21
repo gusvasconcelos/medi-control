@@ -192,7 +192,6 @@ class UserMedicationControllerTest extends TestCase
                     'dosage',
                     'time_slots',
                     'via_administration',
-                    'duration',
                     'start_date',
                     'end_date',
                     'initial_stock',

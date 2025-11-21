@@ -3,11 +3,13 @@
 namespace App\Services\Medication;
 
 use App\Models\Medication;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
+use App\Packages\Monitoring\DTOs\InteractionCheckResult;
+use App\Packages\Monitoring\DTOs\TokenUsage;
+use App\Packages\OpenAI\Contracts\OpenAIClientInterface;
 use App\Packages\OpenAI\DTOs\InteractionResult;
 use App\Packages\OpenAI\Prompts\CheckInteractionPrompt;
-use App\Packages\OpenAI\Contracts\OpenAIClientInterface;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class InteractionCheckerService
 {
@@ -18,18 +20,21 @@ class InteractionCheckerService
     }
 
     /**
-     * @param Medication $mainMedication
      * @param Collection<int, int> $medicationIds
-     * @return Collection<int, InteractionResult>
      */
-    public function checkInteractionsWithOpenAI(Medication $mainMedication, Collection $medicationIds): Collection
+    public function checkInteractionsWithOpenAI(Medication $mainMedication, Collection $medicationIds): InteractionCheckResult
     {
         $medicationsToCheck = $this->medication
             ->whereIn('id', $medicationIds->toArray())
             ->get(['id', 'name']);
 
         if ($medicationsToCheck->isEmpty()) {
-            return collect();
+            return new InteractionCheckResult(
+                interactions: collect(),
+                tokenUsage: new TokenUsage(0, 0, 0),
+                durationInSeconds: 0,
+                model: config('openai.check_interactions.model')
+            );
         }
 
         $messages = CheckInteractionPrompt::build(
@@ -40,6 +45,8 @@ class InteractionCheckerService
             ])
         );
 
+        $startTime = microtime(true);
+
         $response = $this->openAIClient->chatCompletion(
             messages: $messages,
             temperature: config('openai.check_interactions.temperature'),
@@ -47,14 +54,23 @@ class InteractionCheckerService
             jsonFormat: true
         );
 
+        $durationInSeconds = microtime(true) - $startTime;
+
         $parsedResponse = json_decode($response['content'], true);
 
-        if (!isset($parsedResponse['interactions']) || !is_array($parsedResponse['interactions'])) {
+        if (! isset($parsedResponse['interactions']) || ! is_array($parsedResponse['interactions'])) {
             throw new \RuntimeException('Invalid response format from OpenAI');
         }
 
-        return collect($parsedResponse['interactions'])
+        $interactions = collect($parsedResponse['interactions'])
             ->map(fn (array $interaction) => InteractionResult::fromArray($interaction));
+
+        return new InteractionCheckResult(
+            interactions: $interactions,
+            tokenUsage: TokenUsage::fromArray($response['usage']),
+            durationInSeconds: $durationInSeconds,
+            model: config('openai.check_interactions.model')
+        );
     }
 
     /**
