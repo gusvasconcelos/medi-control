@@ -49,7 +49,7 @@ final class CheckUserMedicationInteractionsJob implements ShouldQueue
             return;
         }
 
-        auth('api')->setUser($userMedication->user);
+        auth()->setUser($userMedication->user);
 
         $activeUserMedications = UserMedication::query()
             ->where('id', '!=', $userMedication->id)

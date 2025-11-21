@@ -12,7 +12,7 @@ Apply these standards to all PHP 8.2 and Laravel 12 code. Focus on type-safety, 
 -   PHP 8.2
 -   Laravel 12
 -   PostgreSQL (production and testing)
--   JWT Authentication (tymon/jwt-auth)
+-   Laravel Sanctum (session-based auth for SPA, API tokens for mobile)
 -   Spatie Laravel Permission for role management
 -   Discord logging integration (marvinlabs/laravel-discord-logger) for logging errors and warnings
 
@@ -26,7 +26,7 @@ Apply these standards to all PHP 8.2 and Laravel 12 code. Focus on type-safety, 
 ### Code Organization
 
 -   Usually use one level of indentation per function or method
--   Don’t Use The ELSE Keyword, use early returns instead
+-   Don't Use The ELSE Keyword, use early returns instead
 -   Prefer using Illuminate Collections instead of arrays
 -   Prefer using readonly properties instead of public properties
 -   Only use try-catch blocks in batch operations, prefer to use exceptions for global error handling
@@ -96,12 +96,21 @@ All API routes are versioned under `/api/v1`. Route files are organized in [rout
 
 ### Authentication
 
-The application uses JWT tokens via tymon/jwt-auth:
+The application uses Laravel Sanctum with dual authentication strategies:
 
--   Guard name: `api`
--   Middleware: `jwt` (see [JWTMiddleware.php](app/Http/Middleware/JWTMiddleware.php))
--   All authenticated endpoints use `auth('api')` guard
--   Token expires as configured in [config/jwt.php](config/jwt.php)
+**Web SPA (Inertia):**
+-   Session-based authentication via cookies
+-   Middleware: `auth:sanctum` with `EnsureFrontendRequestsAreStateful`
+-   User shared via Inertia props (`$request->user()`)
+
+**Mobile API:**
+-   Token-based authentication via Sanctum API tokens
+-   Middleware: `auth:sanctum`
+-   Requires `device_name` on login to create tokens
+
+Configuration files:
+-   [config/sanctum.php](config/sanctum.php): Stateful domains, token expiration
+-   [config/auth.php](config/auth.php): Default guard is `web`
 
 ### Exception Handling
 
@@ -129,7 +138,7 @@ The application implements automatic user scoping for multi-tenant data isolatio
 -   Provides `scopeDisableUserScope()` to bypass filtering when needed
 -   Adds `user()` relationship
 
-**[UserScope](app/Models/Scopes/UserScope.php)**: Global scope that filters queries by `auth('api')->id()`
+**[UserScope](app/Models/Scopes/UserScope.php)**: Global scope that filters queries by `auth()->id()`
 
 Usage:
 
@@ -186,4 +195,4 @@ Translation files are organized by domain:
 -   `gusvasconcelos/markdown-converter`: Custom markdown conversion
 -   `spatie/laravel-permission`: Role and permission management
 -   `marvinlabs/laravel-discord-logger`: Discord logging integration
--   `tymon/jwt-auth`: JWT authentication
+-   `laravel/sanctum`: Authentication (session for SPA, tokens for mobile)

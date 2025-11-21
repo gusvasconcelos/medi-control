@@ -6,7 +6,6 @@ use App\Models\MedicationLog;
 use App\Models\UserMedication;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
-use App\Exceptions\UnprocessableEntityException;
 
 class MedicationLogService
 {

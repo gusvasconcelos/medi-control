@@ -28,7 +28,7 @@ class FileService
 
         $storageResult = FileStorageService::put(
             tempPath: $uploadedFileData->tempPath,
-            uploadedBy: auth('api')->id(),
+            uploadedBy: auth()->id(),
             fileableType: get_class($fileable),
             originalName: $uploadedFileData->originalName,
             disk: $data->get('disk', 's3')
@@ -40,7 +40,7 @@ class FileService
         );
 
         $file = $fileable->files()->create([
-            'uploaded_by' => auth('api')->id(),
+            'uploaded_by' => auth()->id(),
             'original_name' => $uploadedFileData->originalName,
             'stored_name' => $storageResult['stored_name'],
             'path' => $storageResult['path'],

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use App\Exceptions\UnauthorizedException;
 use App\Exceptions\UnprocessableEntityException;
 
@@ -12,7 +13,6 @@ class AuthService
      * Register a new user in the system.
      *
      * @param array{name: string, email: string, password: string} $userData
-     * @return User
      */
     public function registerUser(array $userData): User
     {
@@ -24,33 +24,57 @@ class AuthService
     }
 
     /**
-     * Attempt to authenticate a user and return JWT token.
+     * Attempt to authenticate a user via session (for web/SPA).
      *
      * @param array{email: string, password: string} $credentials
-     * @return string
      * @throws UnprocessableEntityException
      */
-    public function attemptLogin(array $credentials): string
+    public function attemptLogin(array $credentials): User
     {
-        $token = auth('api')->attempt($credentials);
-
-        if (! $token) {
+        if (! Auth::attempt($credentials)) {
             throw new UnprocessableEntityException(__('auth.invalid_credentials'), 'INVALID_CREDENTIALS');
         }
 
-        return $token;
+        /** @var User $user */
+        $user = Auth::user();
+
+        return $user;
+    }
+
+    /**
+     * Attempt to authenticate and create a Sanctum token (for mobile API).
+     *
+     * @param array{email: string, password: string} $credentials
+     * @param string $deviceName
+     * @return array{user: User, token: string}
+     * @throws UnprocessableEntityException
+     */
+    public function attemptLoginWithToken(array $credentials, string $deviceName): array
+    {
+        if (! Auth::attempt($credentials)) {
+            throw new UnprocessableEntityException(__('auth.invalid_credentials'), 'INVALID_CREDENTIALS');
+        }
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        $token = $user->createToken($deviceName)->plainTextToken;
+
+        return [
+            'user' => $user,
+            'token' => $token,
+        ];
     }
 
     /**
      * Get the authenticated user.
      *
-     * @return User
      * @throws UnauthorizedException
      */
     public function getAuthenticatedUser(): User
     {
         /** @var User|null $user */
-        $user = auth('api')->user();
+        $user = Auth::user();
 
         if (! $user) {
             throw new UnauthorizedException(__('auth.not_authenticated'));
@@ -60,37 +84,32 @@ class AuthService
     }
 
     /**
-     * Logout the authenticated user (invalidate token).
-     *
-     * @return void
+     * Logout the authenticated user (invalidate session).
      */
     public function logout(): void
     {
-        auth('api')->logout();
+        Auth::guard('web')->logout();
     }
 
     /**
-     * Refresh the JWT token.
-     *
-     * @return string
+     * Revoke all tokens for the authenticated user (for mobile API).
      */
-    public function refreshToken(): string
+    public function revokeAllTokens(): void
     {
-        return auth('api')->refresh(); // @phpstan-ignore-line
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        $user?->tokens()->delete();
     }
 
     /**
-     * Format the token response with expiration time.
-     *
-     * @param string $token
-     * @return array{access_token: string, token_type: string, expires_in: int}
+     * Revoke the current token (for mobile API).
      */
-    public function respondWithToken(string $token): array
+    public function revokeCurrentToken(): void
     {
-        return [
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => auth('api')->factory()->getTTL() * 60 // @phpstan-ignore-line
-        ];
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        $user?->currentAccessToken()?->delete();
     }
 }

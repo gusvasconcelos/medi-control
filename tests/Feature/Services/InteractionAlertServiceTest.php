@@ -25,7 +25,7 @@ final class InteractionAlertServiceTest extends TestCase
 
     private function authenticateAs(User $user): void
     {
-        $this->actingAs($user, 'api');
+        $this->actingAs($user);
     }
 
     public function test_creates_alert_for_severe_interaction(): void

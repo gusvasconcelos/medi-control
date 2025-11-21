@@ -9,7 +9,6 @@ import { MedicationDetailsModal } from '@/Components/Dashboard/MedicationDetails
 import { MedicationList } from '@/Components/Dashboard/MedicationList';
 import { MetricsCards } from '@/Components/Dashboard/MetricsCards';
 import { getNavigationItems } from '@/config/navigation';
-import { useAuth } from '@/hooks/useAuth';
 import { useMedications } from '@/hooks/useMedications';
 import { useToast } from '@/hooks/useToast';
 import { AuthenticatedLayout } from '@/Layouts/AuthenticatedLayout';
@@ -25,9 +24,9 @@ interface DetailsModalState {
     medication: UserMedication | null;
 }
 
-export default function Dashboard({}: PageProps) {
-    const { user, isLoading: authLoading } = useAuth();
-    const { showInfo, showWarning } = useToast();
+export default function Dashboard({ auth }: PageProps) {
+    const user = auth?.user;
+    const { showInfo } = useToast();
     const [selectedDate, setSelectedDate] = useState<Date>(today());
     const [confirmModal, setConfirmModal] = useState<ConfirmModalState>({
         medication: null,
@@ -97,10 +96,6 @@ export default function Dashboard({}: PageProps) {
         }
     };
 
-    const handleSnooze = (_medicationId: number) => {
-        showWarning('Funcionalidade de adiamento em desenvolvimento');
-    };
-
     const handleViewDetails = (medicationId: number) => {
         const medication = medications.find((m) => m.id === medicationId);
         if (medication) {
@@ -119,14 +114,6 @@ export default function Dashboard({}: PageProps) {
     const handleOpenChat = () => {
         showInfo('Chat de suporte em desenvolvimento');
     };
-
-    if (authLoading) {
-        return (
-            <div className="flex min-h-screen items-center justify-center bg-base-200">
-                <span className="loading loading-spinner loading-lg text-primary" />
-            </div>
-        );
-    }
 
     return (
         <>
@@ -159,7 +146,6 @@ export default function Dashboard({}: PageProps) {
                             medications={medications}
                             isLoading={medicationsLoading}
                             onMarkAsTaken={handleOpenConfirmModal}
-                            onSnooze={handleSnooze}
                             onViewDetails={handleViewDetails}
                         />
                     </div>

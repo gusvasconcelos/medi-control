@@ -60,7 +60,7 @@ class File extends Model
 
     public function scopeByAuthenticatedUser(Builder $query): Builder
     {
-        return $query->where('uploaded_by', auth('api')->id());
+        return $query->where('uploaded_by', auth()->id());
     }
 
     public function scopeByFileable(Builder $query, Model $fileable): Builder

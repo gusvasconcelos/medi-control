@@ -37,9 +37,8 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            // Don't share user via Inertia - frontend will fetch via JWT
             'auth' => [
-                'user' => null,
+                'user' => $request->user(),
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),

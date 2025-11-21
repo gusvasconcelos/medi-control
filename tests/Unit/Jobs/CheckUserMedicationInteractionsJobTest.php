@@ -24,7 +24,7 @@ final class CheckUserMedicationInteractionsJobTest extends TestCase
         /** @var User $user */
         $user = User::factory()->create();
 
-        $this->actingAs($user, 'api');
+        $this->actingAs($user);
 
         $interactionChecker = Mockery::mock(InteractionCheckerService::class);
         $alertService = Mockery::mock(InteractionAlertService::class);
@@ -66,7 +66,7 @@ final class CheckUserMedicationInteractionsJobTest extends TestCase
         /** @var User $user */
         $user = User::factory()->create();
 
-        $this->actingAs($user, 'api');
+        $this->actingAs($user);
 
         $medication1 = Medication::factory()->create(['name' => 'Medication 1']);
         $medication2 = Medication::factory()->create(['name' => 'Medication 2']);
@@ -139,7 +139,7 @@ final class CheckUserMedicationInteractionsJobTest extends TestCase
         /** @var User $user */
         $user = User::factory()->create();
 
-        $this->actingAs($user, 'api');
+        $this->actingAs($user);
 
         $medication1 = Medication::factory()->create([
             'name' => 'Medication 1',
@@ -191,7 +191,7 @@ final class CheckUserMedicationInteractionsJobTest extends TestCase
         /** @var User $user */
         $user = User::factory()->create();
 
-        $this->actingAs($user, 'api');
+        $this->actingAs($user);
 
         $medication1 = Medication::factory()->create();
         $medication2 = Medication::factory()->create();
@@ -240,7 +240,7 @@ final class CheckUserMedicationInteractionsJobTest extends TestCase
         /** @var User $user */
         $user = User::factory()->create();
 
-        $this->actingAs($user, 'api');
+        $this->actingAs($user);
 
         $medication1 = Medication::factory()->create();
         $medication2 = Medication::factory()->create();

@@ -1,27 +1,11 @@
 import { Head, router } from '@inertiajs/react';
-import { useEffect } from 'react';
 import { PageProps } from '@/types';
 import { Navbar } from '@/Components/Layout/Navbar';
-import { useAuth } from '@/hooks/useAuth';
 
 export default function Welcome({ auth }: PageProps) {
-    const { isAuthenticated, isLoading } = useAuth();
-
-    useEffect(() => {
-        if (!isLoading && isAuthenticated) {
-            router.visit('/dashboard');
-        }
-    }, [isLoading, isAuthenticated]);
-
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-base-200">
-                <span className="loading loading-spinner loading-lg text-primary" />
-            </div>
-        );
-    }
-
-    if (isAuthenticated) {
+    // If authenticated, redirect to dashboard
+    if (auth?.user) {
+        router.visit('/dashboard');
         return null;
     }
 

@@ -5,21 +5,18 @@ use Illuminate\Http\Request;
 use App\Helpers\ErrorResponse;
 use App\Exceptions\HttpException;
 use Illuminate\Support\Facades\Log;
-use App\Http\Middleware\JWTMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Database\QueryException;
-use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Tymon\JWTAuth\Exceptions\TokenExpiredException;
-use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 use GusVasconcelos\MarkdownConverter\MarkdownConverter;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Illuminate\Auth\AuthenticationException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -33,8 +30,8 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
         ]);
 
-        $middleware->alias([
-            'jwt' => JWTMiddleware::class,
+        $middleware->api(prepend: [
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
 
         $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_FOR |
@@ -47,7 +44,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->dontReport([
             InvalidArgumentException::class,
             HttpException::class,
-            JWTException::class,
         ]);
 
         $reqId = Str::uuid7()->toString();
@@ -75,6 +71,22 @@ return Application::configure(basePath: dirname(__DIR__))
             );
 
             return $errorResponse->toJsonResponse();
+        });
+
+        $exceptions->render(function (AuthenticationException $e, Request $request) use ($reqId) {
+            if ($request->expectsJson()) {
+                $errorResponse = new ErrorResponse(
+                    exception: $e,
+                    message: __('errors.unauthenticated'),
+                    statusCode: 401,
+                    errorCode: 'UNAUTHENTICATED',
+                    reqId: $reqId,
+                );
+
+                return $errorResponse->toJsonResponse();
+            }
+
+            return redirect()->guest(route('login'));
         });
 
         $exceptions->render(function (AuthorizationException $e) use ($reqId) {
@@ -107,7 +119,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (QueryException $e) use ($reqId) {
-            $userId = auth('api')->id() ?? 'N/A';
+            $userId = auth()->id() ?? 'N/A';
 
             $message = __('errors.query_not_acceptable');
 
@@ -166,54 +178,6 @@ return Application::configure(basePath: dirname(__DIR__))
             return $errorResponse->toJsonResponse();
         });
 
-        $exceptions->render(function (TokenInvalidException $e) use ($reqId) {
-            $errorResponse = new ErrorResponse(
-                exception: $e,
-                message: __('errors.auth_invalid_token'),
-                statusCode: 403,
-                errorCode: 'AUTH_INVALID_TOKEN',
-                reqId: $reqId,
-            );
-
-            return $errorResponse->toJsonResponse();
-        });
-
-        $exceptions->render(function (TokenExpiredException $e) use ($reqId) {
-            $errorResponse = new ErrorResponse(
-                exception: $e,
-                message: __('errors.auth_token_expired'),
-                statusCode: 401,
-                errorCode: 'AUTH_EXPIRED_TOKEN',
-                reqId: $reqId,
-            );
-
-            return $errorResponse->toJsonResponse();
-        });
-
-        $exceptions->render(function (TokenExpiredException $e) use ($reqId) {
-            $errorResponse = new ErrorResponse(
-                exception: $e,
-                message: __('errors.auth_token_expired'),
-                statusCode: 401,
-                errorCode: 'AUTH_EXPIRED_TOKEN',
-                reqId: $reqId,
-            );
-
-            return $errorResponse->toJsonResponse();
-        });
-
-        $exceptions->render(function (JWTException $e) use ($reqId) {
-            $errorResponse = new ErrorResponse(
-                exception: $e,
-                message: __('errors.auth_jwt_error'),
-                statusCode: 401,
-                errorCode: 'AUTH_JWT_ERROR',
-                reqId: $reqId,
-            );
-
-            return $errorResponse->toJsonResponse();
-        });
-
         $exceptions->render(function (HttpException $e) use ($reqId) {
             $errorResponse = new ErrorResponse(
                 exception: $e,
@@ -228,7 +192,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (Throwable $e) use ($reqId) {
-            $userId = auth('api')->id() ?? 'N/A';
+            $userId = auth()->id() ?? 'N/A';
 
             $message = __('errors.internal_server');
 

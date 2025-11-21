@@ -7,14 +7,14 @@ use Illuminate\Support\Facades\Route;
 
 Route::group([
     'prefix' => 'auth',
-    'middleware' => ['api', 'jwt'],
 ], function () {
-    Route::post('register', [AuthController::class, 'register'])->withoutMiddleware(['jwt']);
-    Route::post('login', [AuthController::class, 'login'])->withoutMiddleware(['jwt']);
-    Route::post('logout', [AuthController::class, 'logout']);
-    Route::post('refresh', [AuthController::class, 'refresh']);
-    Route::get('me', [AuthController::class, 'me']);
+    Route::post('register', [AuthController::class, 'register']);
+    Route::post('login', [AuthController::class, 'login']);
+    Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLink']);
+    Route::post('reset-password', [ResetPasswordController::class, 'resetPassword']);
 
-    Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLink'])->withoutMiddleware(['jwt']);
-    Route::post('reset-password', [ResetPasswordController::class, 'resetPassword'])->withoutMiddleware(['jwt']);
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::get('me', [AuthController::class, 'me']);
+    });
 });

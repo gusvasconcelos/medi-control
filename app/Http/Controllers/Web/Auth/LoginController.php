@@ -5,9 +5,8 @@ namespace App\Http\Controllers\Web\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Services\AuthService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -23,27 +22,24 @@ final class LoginController extends Controller
         return Inertia::render('Auth/Login');
     }
 
-    public function store(LoginRequest $request): JsonResponse
+    public function store(LoginRequest $request): RedirectResponse
     {
         $validated = $request->validated();
 
-        $token = $this->authService->attemptLogin($validated);
+        $this->authService->attemptLogin($validated);
 
-        Auth::guard('web')->login(auth('api')->user());
+        $request->session()->regenerate();
 
-        return response()->json(
-            $this->authService->respondWithToken($token)
-        );
+        return redirect()->intended(route('dashboard'));
     }
 
-    public function destroy(): JsonResponse
+    public function destroy(Request $request): RedirectResponse
     {
         $this->authService->logout();
 
-        Session::flush();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-        return response()->json([
-            'message' => __('auth.logout')
-        ]);
+        return redirect()->route('login');
     }
 }

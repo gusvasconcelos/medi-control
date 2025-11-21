@@ -5,7 +5,7 @@ use App\Http\Controllers\Api\MedicationLogController;
 use Illuminate\Support\Facades\Route;
 
 Route::group([
-    'middleware' => ['api', 'jwt'],
+    'middleware' => ['auth:sanctum'],
 ], function () {
     Route::get('user-medications/indicators', [UserMedicationController::class, 'indicators']);
     Route::get('user-medications', [UserMedicationController::class, 'getUserMedications']);

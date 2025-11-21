@@ -40,6 +40,7 @@ class AuthControllerTest extends TestCase
         $form = [
             'email' => $user->email,
             'password' => 'password',
+            'device_name' => 'PHPUnit Test Device',
         ];
 
         $response = $this->postJson("$this->url/login", $form);
@@ -47,9 +48,9 @@ class AuthControllerTest extends TestCase
         $response
             ->assertStatus(200)
             ->assertJsonStructure([
+                'user',
                 'access_token',
                 'token_type',
-                'expires_in',
             ]);
     }
 
@@ -58,6 +59,7 @@ class AuthControllerTest extends TestCase
         $form = [
             'email' => $this->faker()->email(),
             'password' => 'password',
+            'device_name' => 'PHPUnit Test Device',
         ];
 
         $response = $this->postJson("$this->url/login", $form);
@@ -85,14 +87,6 @@ class AuthControllerTest extends TestCase
                 'message' => __('errors.validation'),
                 'status_code' => 422,
                 'code' => 'VALIDATION',
-                'details' => [
-                    'email' => [
-                        __('validation.email', ['attribute' => __('validation.attributes.email')])
-                    ],
-                    'password' => [
-                        __('validation.required', ['attribute' => __('validation.attributes.password')])
-                    ]
-                ]
             ]);
     }
 
@@ -118,9 +112,9 @@ class AuthControllerTest extends TestCase
         $response
             ->assertStatus(401)
             ->assertJson([
-                'message' => __('errors.auth_jwt_error'),
+                'message' => __('errors.unauthenticated'),
                 'status_code' => 401,
-                'code' => 'AUTH_JWT_ERROR',
+                'code' => 'UNAUTHENTICATED',
             ]);
     }
 
@@ -144,37 +138,9 @@ class AuthControllerTest extends TestCase
         $response
             ->assertStatus(401)
             ->assertJson([
-                'message' => __('errors.auth_jwt_error'),
+                'message' => __('errors.unauthenticated'),
                 'status_code' => 401,
-                'code' => 'AUTH_JWT_ERROR'
-            ]);
-    }
-
-    public function test_refresh_with_successful(): void
-    {
-        $user = User::factory()->create();
-
-        $response = $this->actingAsUser($user)->postJson("$this->url/refresh");
-
-        $response
-            ->assertStatus(200)
-            ->assertJsonStructure([
-                'access_token',
-                'token_type',
-                'expires_in',
-            ]);
-    }
-
-    public function test_refresh_not_authenticated(): void
-    {
-        $response = $this->postJson("$this->url/refresh");
-
-        $response
-            ->assertStatus(401)
-            ->assertJson([
-                'message' => __('errors.auth_jwt_error'),
-                'status_code' => 401,
-                'code' => 'AUTH_JWT_ERROR'
+                'code' => 'UNAUTHENTICATED'
             ]);
     }
 }

@@ -1,5 +1,5 @@
-import { ReactNode, useEffect } from 'react';
-import { router, usePage } from '@inertiajs/react';
+import { ReactNode } from 'react';
+import { usePage } from '@inertiajs/react';
 import { Sidebar, NavItem } from '@/Components/Layout/Sidebar';
 import { Navbar } from '@/Components/Layout/Navbar';
 import { Toolbar } from '@/Components/Layout/Toolbar';
@@ -15,26 +15,8 @@ export function AuthenticatedLayout({
     children,
     navItems = [],
 }: AuthenticatedLayoutProps) {
-    const { logout, isLoading, isAuthenticated } = useAuth();
+    const { logout } = useAuth();
     const { auth } = usePage<PageProps>().props;
-
-    useEffect(() => {
-        if (!isLoading && !isAuthenticated) {
-            router.visit('/login');
-        }
-    }, [isLoading, isAuthenticated]);
-
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-base-200">
-                <span className="loading loading-spinner loading-lg text-primary" />
-            </div>
-        );
-    }
-
-    if (!isAuthenticated) {
-        return null;
-    }
 
     return (
         <div className="flex min-h-screen">

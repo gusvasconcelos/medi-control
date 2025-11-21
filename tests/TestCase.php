@@ -7,6 +7,7 @@ use Illuminate\Testing\TestResponse;
 use App\Models\User;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Laravel\Sanctum\Sanctum;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -26,13 +27,11 @@ abstract class TestCase extends BaseTestCase
         return parent::call($method, $uri, $parameters, $cookies, $files, $server, $content);
     }
 
-    protected function actingAsUser(?User $user = null)
+    protected function actingAsUser(?User $user = null): static
     {
         $user = $user ?? User::factory()->create();
 
-        $token = auth('api')->tokenById($user->id);
-
-        $this->withHeaders(['Authorization' => "Bearer $token"]);
+        Sanctum::actingAs($user);
 
         return $this;
     }

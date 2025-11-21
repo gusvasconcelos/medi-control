@@ -1,21 +1,19 @@
-import { FormEvent, useState, useEffect } from 'react';
+import { FormEvent, useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import axios from 'axios';
 import { AuthCard } from '@/Components/Auth/AuthCard';
 import { InputField } from '@/Components/Auth/InputField';
-import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
-import type { PageProps, LoginCredentials, AuthResponse } from '@/types';
+import type { PageProps, LoginCredentials } from '@/types';
 
-export default function Login({ }: PageProps) {
-    const { saveAuthData, isAuthenticated, isLoading } = useAuth();
+export default function Login({ auth }: PageProps) {
     const { showError } = useToast();
 
-    useEffect(() => {
-        if (!isLoading && isAuthenticated) {
-            router.visit('/dashboard');
-        }
-    }, [isLoading, isAuthenticated]);
+    // If already authenticated, redirect to dashboard
+    if (auth?.user) {
+        router.visit('/dashboard');
+        return null;
+    }
 
     const [formData, setFormData] = useState<LoginCredentials>({
         email: '',
@@ -24,33 +22,24 @@ export default function Login({ }: PageProps) {
     const [errors, setErrors] = useState<Partial<LoginCredentials>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-base-200">
-                <span className="loading loading-spinner loading-lg text-primary" />
-            </div>
-        );
-    }
-
-    if (isAuthenticated) {
-        return null;
-    }
-
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setErrors({});
         setIsSubmitting(true);
 
         try {
-            const response = await axios.post<AuthResponse>('/api/v1/auth/login', formData);
-            saveAuthData(response.data);
+            await axios.post('/login', formData);
             router.visit('/dashboard');
-        } catch (error: any) {
-            if (error.response?.status === 422) {
-                setErrors(error.response.data.details || {});
-                showError(error.response.data.message);
-            } else if (error.response?.status === 401) {
-                showError('Email ou senha inválidos.');
+        } catch (error: unknown) {
+            if (axios.isAxiosError(error) && error.response) {
+                if (error.response.status === 422) {
+                    setErrors(error.response.data.details || {});
+                    showError(error.response.data.message);
+                } else if (error.response.status === 401) {
+                    showError('Email ou senha inválidos.');
+                } else {
+                    showError('Ocorreu um erro ao fazer login. Tente novamente.');
+                }
             } else {
                 showError('Ocorreu um erro ao fazer login. Tente novamente.');
             }
@@ -65,7 +54,7 @@ export default function Login({ }: PageProps) {
 
             <AuthCard
                 title="Login"
-                subtitle="Olá, bem-vindo de volta 👋"
+                subtitle="Olá, bem-vindo de volta"
             >
                 <form onSubmit={handleSubmit} className="space-y-4">
                         <InputField

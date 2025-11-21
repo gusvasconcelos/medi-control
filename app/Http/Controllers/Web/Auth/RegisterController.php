@@ -6,7 +6,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use App\Services\AuthService;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\Auth\RegisterRequest;
 
 final class RegisterController extends Controller
@@ -21,19 +21,19 @@ final class RegisterController extends Controller
         return Inertia::render('Auth/Register');
     }
 
-    public function store(RegisterRequest $request): JsonResponse
+    public function store(RegisterRequest $request): RedirectResponse
     {
         $validated = $request->validated();
 
         $this->authService->registerUser($validated);
 
-        $token = $this->authService->attemptLogin([
+        $this->authService->attemptLogin([
             'email' => $validated['email'],
             'password' => $validated['password'],
         ]);
 
-        return response()->json(
-            $this->authService->respondWithToken($token)
-        );
+        $request->session()->regenerate();
+
+        return redirect()->route('dashboard');
     }
 }

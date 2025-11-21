@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\MobileLoginRequest;
 
 class AuthController extends Controller
 {
@@ -26,15 +26,23 @@ class AuthController extends Controller
         ]);
     }
 
-    public function login(LoginRequest $request): JsonResponse
+    public function login(MobileLoginRequest $request): JsonResponse
     {
         $validated = $request->validated();
 
-        $token = $this->authService->attemptLogin($validated);
-
-        return response()->json(
-            $this->authService->respondWithToken($token)
+        $result = $this->authService->attemptLoginWithToken(
+            credentials: [
+                'email' => $validated['email'],
+                'password' => $validated['password'],
+            ],
+            deviceName: $validated['device_name']
         );
+
+        return response()->json([
+            'user' => $result['user'],
+            'access_token' => $result['token'],
+            'token_type' => 'Bearer',
+        ]);
     }
 
     public function me(): JsonResponse
@@ -46,19 +54,10 @@ class AuthController extends Controller
 
     public function logout(): JsonResponse
     {
-        $this->authService->logout();
+        $this->authService->revokeCurrentToken();
 
         return response()->json([
             'message' => __('auth.logout')
         ]);
-    }
-
-    public function refresh(): JsonResponse
-    {
-        $token = $this->authService->refreshToken();
-
-        return response()->json(
-            $this->authService->respondWithToken($token)
-        );
     }
 }
