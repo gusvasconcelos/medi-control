@@ -1,3 +1,6 @@
+/**
+ * User
+ */
 export interface User {
     id: number;
     name: string;
@@ -6,6 +9,9 @@ export interface User {
     email_verified_at?: string;
 }
 
+/**
+ * Authentication
+ */
 export interface AuthResponse {
     access_token: string;
     token_type: string;
@@ -35,7 +41,12 @@ export interface ResetPasswordData {
     token: string;
 }
 
-export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
+/**
+ * Inertia Page Props
+ */
+export type PageProps<
+    T extends Record<string, unknown> = Record<string, unknown>,
+> = T & {
     auth?: {
         user: User;
     };
@@ -47,6 +58,9 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     };
 };
 
+/**
+ * Toast Notifications
+ */
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
 export interface Toast {
@@ -69,6 +83,9 @@ export interface ToastContextType {
     removeToast: (toastId: string) => void;
 }
 
+/**
+ * Medications
+ */
 export interface Medication {
     id: number;
     name: string;
@@ -84,6 +101,25 @@ export interface Medication {
     interactions?: string[] | null;
 }
 
+export interface MedicationSearchResult {
+    id: number;
+    name: string;
+    active_principle?: string | null;
+    manufacturer?: string | null;
+    category?: string | null;
+    therapeutic_class?: string | null;
+    strength?: string | null;
+    form?: string | null;
+    description?: string | null;
+}
+
+export interface MedicationSearchResponse {
+    data: MedicationSearchResult[];
+}
+
+/**
+ * User Medications
+ */
 export type ViaAdministration =
     | 'oral'
     | 'topical'
@@ -116,7 +152,6 @@ export interface UserMedication {
     dosage: string;
     time_slots: string[];
     via_administration: ViaAdministration;
-    duration?: number | null;
     start_date: string;
     end_date?: string | null;
     initial_stock: number;
@@ -130,6 +165,22 @@ export interface UserMedication {
     logs?: MedicationLog[];
 }
 
+export interface CreateUserMedicationData {
+    medication_id: number;
+    dosage: string;
+    time_slots: string[];
+    via_administration: ViaAdministration;
+    start_date: string;
+    end_date?: string;
+    initial_stock: number;
+    current_stock: number;
+    low_stock_threshold: number;
+    notes?: string;
+}
+
+/**
+ * API Responses
+ */
 export interface UserMedicationsResponse {
     data: UserMedication[];
 }
@@ -144,6 +195,9 @@ export interface IndicatorsResponse {
     data: IndicatorData[];
 }
 
+/**
+ * Dashboard Metrics
+ */
 export interface DailyMetrics {
     totalMedications: number;
     medicationsTaken: number;

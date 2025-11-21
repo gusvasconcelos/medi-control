@@ -25,7 +25,6 @@ return new class () extends Migration {
                 'rectal',
                 'other',
             ])->default('oral');
-            $table->integer('duration')->nullable();
             $table->date('start_date');
             $table->date('end_date')->nullable();
             $table->integer('initial_stock')->default(0);

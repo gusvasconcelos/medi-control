@@ -1,35 +1,35 @@
-import { Plus, MessageCircle } from 'lucide-react';
+import { MessageCircle, Plus } from 'lucide-react';
 
 interface FloatingActionButtonsProps {
-    onAddMedication: () => void;
+    onAddMedication?: () => void;
     onOpenChat?: () => void;
 }
 
 export function FloatingActionButtons({
-    onAddMedication,
-    onOpenChat
+    onOpenChat,
 }: FloatingActionButtonsProps) {
     return (
-        <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3">
+        <div className="fixed bottom-24 right-4 z-50 flex flex-col gap-3 lg:bottom-6 lg:right-6">
+            <button
+                type="button"
+                // @ts-ignore - popoverTarget is valid but TypeScript doesn't recognize it yet
+                popoverTarget="add-medication-modal"
+                className="btn btn-circle btn-primary order-2 h-14 w-14 shadow-lg transition-shadow hover:shadow-xl"
+                aria-label="Adicionar novo medicamento"
+            >
+                <Plus className="h-6 w-6" />
+            </button>
+
             {onOpenChat && (
                 <button
                     type="button"
                     onClick={onOpenChat}
-                    className="btn btn-ghost btn-circle w-12 h-12 shadow-lg bg-base-100 hover:bg-base-200"
+                    className="btn btn-circle btn-ghost order-1 h-12 w-12 bg-base-100 shadow-lg hover:bg-base-200"
                     aria-label="Chat de suporte"
                 >
-                    <MessageCircle className="w-5 h-5" />
+                    <MessageCircle className="h-5 w-5" />
                 </button>
             )}
-
-            <button
-                type="button"
-                onClick={onAddMedication}
-                className="btn btn-primary btn-circle w-14 h-14 shadow-lg hover:shadow-xl transition-shadow"
-                aria-label="Adicionar novo medicamento"
-            >
-                <Plus className="w-6 h-6" />
-            </button>
         </div>
     );
 }

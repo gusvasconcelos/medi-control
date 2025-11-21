@@ -90,17 +90,17 @@ class UserMedicationService
                     ->count();
 
                 $totalTaken += $taken;
+            }
 
-                if ($totalScheduled > 0) {
-                    $indicators->push([
-                        'date' => $date->toDateString(),
-                        'total_scheduled' => $totalScheduled,
-                        'total_taken' => $totalTaken,
-                        'adherence_percentage' => $totalScheduled > 0
-                            ? round(($totalTaken / $totalScheduled) * 100)
-                            : 0,
-                    ]);
-                }
+            if ($totalScheduled > 0) {
+                $indicators->push([
+                    'date' => $date->toDateString(),
+                    'total_scheduled' => $totalScheduled,
+                    'total_taken' => $totalTaken,
+                    'adherence_percentage' => $totalScheduled > 0
+                        ? round(($totalTaken / $totalScheduled) * 100)
+                        : 0,
+                ]);
             }
         }
 
