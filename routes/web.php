@@ -39,7 +39,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/monitoring/pulse', [PulseDashboardController::class, 'index'])->name('pulse.dashboard');
     });
 
-    Route::prefix('monitoring/horizon')->name('horizon.')->group(function () {
+    Route::prefix('monitoring/horizon')->name('monitoring.horizon.')->group(function () {
         Route::get('/', [HorizonDashboardController::class, 'index'])->name('dashboard');
 
         Route::get('/jobs/{status}', [HorizonJobsController::class, 'index'])
