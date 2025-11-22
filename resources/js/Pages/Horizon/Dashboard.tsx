@@ -47,9 +47,8 @@ export default function HorizonDashboard({ auth, stats, workload, masters }: Hor
     };
 
     const queueWaitTime = Object.entries(stats.wait)[0];
-    const waitTimeDisplay = queueWaitTime
-        ? `${queueWaitTime[1]}s (${queueWaitTime[0]})`
-        : '0s';
+    const waitTimeValue = queueWaitTime ? `${queueWaitTime[1]}s` : '0s';
+    const waitTimeQueue = queueWaitTime ? queueWaitTime[0] : undefined;
 
     return (
         <>
@@ -111,7 +110,8 @@ export default function HorizonDashboard({ auth, stats, workload, masters }: Hor
                             />
                             <StatsCard
                                 title="Tempo de Espera"
-                                value={waitTimeDisplay}
+                                value={waitTimeValue}
+                                subtitle={waitTimeQueue}
                                 icon={<Clock className="w-5 h-5 text-warning" />}
                                 iconBgClass="bg-warning/10"
                             />

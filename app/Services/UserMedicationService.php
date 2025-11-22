@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
+use App\Events\UserMedicationCreated;
 use App\Models\Medication;
 use App\Models\UserMedication;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
-use App\Jobs\CheckUserMedicationInteractionsJob;
 
 class UserMedicationService
 {
@@ -126,7 +126,7 @@ class UserMedicationService
             'active' => true,
         ]);
 
-        CheckUserMedicationInteractionsJob::dispatch($userMedication->id);
+        UserMedicationCreated::dispatch($userMedication);
 
         return $userMedication;
     }
