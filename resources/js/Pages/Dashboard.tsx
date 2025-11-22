@@ -26,6 +26,7 @@ interface DetailsModalState {
 
 export default function Dashboard({ auth }: PageProps) {
     const user = auth?.user;
+    const userRoles = user?.roles || [];
     const { showInfo } = useToast();
     const [selectedDate, setSelectedDate] = useState<Date>(today());
     const [confirmModal, setConfirmModal] = useState<ConfirmModalState>({
@@ -119,7 +120,7 @@ export default function Dashboard({ auth }: PageProps) {
         <>
             <Head title="Dashboard - MediControl" />
 
-            <AuthenticatedLayout navItems={getNavigationItems('/dashboard')}>
+            <AuthenticatedLayout navItems={getNavigationItems('/dashboard', userRoles)}>
                 <div className="min-h-screen bg-base-100">
                     <div className="container mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8">
                         <div className="mb-6 sm:mb-8">

@@ -9,6 +9,8 @@ export interface NavItem {
     active?: boolean;
     section?: boolean;
     children?: NavItem[];
+    roles?: string[];
+    external?: boolean;
 }
 
 interface SidebarProps {
@@ -92,17 +94,39 @@ function SidebarItem({ item, level }: SidebarItemProps) {
     }
 
     if (item.href) {
+        const linkClassName = `
+            flex items-center gap-3 px-4 py-3 rounded-lg
+            transition-all duration-200
+            hover:bg-base-200
+            ${item.active ? 'bg-primary/10 text-primary font-medium' : 'text-base-content'}
+            ${level > 1 ? 'text-sm' : ''}
+        `;
+
+        if (item.external) {
+            return (
+                <li>
+                    <a
+                        href={item.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={linkClassName}
+                    >
+                        {item.icon && (
+                            <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                                {item.icon}
+                            </span>
+                        )}
+                        <span className="flex-1">{item.label}</span>
+                    </a>
+                </li>
+            );
+        }
+
         return (
             <li>
-                <Link
+                <a
                     href={item.href}
-                    className={`
-                        flex items-center gap-3 px-4 py-3 rounded-lg
-                        transition-all duration-200
-                        hover:bg-base-200
-                        ${item.active ? 'bg-primary/10 text-primary font-medium' : 'text-base-content'}
-                        ${level > 1 ? 'text-sm' : ''}
-                    `}
+                    className={linkClassName}
                     aria-current={item.active ? 'page' : undefined}
                 >
                     {item.icon && (
@@ -111,7 +135,7 @@ function SidebarItem({ item, level }: SidebarItemProps) {
                         </span>
                     )}
                     <span className="flex-1">{item.label}</span>
-                </Link>
+                </a>
             </li>
         );
     }

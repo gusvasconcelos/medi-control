@@ -7,6 +7,7 @@ export interface User {
     email: string;
     phone?: string;
     email_verified_at?: string;
+    roles?: string[];
 }
 
 /**
@@ -189,14 +190,47 @@ export interface IndicatorsResponse {
     data: IndicatorData[];
 }
 
-/**
- * Dashboard Metrics
- */
 export interface DailyMetrics {
     totalMedications: number;
     medicationsTaken: number;
     medicationsPending: number;
     adherencePercentage: number;
+}
+
+/**
+ * Metrics Overview
+ */
+export interface TopMedication {
+    id: number;
+    name: string;
+    usage_count: number;
+}
+
+export interface MetricsOverviewData {
+    uptime: {
+        started_at: string;
+        uptime_seconds: number;
+        uptime_human: string;
+        days: number;
+        hours: number;
+        minutes: number;
+        seconds: number;
+    };
+    cpu: {
+        load_average: number;
+        cores: number;
+        percentage: number;
+    };
+    memory: {
+        used_mb: number;
+        total_mb: number;
+        percentage: number;
+    };
+    disk: number;
+    total_medications: number;
+    total_users: number;
+    total_active_medications: number;
+    top_medications: TopMedication[];
 }
 
 declare global {
