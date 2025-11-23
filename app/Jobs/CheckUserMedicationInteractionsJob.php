@@ -22,6 +22,8 @@ final class CheckUserMedicationInteractionsJob implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
+    public bool $afterCommit = true;
+
     public int $tries = 3;
 
     public int $backoff = 60;

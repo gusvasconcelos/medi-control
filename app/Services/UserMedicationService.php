@@ -127,7 +127,7 @@ class UserMedicationService
             'active' => true,
         ]);
 
-        CheckUserMedicationInteractionsJob::dispatch($userMedication->id)->afterCommit();
+        CheckUserMedicationInteractionsJob::dispatch($userMedication->id);
 
         return $userMedication;
     }
