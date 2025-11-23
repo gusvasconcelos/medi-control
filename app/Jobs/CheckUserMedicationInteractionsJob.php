@@ -22,8 +22,6 @@ final class CheckUserMedicationInteractionsJob implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    public bool $afterCommit = true;
-
     public int $tries = 3;
 
     public int $backoff = 60;
@@ -33,6 +31,7 @@ final class CheckUserMedicationInteractionsJob implements ShouldQueue
     public function __construct(
         public readonly int $userMedicationId
     ) {
+        $this->afterCommit();
         $this->onConnection('rabbitmq');
         $this->onQueue('medication-interactions');
     }
