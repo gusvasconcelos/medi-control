@@ -36,7 +36,7 @@ export function Navbar({ variant, auth, onLogout }: NavbarProps) {
                 )}
 
                 {variant === 'authenticated' && auth?.user && onLogout && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-4">
                         <NotificationDropdown />
                         <UserMenu user={auth.user} onLogout={onLogout} />
                     </div>
