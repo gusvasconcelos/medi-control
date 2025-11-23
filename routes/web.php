@@ -30,27 +30,24 @@ Route::middleware('guest')->group(function () {
     Route::post('/reset-password', [ResetPasswordController::class, 'store'])->name('password.update');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
     Route::get('/select-role', fn () => Inertia::render('Auth/SelectRole'))->name('select-role');
     Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
     Route::get('/medications', fn () => Inertia::render('Medications/Index'))->name('medications.index');
-    Route::get('/users', fn () => Inertia::render('Users/Index'))->name('users.index');
     Route::get('/metrics/overview', [OverviewController::class, 'create'])->name('metrics.overview');
 
-    // Caregiver-Patient Routes
     Route::get('/my-caregivers', fn () => Inertia::render('Caregivers/Index'))->name('caregivers.index');
     Route::get('/my-patients', fn () => Inertia::render('Patients/Index'))->name('patients.index');
 
-    // Reports Routes
     Route::get('/reports', fn () => Inertia::render('Reports/Adherence'))->name('reports.adherence');
 
-    // Settings Routes (available to all authenticated users)
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/notifications', fn () => Inertia::render('Settings/Notifications/Index'))->name('notifications.index');
     });
 
-    // Settings Routes (super-admin only)
+    Route::get('/users', fn () => Inertia::render('Users/Index'))->name('system.users.index');
+
     Route::middleware('role:super-admin')->prefix('settings')->name('settings.')->group(function () {
         Route::get('/roles', fn () => Inertia::render('Settings/Roles/Index'))->name('roles.index');
         Route::get('/permissions', fn () => Inertia::render('Settings/Permissions/Index'))->name('permissions.index');
