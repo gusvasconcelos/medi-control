@@ -284,12 +284,12 @@ export default function Adherence({ auth }: PageProps) {
 
                         <div className="mb-6">
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                                <div role="tablist" className="tabs tabs-boxed bg-base-200 p-1 justify-center gap-4 rounded-full">
+                                <div role="tablist" className="tabs tabs-boxed bg-base-200 p-1 justify-center gap-1 sm:gap-4 rounded-full flex">
                                     {PERIODS.map((period) => (
                                         <button
                                             key={period}
                                             role="tab"
-                                            className={`tab ${selectedPeriod === period ? 'tab-active bg-base-100 rounded-full' : ''}`}
+                                            className={`tab flex-1 sm:flex-none ${selectedPeriod === period ? 'tab-active bg-base-100 rounded-full' : ''}`}
                                             onClick={() => setSelectedPeriod(period)}
                                         >
                                             {PERIOD_LABELS[period]}
