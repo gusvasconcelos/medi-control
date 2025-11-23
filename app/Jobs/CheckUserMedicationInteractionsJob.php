@@ -42,7 +42,7 @@ final class CheckUserMedicationInteractionsJob implements ShouldQueue
         DiscordMonitoringService $discordMonitoring
     ): void {
         /** @var UserMedication|null $userMedication */
-        $userMedication = UserMedication::query()
+        $userMedication = UserMedication::disableUserScope()
             ->with(['medication', 'user'])
             ->find($this->userMedicationId);
 
