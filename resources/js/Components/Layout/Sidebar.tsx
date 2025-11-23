@@ -11,6 +11,7 @@ export interface NavItem {
     children?: NavItem[];
     roles?: string[];
     external?: boolean;
+    showInToolbar?: boolean;
 }
 
 interface SidebarProps {

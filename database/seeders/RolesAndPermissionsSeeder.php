@@ -19,57 +19,57 @@ class RolesAndPermissionsSeeder extends Seeder
         // Create permissions
         $permissions = [
             // System Users Management (Admin only)
-            ['name' => 'users.view', 'display_name' => 'Visualizar Usuários', 'group' => 'Usuários do Sistema', 'description' => 'Ver lista de todos os usuários do sistema'],
-            ['name' => 'users.create', 'display_name' => 'Criar Usuários', 'group' => 'Usuários do Sistema', 'description' => 'Criar novos usuários no sistema'],
-            ['name' => 'users.edit', 'display_name' => 'Editar Usuários', 'group' => 'Usuários do Sistema', 'description' => 'Editar dados de usuários'],
-            ['name' => 'users.delete', 'display_name' => 'Deletar Usuários', 'group' => 'Usuários do Sistema', 'description' => 'Remover usuários do sistema'],
+            ['name' => 'users.view', 'display_name' => 'Visualizar Usuários', 'group' => 'system', 'description' => 'Ver lista de todos os usuários do sistema'],
+            ['name' => 'users.create', 'display_name' => 'Criar Usuários', 'group' => 'system', 'description' => 'Criar novos usuários no sistema'],
+            ['name' => 'users.edit', 'display_name' => 'Editar Usuários', 'group' => 'system', 'description' => 'Editar dados de usuários'],
+            ['name' => 'users.delete', 'display_name' => 'Deletar Usuários', 'group' => 'system', 'description' => 'Remover usuários do sistema'],
 
             // Patient's Own Medications
-            ['name' => 'medications.view_own', 'display_name' => 'Visualizar Próprios Medicamentos', 'group' => 'Medicamentos do Paciente', 'description' => 'Ver seus próprios medicamentos'],
-            ['name' => 'medications.create_own', 'display_name' => 'Criar Próprios Medicamentos', 'group' => 'Medicamentos do Paciente', 'description' => 'Adicionar novos medicamentos para si'],
-            ['name' => 'medications.edit_own', 'display_name' => 'Editar Próprios Medicamentos', 'group' => 'Medicamentos do Paciente', 'description' => 'Editar seus próprios medicamentos'],
-            ['name' => 'medications.delete_own', 'display_name' => 'Deletar Próprios Medicamentos', 'group' => 'Medicamentos do Paciente', 'description' => 'Remover seus próprios medicamentos'],
+            ['name' => 'medications.view_own', 'display_name' => 'Visualizar Próprios Medicamentos', 'group' => 'patient', 'description' => 'Ver seus próprios medicamentos'],
+            ['name' => 'medications.create_own', 'display_name' => 'Criar Próprios Medicamentos', 'group' => 'patient', 'description' => 'Adicionar novos medicamentos para si'],
+            ['name' => 'medications.edit_own', 'display_name' => 'Editar Próprios Medicamentos', 'group' => 'patient', 'description' => 'Editar seus próprios medicamentos'],
+            ['name' => 'medications.delete_own', 'display_name' => 'Deletar Próprios Medicamentos', 'group' => 'patient', 'description' => 'Remover seus próprios medicamentos'],
 
             // Caregiver Permissions (for patients to grant to their caregivers)
-            ['name' => 'patient.medications.view', 'display_name' => 'Ver Medicamentos do Paciente', 'group' => 'Cuidador', 'description' => 'Visualizar medicamentos do paciente sob cuidado'],
-            ['name' => 'patient.medications.create', 'display_name' => 'Adicionar Medicamentos do Paciente', 'group' => 'Cuidador', 'description' => 'Adicionar medicamentos para o paciente'],
-            ['name' => 'patient.medications.edit', 'display_name' => 'Editar Medicamentos do Paciente', 'group' => 'Cuidador', 'description' => 'Editar medicamentos do paciente'],
-            ['name' => 'patient.medications.delete', 'display_name' => 'Deletar Medicamentos do Paciente', 'group' => 'Cuidador', 'description' => 'Remover medicamentos do paciente'],
-            ['name' => 'patient.adherence.view', 'display_name' => 'Ver Adesão do Paciente', 'group' => 'Cuidador', 'description' => 'Visualizar relatórios de adesão'],
-            ['name' => 'patient.adherence.mark', 'display_name' => 'Marcar Adesão do Paciente', 'group' => 'Cuidador', 'description' => 'Marcar medicamentos como tomados'],
-            ['name' => 'patient.profile.view', 'display_name' => 'Ver Perfil do Paciente', 'group' => 'Cuidador', 'description' => 'Visualizar dados do paciente'],
+            ['name' => 'patient.medications.view', 'display_name' => 'Ver Medicamentos do Paciente', 'group' => 'caregiver', 'description' => 'Visualizar medicamentos do paciente sob cuidado'],
+            ['name' => 'patient.medications.create', 'display_name' => 'Adicionar Medicamentos do Paciente', 'group' => 'caregiver', 'description' => 'Adicionar medicamentos para o paciente'],
+            ['name' => 'patient.medications.edit', 'display_name' => 'Editar Medicamentos do Paciente', 'group' => 'caregiver', 'description' => 'Editar medicamentos do paciente'],
+            ['name' => 'patient.medications.delete', 'display_name' => 'Deletar Medicamentos do Paciente', 'group' => 'caregiver', 'description' => 'Remover medicamentos do paciente'],
+            ['name' => 'patient.adherence.view', 'display_name' => 'Ver Adesão do Paciente', 'group' => 'caregiver', 'description' => 'Visualizar relatórios de adesão'],
+            ['name' => 'patient.adherence.mark', 'display_name' => 'Marcar Adesão do Paciente', 'group' => 'caregiver', 'description' => 'Marcar medicamentos como tomados'],
+            ['name' => 'patient.profile.view', 'display_name' => 'Ver Perfil do Paciente', 'group' => 'caregiver', 'description' => 'Visualizar dados do paciente'],
 
             // Caregiver Management (for patients)
-            ['name' => 'caregivers.invite', 'display_name' => 'Convidar Cuidadores', 'group' => 'Gerenciar Cuidadores', 'description' => 'Enviar convites para cuidadores'],
-            ['name' => 'caregivers.remove', 'display_name' => 'Remover Cuidadores', 'group' => 'Gerenciar Cuidadores', 'description' => 'Remover acesso de cuidadores'],
-            ['name' => 'caregivers.permissions', 'display_name' => 'Gerenciar Permissões dos Cuidadores', 'group' => 'Gerenciar Cuidadores', 'description' => 'Definir o que cada cuidador pode fazer'],
+            ['name' => 'caregivers.invite', 'display_name' => 'Convidar Cuidadores', 'group' => 'patient', 'description' => 'Enviar convites para cuidadores'],
+            ['name' => 'caregivers.remove', 'display_name' => 'Remover Cuidadores', 'group' => 'patient', 'description' => 'Remover acesso de cuidadores'],
+            ['name' => 'caregivers.permissions', 'display_name' => 'Gerenciar Permissões dos Cuidadores', 'group' => 'patient', 'description' => 'Definir o que cada cuidador pode fazer'],
 
             // All Medications Management (Admin only)
-            ['name' => 'medications.view_all', 'display_name' => 'Visualizar Todos Medicamentos', 'group' => 'Medicamentos (Admin)', 'description' => 'Ver medicamentos de todos os usuários'],
-            ['name' => 'medications.manage_all', 'display_name' => 'Gerenciar Todos Medicamentos', 'group' => 'Medicamentos (Admin)', 'description' => 'Gerenciar medicamentos do sistema'],
+            ['name' => 'medications.view_all', 'display_name' => 'Visualizar Todos Medicamentos', 'group' => 'system', 'description' => 'Ver medicamentos de todos os usuários'],
+            ['name' => 'medications.manage_all', 'display_name' => 'Gerenciar Todos Medicamentos', 'group' => 'system', 'description' => 'Gerenciar medicamentos do sistema'],
 
             // Reports
-            ['name' => 'reports.view_own', 'display_name' => 'Visualizar Próprios Relatórios', 'group' => 'Relatórios', 'description' => 'Ver seus próprios relatórios'],
-            ['name' => 'reports.export_own', 'display_name' => 'Exportar Próprios Relatórios', 'group' => 'Relatórios', 'description' => 'Exportar seus relatórios'],
-            ['name' => 'reports.view_all', 'display_name' => 'Visualizar Todos Relatórios', 'group' => 'Relatórios', 'description' => 'Ver relatórios de todos os usuários'],
+            ['name' => 'reports.view_own', 'display_name' => 'Visualizar Próprios Relatórios', 'group' => 'patient', 'description' => 'Ver seus próprios relatórios'],
+            ['name' => 'reports.export_own', 'display_name' => 'Exportar Próprios Relatórios', 'group' => 'patient', 'description' => 'Exportar seus relatórios'],
+            ['name' => 'reports.view_all', 'display_name' => 'Visualizar Todos Relatórios', 'group' => 'patient', 'description' => 'Ver relatórios de todos os usuários'],
 
             // Monitoring (Admin/Super-Admin only)
-            ['name' => 'monitoring.pulse', 'display_name' => 'Acessar Pulse', 'group' => 'Monitoramento', 'description' => 'Acesso ao Laravel Pulse'],
-            ['name' => 'monitoring.horizon', 'display_name' => 'Acessar Horizon', 'group' => 'Monitoramento', 'description' => 'Acesso ao Laravel Horizon'],
+            ['name' => 'monitoring.pulse', 'display_name' => 'Acessar Pulse', 'group' => 'system', 'description' => 'Acesso ao Laravel Pulse'],
+            ['name' => 'monitoring.horizon', 'display_name' => 'Acessar Horizon', 'group' => 'system', 'description' => 'Acesso ao Laravel Horizon'],
 
             // Settings
-            ['name' => 'settings.view', 'display_name' => 'Visualizar Configurações', 'group' => 'Configurações', 'description' => 'Acessar configurações do sistema'],
-            ['name' => 'settings.edit', 'display_name' => 'Editar Configurações', 'group' => 'Configurações', 'description' => 'Modificar configurações do sistema'],
+            ['name' => 'settings.view', 'display_name' => 'Visualizar Configurações', 'group' => 'system', 'description' => 'Acessar configurações do sistema'],
+            ['name' => 'settings.edit', 'display_name' => 'Editar Configurações', 'group' => 'system', 'description' => 'Modificar configurações do sistema'],
 
             // Roles & Permissions (Super-Admin only)
-            ['name' => 'roles.view', 'display_name' => 'Visualizar Roles', 'group' => 'Permissões do Sistema', 'description' => 'Ver roles do sistema'],
-            ['name' => 'roles.create', 'display_name' => 'Criar Roles', 'group' => 'Permissões do Sistema', 'description' => 'Criar novas roles'],
-            ['name' => 'roles.edit', 'display_name' => 'Editar Roles', 'group' => 'Permissões do Sistema', 'description' => 'Modificar roles existentes'],
-            ['name' => 'roles.delete', 'display_name' => 'Deletar Roles', 'group' => 'Permissões do Sistema', 'description' => 'Remover roles do sistema'],
-            ['name' => 'permissions.view', 'display_name' => 'Visualizar Permissões', 'group' => 'Permissões do Sistema', 'description' => 'Ver permissões do sistema'],
-            ['name' => 'permissions.create', 'display_name' => 'Criar Permissões', 'group' => 'Permissões do Sistema', 'description' => 'Criar novas permissões'],
-            ['name' => 'permissions.edit', 'display_name' => 'Editar Permissões', 'group' => 'Permissões do Sistema', 'description' => 'Modificar permissões existentes'],
-            ['name' => 'permissions.delete', 'display_name' => 'Deletar Permissões', 'group' => 'Permissões do Sistema', 'description' => 'Remover permissões do sistema'],
+            ['name' => 'roles.view', 'display_name' => 'Visualizar Roles', 'group' => 'system', 'description' => 'Ver roles do sistema'],
+            ['name' => 'roles.create', 'display_name' => 'Criar Roles', 'group' => 'system', 'description' => 'Criar novas roles'],
+            ['name' => 'roles.edit', 'display_name' => 'Editar Roles', 'group' => 'system', 'description' => 'Modificar roles existentes'],
+            ['name' => 'roles.delete', 'display_name' => 'Deletar Roles', 'group' => 'system', 'description' => 'Remover roles do sistema'],
+            ['name' => 'permissions.view', 'display_name' => 'Visualizar Permissões', 'group' => 'system', 'description' => 'Ver permissões do sistema'],
+            ['name' => 'permissions.create', 'display_name' => 'Criar Permissões', 'group' => 'system', 'description' => 'Criar novas permissões'],
+            ['name' => 'permissions.edit', 'display_name' => 'Editar Permissões', 'group' => 'system', 'description' => 'Modificar permissões existentes'],
+            ['name' => 'permissions.delete', 'display_name' => 'Deletar Permissões', 'group' => 'system', 'description' => 'Remover permissões do sistema'],
         ];
 
         foreach ($permissions as $permission) {

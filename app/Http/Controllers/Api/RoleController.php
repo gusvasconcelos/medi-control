@@ -100,4 +100,3 @@ class RoleController extends Controller
         return response()->json(['data' => $roles]);
     }
 }
-

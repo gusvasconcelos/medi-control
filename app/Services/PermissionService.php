@@ -79,4 +79,3 @@ class PermissionService
             ->values();
     }
 }
-

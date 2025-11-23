@@ -5,6 +5,7 @@ import { Plus, Filter } from 'lucide-react';
 import { AuthenticatedLayout } from '@/Layouts/AuthenticatedLayout';
 import { PermissionsTable } from '@/Components/Settings/PermissionsTable';
 import { PermissionFormModal } from '@/Components/Settings/PermissionFormModal';
+import { ConfirmModal } from '@/Components/Common/ConfirmModal';
 import { getNavigationItems } from '@/config/navigation';
 import { permissionService } from '@/services/permissionService';
 import { useToast } from '@/hooks/useToast';
@@ -25,6 +26,13 @@ export default function PermissionsIndex({ auth }: PageProps) {
     const [availableGroups, setAvailableGroups] = useState<string[]>([]);
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [editingPermission, setEditingPermission] = useState<Permission | null>(null);
+    const [deleteModal, setDeleteModal] = useState<{
+        isOpen: boolean;
+        permission: Permission | null;
+    }>({
+        isOpen: false,
+        permission: null,
+    });
 
     const fetchPermissions = async (page = 1, group = '') => {
         setIsLoading(true);
@@ -76,14 +84,23 @@ export default function PermissionsIndex({ auth }: PageProps) {
         setIsFormModalOpen(true);
     };
 
-    const handleDelete = async (permission: Permission) => {
-        if (!confirm(`Tem certeza que deseja deletar a permissão "${permission.display_name}"?`)) {
-            return;
-        }
+    const handleOpenDeleteModal = (permission: Permission) => {
+        setDeleteModal({ isOpen: true, permission });
+    };
+
+    const handleCloseDeleteModal = () => {
+        setDeleteModal({ isOpen: false, permission: null });
+        const modal = document.getElementById('confirm-modal') as HTMLDialogElement;
+        modal?.close?.();
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!deleteModal.permission) return;
 
         try {
-            await permissionService.deletePermission(permission.id);
+            await permissionService.deletePermission(deleteModal.permission.id);
             showSuccess('Permissão deletada com sucesso');
+            handleCloseDeleteModal();
             fetchPermissions(currentPage, selectedGroup);
             fetchGroups(); // Refresh groups in case the deleted permission was the last in its group
         } catch (error) {
@@ -254,7 +271,7 @@ export default function PermissionsIndex({ auth }: PageProps) {
                                 permissions={permissions}
                                 isLoading={isLoading}
                                 onEdit={handleEdit}
-                                onDelete={handleDelete}
+                                onDelete={handleOpenDeleteModal}
                             />
 
                             {renderPagination()}
@@ -268,6 +285,16 @@ export default function PermissionsIndex({ auth }: PageProps) {
                 permission={editingPermission}
                 onClose={handleFormClose}
                 onSuccess={handleFormSuccess}
+            />
+
+            <ConfirmModal
+                isOpen={deleteModal.isOpen}
+                title="Deletar Permissão"
+                message={`Tem certeza que deseja deletar a permissão "${deleteModal.permission?.display_name}"?`}
+                confirmText="Deletar"
+                variant="error"
+                onClose={handleCloseDeleteModal}
+                onConfirm={handleConfirmDelete}
             />
         </>
     );

@@ -38,6 +38,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/users', fn () => Inertia::render('Users/Index'))->name('users.index');
     Route::get('/metrics/overview', [OverviewController::class, 'create'])->name('metrics.overview');
 
+    // Caregiver-Patient Routes
+    Route::get('/my-caregivers', fn () => Inertia::render('Caregivers/Index'))->name('caregivers.index');
+    Route::get('/my-patients', fn () => Inertia::render('Patients/Index'))->name('patients.index');
+
     // Settings Routes (super-admin only)
     Route::middleware('role:super-admin')->prefix('settings')->name('settings.')->group(function () {
         Route::get('/roles', fn () => Inertia::render('Settings/Roles/Index'))->name('roles.index');

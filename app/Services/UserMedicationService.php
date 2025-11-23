@@ -6,7 +6,6 @@ use App\Models\Medication;
 use App\Models\UserMedication;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
-use App\Events\UserMedicationCreated;
 use App\Jobs\CheckUserMedicationInteractionsJob;
 
 class UserMedicationService

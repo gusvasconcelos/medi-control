@@ -23,8 +23,8 @@ function flattenNavItems(items: NavItem[]): NavItem[] {
 export function Toolbar({ navItems }: ToolbarProps) {
     const flattenedItems = flattenNavItems(navItems);
 
-    // Limit to first 5 items for mobile toolbar
-    const toolbarItems = flattenedItems.slice(0, 5);
+    // Filter items that should appear in toolbar
+    const toolbarItems = flattenedItems.filter((item) => item.showInToolbar === true);
 
     return (
         <nav className="fixed bottom-0 left-0 right-0 lg:hidden z-50 bg-base-100 border-t border-base-300 safe-area-inset-bottom">

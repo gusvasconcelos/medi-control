@@ -353,4 +353,3 @@ class DashboardController extends Controller
         return 'GET';
     }
 }
-

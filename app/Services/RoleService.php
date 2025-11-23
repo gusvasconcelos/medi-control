@@ -90,4 +90,3 @@ class RoleService
             ->get(['id', 'name', 'display_name', 'description']);
     }
 }
-

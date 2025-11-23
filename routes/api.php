@@ -11,6 +11,7 @@ Route::group([
     require __DIR__ . '/api/auth.php';
     require __DIR__ . '/api/medications.php';
     require __DIR__ . '/api/user-medications.php';
+    require __DIR__ . '/api/caregiver-patient.php';
 
     Route::file('users');
     Route::apiResource('users', UserController::class)->only(['index', 'show']);

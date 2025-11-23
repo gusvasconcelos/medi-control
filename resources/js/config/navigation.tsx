@@ -12,6 +12,8 @@ import {
     Zap,
     Shield,
     Key,
+    Heart,
+    UserCheck,
 } from 'lucide-react';
 import { NavItem } from '@/Components/Layout/Sidebar';
 
@@ -90,19 +92,37 @@ export const mainNavigationItems: NavItem[] = [
                 href: '/dashboard',
                 icon: <Home className="w-5 h-5" />,
                 active: true,
+                showInToolbar: true,
             },
             {
                 label: 'Medicamentos',
                 href: '/medications',
                 icon: <Pill className="w-5 h-5" />,
                 active: false,
-                roles: ['admin', 'super-admin'],
+                roles: ['super-admin', 'admin'],
+            },
+            {
+                label: 'Cuidadores',
+                href: '/my-caregivers',
+                icon: <Heart className="w-5 h-5" />,
+                active: false,
+                roles: ['super-admin', 'patient'],
+                showInToolbar: true,
+            },
+            {
+                label: 'Pacientes',
+                href: '/my-patients',
+                icon: <UserCheck className="w-5 h-5" />,
+                active: false,
+                roles: ['super-admin', 'caregiver'],
+                showInToolbar: true,
             },
             {
                 label: 'Calendário',
                 href: '/calendar',
                 icon: <Calendar className="w-5 h-5" />,
                 active: false,
+                showInToolbar: true,
             },
             {
                 label: 'Lembretes',
@@ -115,6 +135,7 @@ export const mainNavigationItems: NavItem[] = [
                 href: '/reports',
                 icon: <FileText className="w-5 h-5" />,
                 active: false,
+                showInToolbar: true,
             }
         ],
     },

@@ -1,59 +1,68 @@
 import { useState, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { Bell } from 'lucide-react';
 
 import { AuthenticatedLayout } from '@/Layouts/AuthenticatedLayout';
-import { RolesTable } from '@/Components/Settings/RolesTable';
-import { RoleFormModal } from '@/Components/Settings/RoleFormModal';
+import { PatientsTable } from '@/Components/Caregiver/PatientsTable';
 import { ConfirmModal } from '@/Components/Common/ConfirmModal';
 import { getNavigationItems } from '@/config/navigation';
-import { roleService } from '@/services/roleService';
+import { caregiverPatientService } from '@/services/caregiverPatientService';
 import { useToast } from '@/hooks/useToast';
 import type { PageProps } from '@/types';
-import type { Role } from '@/types/permissions';
+import type { CaregiverPatient } from '@/types/caregiver';
 
-export default function RolesIndex({ auth }: PageProps) {
+export default function PatientsIndex({ auth }: PageProps) {
     const user = auth?.user;
     const userRoles = user?.roles || [];
     const { showSuccess, showError } = useToast();
 
-    const [roles, setRoles] = useState<Role[]>([]);
+    const [patients, setPatients] = useState<CaregiverPatient[]>([]);
+    const [pendingInvitations, setPendingInvitations] = useState<CaregiverPatient[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [lastPage, setLastPage] = useState(1);
     const [total, setTotal] = useState(0);
-    const [isFormModalOpen, setIsFormModalOpen] = useState(false);
-    const [editingRole, setEditingRole] = useState<Role | null>(null);
-    const [deleteModal, setDeleteModal] = useState<{
+    const [activeTab, setActiveTab] = useState<'patients' | 'pending'>('patients');
+    const [rejectModal, setRejectModal] = useState<{
         isOpen: boolean;
-        role: Role | null;
+        relationship: CaregiverPatient | null;
     }>({
         isOpen: false,
-        role: null,
+        relationship: null,
     });
 
-    const fetchRoles = async (page = 1) => {
+    const fetchPatients = async (page = 1) => {
         setIsLoading(true);
         try {
-            const response = await roleService.getRoles({
+            const response = await caregiverPatientService.getMyPatients({
                 page,
                 per_page: 15,
             });
 
-            setRoles(response.data);
+            setPatients(response.data);
             setCurrentPage(response.current_page);
             setLastPage(response.last_page);
             setTotal(response.total);
         } catch (error) {
-            showError('Erro ao carregar roles');
-            console.error('Error fetching roles:', error);
+            showError('Erro ao carregar pacientes');
+            console.error('Error fetching patients:', error);
         } finally {
             setIsLoading(false);
         }
     };
 
+    const fetchPendingInvitations = async () => {
+        try {
+            const response = await caregiverPatientService.getPendingInvitations();
+            setPendingInvitations(response.data);
+        } catch (error) {
+            console.error('Error fetching pending invitations:', error);
+        }
+    };
+
     useEffect(() => {
-        fetchRoles(currentPage);
+        fetchPatients(currentPage);
+        fetchPendingInvitations();
     }, [currentPage]);
 
     const handlePageChange = (page: number) => {
@@ -62,44 +71,45 @@ export default function RolesIndex({ auth }: PageProps) {
         }
     };
 
-    const handleEdit = (role: Role) => {
-        setEditingRole(role);
-        setIsFormModalOpen(true);
+    const handleAccept = async (relationship: CaregiverPatient) => {
+        try {
+            await caregiverPatientService.acceptInvitation(relationship.id);
+            showSuccess('Convite aceito com sucesso');
+            fetchPatients(currentPage);
+            fetchPendingInvitations();
+        } catch (error) {
+            showError('Erro ao aceitar convite');
+            console.error('Error accepting invitation:', error);
+        }
     };
 
-    const handleOpenDeleteModal = (role: Role) => {
-        setDeleteModal({ isOpen: true, role });
+    const handleOpenRejectModal = (relationship: CaregiverPatient) => {
+        setRejectModal({ isOpen: true, relationship });
     };
 
-    const handleCloseDeleteModal = () => {
-        setDeleteModal({ isOpen: false, role: null });
+    const handleCloseRejectModal = () => {
+        setRejectModal({ isOpen: false, relationship: null });
         const modal = document.getElementById('confirm-modal') as HTMLDialogElement;
         modal?.close?.();
     };
 
-    const handleConfirmDelete = async () => {
-        if (!deleteModal.role) return;
+    const handleConfirmReject = async () => {
+        if (!rejectModal.relationship) return;
 
         try {
-            await roleService.deleteRole(deleteModal.role.id);
-            showSuccess('Role deletada com sucesso');
-            handleCloseDeleteModal();
-            fetchRoles(currentPage);
+            await caregiverPatientService.rejectInvitation(rejectModal.relationship.id);
+            showSuccess('Convite recusado');
+            handleCloseRejectModal();
+            fetchPendingInvitations();
         } catch (error) {
-            showError('Erro ao deletar role');
-            console.error('Error deleting role:', error);
+            showError('Erro ao recusar convite');
+            console.error('Error rejecting invitation:', error);
         }
     };
 
-    const handleFormSuccess = () => {
-        setIsFormModalOpen(false);
-        setEditingRole(null);
-        fetchRoles(currentPage);
-    };
-
-    const handleFormClose = () => {
-        setIsFormModalOpen(false);
-        setEditingRole(null);
+    const handleView = (relationship: CaregiverPatient) => {
+        // TODO: Navigate to patient details or show modal
+        console.log('View patient:', relationship);
     };
 
     const renderPagination = () => {
@@ -133,7 +143,7 @@ export default function RolesIndex({ auth }: PageProps) {
                     <div className="text-sm text-base-content/60">
                         Mostrando <span className="font-medium">{(currentPage - 1) * 15 + 1}</span> a{' '}
                         <span className="font-medium">{Math.min(currentPage * 15, total)}</span> de{' '}
-                        <span className="font-medium">{total}</span> roles
+                        <span className="font-medium">{total}</span> pacientes
                     </div>
                     <div className="join">
                         <button
@@ -158,7 +168,7 @@ export default function RolesIndex({ auth }: PageProps) {
 
                 <div className="sm:hidden flex flex-col gap-3">
                     <div className="text-xs text-center text-base-content/60">
-                        Página {currentPage} de {lastPage} ({total} roles)
+                        Página {currentPage} de {lastPage} ({total} pacientes)
                     </div>
                     <div className="flex justify-center gap-2">
                         <button
@@ -188,62 +198,80 @@ export default function RolesIndex({ auth }: PageProps) {
 
     return (
         <>
-            <Head title="Roles - MediControl" />
+            <Head title="Meus Pacientes - MediControl" />
 
-            <AuthenticatedLayout navItems={getNavigationItems('/settings/roles', userRoles)}>                <div className="min-h-screen bg-base-100">
+            <AuthenticatedLayout navItems={getNavigationItems('/my-patients', userRoles)}>
+                <div className="min-h-screen bg-base-100">
                     <div className="container mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8">
                         <div className="mb-6 sm:mb-8">
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                                 <div className="flex-1">
                                     <h1 className="mb-1 text-xl font-bold text-base-content sm:text-2xl md:text-3xl">
-                                        Roles
+                                        Meus Pacientes
                                     </h1>
                                     <p className="text-xs sm:text-sm text-base-content/60">
-                                        Crie e gerencie roles e suas permissões
+                                        Acompanhe os pacientes que você cuida
                                     </p>
                                 </div>
-                                <button
-                                    type="button"
-                                    className="btn btn-primary"
-                                    onClick={() => setIsFormModalOpen(true)}
-                                >
-                                    <Plus className="w-5 h-5" />
-                                    Nova Role
-                                </button>
                             </div>
                         </div>
 
-                        <div className="rounded-lg bg-base-200 p-4">
-                            <RolesTable
-                                roles={roles}
-                                isLoading={isLoading}
-                                onEdit={handleEdit}
-                                onDelete={handleOpenDeleteModal}
-                            />
+                        {/* Tabs */}
+                        <div className="tabs tabs-boxed mb-4">
+                            <button
+                                type="button"
+                                className={`tab ${activeTab === 'patients' ? 'tab-active' : ''}`}
+                                onClick={() => setActiveTab('patients')}
+                            >
+                                Pacientes Ativos
+                            </button>
+                            <button
+                                type="button"
+                                className={`tab ${activeTab === 'pending' ? 'tab-active' : ''}`}
+                                onClick={() => setActiveTab('pending')}
+                            >
+                                <Bell className="w-4 h-4 mr-1" />
+                                Convites Pendentes
+                                {pendingInvitations.length > 0 && (
+                                    <span className="badge badge-primary badge-sm ml-2">
+                                        {pendingInvitations.length}
+                                    </span>
+                                )}
+                            </button>
+                        </div>
 
-                            {renderPagination()}
+                        <div className="rounded-lg bg-base-200 p-4">
+                            {activeTab === 'patients' ? (
+                                <>
+                                    <PatientsTable
+                                        patients={patients.filter((p) => p.status === 'active')}
+                                        isLoading={isLoading}
+                                        onView={handleView}
+                                    />
+                                    {renderPagination()}
+                                </>
+                            ) : (
+                                <PatientsTable
+                                    patients={pendingInvitations}
+                                    isLoading={isLoading}
+                                    onAccept={handleAccept}
+                                    onReject={handleOpenRejectModal}
+                                />
+                            )}
                         </div>
                     </div>
                 </div>
             </AuthenticatedLayout>
 
-            <RoleFormModal
-                isOpen={isFormModalOpen}
-                role={editingRole}
-                onClose={handleFormClose}
-                onSuccess={handleFormSuccess}
-            />
-
             <ConfirmModal
-                isOpen={deleteModal.isOpen}
-                title="Deletar Role"
-                message={`Tem certeza que deseja deletar a role "${deleteModal.role?.display_name}"?`}
-                confirmText="Deletar"
-                variant="error"
-                onClose={handleCloseDeleteModal}
-                onConfirm={handleConfirmDelete}
+                isOpen={rejectModal.isOpen}
+                title="Recusar Convite"
+                message={`Tem certeza que deseja recusar o convite de ${rejectModal.relationship?.patient?.name || 'este paciente'}?`}
+                confirmText="Recusar Convite"
+                variant="warning"
+                onClose={handleCloseRejectModal}
+                onConfirm={handleConfirmReject}
             />
         </>
     );
 }
-
