@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { usePage } from '@inertiajs/react';
 import { Sidebar, NavItem } from '@/Components/Layout/Sidebar';
 import { Navbar } from '@/Components/Layout/Navbar';
+import { Topbar } from '@/Components/Layout/Topbar';
 import { Toolbar } from '@/Components/Layout/Toolbar';
 import { useAuth } from '@/hooks/useAuth';
 import { PageProps } from '@/types';
@@ -22,11 +23,14 @@ export function AuthenticatedLayout({
         <div className="flex min-h-screen">
             {navItems.length > 0 && (
                 <div className="hidden lg:block">
-                    <Sidebar navItems={navItems} onLogout={logout} />
+                    <Sidebar navItems={navItems} />
                 </div>
             )}
 
             <div className="flex flex-col flex-1 min-h-screen">
+                {/* Topbar - visible on desktop only */}
+                <Topbar auth={auth} onLogout={logout} />
+
                 {/* Navbar - visible on mobile (hidden on desktop where sidebar shows) */}
                 <div className="lg:hidden">
                     <Navbar
