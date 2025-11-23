@@ -2,14 +2,12 @@
 
 namespace Tests\Feature\Http\Controllers\Api;
 
-use App\Events\UserMedicationCreated;
 use App\Models\InteractionAlert;
 use App\Models\Medication;
 use App\Models\MedicationLog;
 use App\Models\User;
 use App\Models\UserMedication;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
 class UserMedicationControllerTest extends TestCase
@@ -226,79 +224,6 @@ class UserMedicationControllerTest extends TestCase
         $response = $this->actingAsUser()->postJson($this->url, $form);
 
         $response->assertStatus(422);
-    }
-
-    public function test_store_dispatches_user_medication_created_event(): void
-    {
-        Event::fake([UserMedicationCreated::class]);
-
-        $user = User::factory()->create();
-        $medication = Medication::factory()->create();
-
-        $form = [
-            'medication_id' => $medication->id,
-            'dosage' => '1 comprimido',
-            'time_slots' => ['08:00', '20:00'],
-            'via_administration' => 'oral',
-            'start_date' => '2025-10-21',
-            'initial_stock' => 30,
-            'current_stock' => 30,
-            'low_stock_threshold' => 5,
-        ];
-
-        $response = $this->actingAsUser($user)->postJson($this->url, $form);
-
-        $response->assertStatus(200);
-
-        Event::assertDispatched(UserMedicationCreated::class, function ($event) use ($user, $medication) {
-            return $event->userMedication->user_id === $user->id
-                && $event->userMedication->medication_id === $medication->id;
-        });
-    }
-
-    public function test_update_does_not_dispatch_event(): void
-    {
-        Event::fake([UserMedicationCreated::class]);
-
-        $user = User::factory()->create();
-        $medication = Medication::factory()->create();
-
-        $userMedication = UserMedication::factory()->create([
-            'user_id' => $user->id,
-            'medication_id' => $medication->id,
-            'dosage' => '1 comprimido',
-        ]);
-
-        $form = [
-            'dosage' => '2 comprimidos',
-            'time_slots' => ['08:00', '14:00', '20:00'],
-        ];
-
-        $response = $this->actingAsUser($user)->putJson("{$this->url}/{$userMedication->id}", $form);
-
-        $response->assertStatus(200);
-
-        Event::assertNotDispatched(UserMedicationCreated::class);
-    }
-
-    public function test_destroy_does_not_dispatch_event(): void
-    {
-        Event::fake([UserMedicationCreated::class]);
-
-        $user = User::factory()->create();
-        $medication = Medication::factory()->create();
-
-        $userMedication = UserMedication::factory()->create([
-            'user_id' => $user->id,
-            'medication_id' => $medication->id,
-            'active' => true,
-        ]);
-
-        $response = $this->actingAsUser($user)->deleteJson("{$this->url}/{$userMedication->id}");
-
-        $response->assertStatus(200);
-
-        Event::assertNotDispatched(UserMedicationCreated::class);
     }
 
     public function test_show_returns_user_medication_with_logs(): void

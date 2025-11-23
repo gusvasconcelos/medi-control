@@ -12,6 +12,5 @@ Route::group([
     Route::post('/', [MedicationController::class, 'store']);
     Route::put('{id}', [MedicationController::class, 'update']);
     Route::delete('{id}', [MedicationController::class, 'destroy']);
-    Route::get('search', [MedicationController::class, 'search']);
     Route::post('{id}/check-interactions', [MedicationController::class, 'checkInteractions']);
 });

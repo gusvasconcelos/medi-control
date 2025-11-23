@@ -20,18 +20,9 @@ class MedicationService
         return FilterQ::applyWithPagination($this->medication->query(), $data);
     }
 
-    public function show(int $id): Medication
+    public function show(string|int $id): Medication
     {
         return $this->medication->findOrFail($id);
-    }
-
-    public function search(Collection $data): Collection
-    {
-        return $this->medication
-            ->query()
-            ->whereFullText('name', $data->get('search'))
-            ->limit($data->get('limit', 10))
-            ->get();
     }
 
     public function store(Collection $data): Medication

@@ -201,10 +201,10 @@ export function MedicationCard({
                                         role="status"
                                         aria-label="Medicamento tomado"
                                     >
-                                        <CheckCircle2 className="size-6" />
                                         <span className="text-lg font-medium">
                                             Tomado
                                         </span>
+                                        <CheckCircle2 className="size-6" />
                                     </div>
                                 ) : (
                                     <>

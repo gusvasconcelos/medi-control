@@ -2,11 +2,12 @@
 
 namespace Tests\Feature\Http\Controllers\Api;
 
-use App\Models\Medication;
-use App\Models\User;
-use App\Packages\OpenAI\Contracts\OpenAIClientInterface;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
+use App\Models\User;
+use App\Models\Medication;
+use App\Packages\Filter\FilterQueryBuilder;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use App\Packages\OpenAI\Contracts\OpenAIClientInterface;
 
 class MedicationControllerTest extends TestCase
 {
@@ -20,23 +21,15 @@ class MedicationControllerTest extends TestCase
 
         Medication::factory()->create(['name' => 'Laravel']);
 
-        $response = $this->actingAsUser($user)->getJson("{$this->url}/search?search=ravel");
+        $filterQuery = (new FilterQueryBuilder())->text('ravel');
 
-        $response
-            ->assertStatus(200)
-            ->assertJsonCount(1)
-            ->assertJsonFragment([
-                'name' => 'Laravel',
-            ]);
-    }
+        $response = $this->actingAsUser($user)->getJson("{$this->url}?" . $filterQuery->toQueryString());
 
-    public function test_search_medications_requires_minimum_length(): void
-    {
-        $user = User::factory()->create();
+        $data = $response->json('data');
 
-        $response = $this->actingAsUser($user)->getJson("{$this->url}/search?search=pa");
+        $this->assertCount(1, $data);
 
-        $response->assertStatus(422);
+        $this->assertEquals('Laravel', $data[0]['name']);
     }
 
     public function test_check_interactions_with_no_existing_interactions(): void

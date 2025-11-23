@@ -1,5 +1,6 @@
 import { PageProps } from '@/types';
 import { UserMenu } from './UserMenu';
+import { NotificationDropdown } from './NotificationDropdown';
 
 export interface NavbarProps {
     variant: 'public' | 'auth' | 'authenticated';
@@ -35,7 +36,10 @@ export function Navbar({ variant, auth, onLogout }: NavbarProps) {
                 )}
 
                 {variant === 'authenticated' && auth?.user && onLogout && (
-                    <UserMenu user={auth.user} onLogout={onLogout} />
+                    <div className="flex items-center gap-2">
+                        <NotificationDropdown />
+                        <UserMenu user={auth.user} onLogout={onLogout} />
+                    </div>
                 )}
             </div>
         </nav>

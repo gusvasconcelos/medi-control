@@ -2,13 +2,14 @@
 
 namespace App\Services;
 
-use App\Models\Medication;
+use App\Jobs\CheckUserMedicationInteractionsJob;
 use App\Models\InteractionAlert;
+use App\Models\Medication;
 use App\Models\UserMedication;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
-use App\Jobs\CheckUserMedicationInteractionsJob;
+use Illuminate\Support\Facades\Artisan;
 
 class UserMedicationService
 {
@@ -99,9 +100,7 @@ class UserMedicationService
                     'date' => $date->toDateString(),
                     'total_scheduled' => $totalScheduled,
                     'total_taken' => $totalTaken,
-                    'adherence_percentage' => $totalScheduled > 0
-                        ? round(($totalTaken / $totalScheduled) * 100)
-                        : 0,
+                    'adherence_percentage' => round(($totalTaken / $totalScheduled) * 100),
                 ]);
             }
         }
@@ -122,13 +121,17 @@ class UserMedicationService
             'start_date' => $data->get('start_date'),
             'end_date' => $data->get('end_date'),
             'initial_stock' => $data->get('initial_stock'),
-            'current_stock' => $data->get('current_stock'),
+            'current_stock' => $data->get('initial_stock'),
             'low_stock_threshold' => $data->get('low_stock_threshold'),
             'notes' => $data->get('notes'),
             'active' => true,
         ]);
 
         CheckUserMedicationInteractionsJob::dispatch($userMedication->id);
+
+        Artisan::call('notifications:schedule', [
+            '--user-medication' => $userMedication->id,
+        ]);
 
         return $userMedication;
     }
@@ -146,7 +149,15 @@ class UserMedicationService
             ->with(['medication', 'logs'])
             ->findOrFail($id);
 
+        $oldTimeSlots = $userMedication->time_slots ?? [];
         $userMedication->update($data->all());
+
+        $newTimeSlots = $data->get('time_slots', $oldTimeSlots);
+        if ($oldTimeSlots !== $newTimeSlots) {
+            Artisan::call('notifications:schedule', [
+                '--user-medication' => $userMedication->id,
+            ]);
+        }
 
         return $userMedication;
     }
@@ -295,22 +306,6 @@ class UserMedicationService
         return $result;
     }
 
-    /**
-     * @param array<int, array{for_medication_id: int, id: int, name: string, severity: string}> $interactionAlerts
-     * @return array{
-     *     id: int,
-     *     name: string,
-     *     dosage: string,
-     *     time_slots: array<string>,
-     *     total_scheduled: int,
-     *     total_taken: int,
-     *     total_lost: int,
-     *     total_pending: int,
-     *     punctuality_rate: float,
-     *     punctual_doses: int,
-     *     interactions: array<int, array{id: int, name: string, severity: string}>
-     * }
-     */
     private function calculateMedicationReport(
         UserMedication $userMedication,
         Carbon $startDate,
@@ -396,7 +391,7 @@ class UserMedicationService
         $startDate = Carbon::parse($data->get('start_date'))->format('d/m/Y');
         $endDate = Carbon::parse($data->get('end_date'))->format('d/m/Y');
         $generatedAt = Carbon::now()->format('d/m/Y H:i');
-        $userName = auth()->user()?->name;
+        $userName = auth('web')->user()?->name;
 
         return Pdf::loadView('pdf.adherence-report', [
             'report' => $report,

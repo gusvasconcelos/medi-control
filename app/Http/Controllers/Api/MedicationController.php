@@ -7,7 +7,6 @@ use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Services\Medication\MedicationService;
 use App\Http\Requests\Medication\StoreMedicationRequest;
-use App\Http\Requests\Medication\SearchMedicationRequest;
 use App\Http\Requests\Medication\UpdateMedicationRequest;
 use App\Http\Requests\Medication\CheckInteractionsRequest;
 
@@ -27,7 +26,7 @@ class MedicationController extends Controller
         return response()->json($medications);
     }
 
-    public function show(int $id): JsonResponse
+    public function show(string|int $id): JsonResponse
     {
         $medication = $this->medicationService->show($id);
 
@@ -57,15 +56,6 @@ class MedicationController extends Controller
         $this->medicationService->destroy($id);
 
         return response()->json(['message' => __('medications.medication.deleted')]);
-    }
-
-    public function search(SearchMedicationRequest $request): JsonResponse
-    {
-        $validated = $request->validated();
-
-        $medications = $this->medicationService->search(collect($validated));
-
-        return response()->json(['data' => $medications]);
     }
 
     public function checkInteractions(CheckInteractionsRequest $request, int $id): JsonResponse

@@ -6,6 +6,8 @@ class FilterQueryBuilder
 {
     protected array $where = [];
 
+    protected ?string $text = null;
+
     protected array $orderBy = [];
 
     protected ?array $paginate = null;
@@ -86,9 +88,11 @@ class FilterQueryBuilder
         return $this->where($field, 'IS NOT NULL', null);
     }
 
-    public function whereSearch(string $field, string $value): self
+    public function text(string $value): self
     {
-        return $this->where($field, 'SEARCH', $value);
+        $this->text = $value;
+
+        return $this;
     }
 
     public function orderBy(string $field, string $direction = 'ASC'): self
@@ -127,6 +131,10 @@ class FilterQueryBuilder
 
         if (! empty($this->where)) {
             $result['where'] = $this->where;
+        }
+
+        if (! empty($this->text)) {
+            $result['text'] = $this->text;
         }
 
         if (! empty($this->orderBy)) {

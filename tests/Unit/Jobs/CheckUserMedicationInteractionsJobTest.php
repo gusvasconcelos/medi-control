@@ -13,6 +13,9 @@ use App\Packages\OpenAI\DTOs\InteractionResult;
 use App\Jobs\CheckUserMedicationInteractionsJob;
 use App\Services\Monitoring\DiscordMonitoringService;
 use App\Services\Medication\InteractionCheckerService;
+use App\Packages\Monitoring\DTOs\InteractionCheckResult;
+use App\Packages\Monitoring\DTOs\InteractionCheckMetrics;
+use App\Packages\Monitoring\DTOs\TokenUsage;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 final class CheckUserMedicationInteractionsJobTest extends TestCase
@@ -32,6 +35,7 @@ final class CheckUserMedicationInteractionsJobTest extends TestCase
 
         $interactionChecker->shouldNotReceive('checkInteractionsWithOpenAI');
         $alertService->shouldNotReceive('createAlertsForInteractions');
+        $discordMonitoring->shouldNotReceive('notifyInteractionCheckSkipped');
 
         $job = new CheckUserMedicationInteractionsJob(999999);
         $job->handle($interactionChecker, $alertService, $discordMonitoring);
@@ -56,6 +60,7 @@ final class CheckUserMedicationInteractionsJobTest extends TestCase
 
         $interactionChecker->shouldNotReceive('checkInteractionsWithOpenAI');
         $alertService->shouldNotReceive('createAlertsForInteractions');
+        $discordMonitoring->shouldNotReceive('notifyInteractionCheckSkipped');
 
         $job = new CheckUserMedicationInteractionsJob($userMedication->id);
         $job->handle($interactionChecker, $alertService, $discordMonitoring);
@@ -113,11 +118,18 @@ final class CheckUserMedicationInteractionsJobTest extends TestCase
             ),
         ]);
 
+        $checkResult = new InteractionCheckResult(
+            interactions: $interactionResults,
+            tokenUsage: new TokenUsage(100, 50, 150),
+            durationInSeconds: 1.5,
+            model: 'gpt-4'
+        );
+
         $interactionChecker
             ->shouldReceive('checkInteractionsWithOpenAI')
             ->once()
             ->with(Mockery::on(fn ($med) => $med->id === $medication1->id), Mockery::on(fn ($ids) => $ids->contains($medication2->id)))
-            ->andReturn($interactionResults);
+            ->andReturn($checkResult);
 
         $interactionChecker
             ->shouldReceive('persistInteractionsBidirectionally')
@@ -129,6 +141,11 @@ final class CheckUserMedicationInteractionsJobTest extends TestCase
             ->once()
             ->with(Mockery::on(fn ($um) => $um->id === $userMedication->id), $interactionResults->toArray())
             ->andReturn(1);
+
+        $discordMonitoring
+            ->shouldReceive('notifyInteractionCheckCompleted')
+            ->once()
+            ->with(Mockery::type(InteractionCheckMetrics::class));
 
         $job = new CheckUserMedicationInteractionsJob($userMedication->id);
         $job->handle($interactionChecker, $alertService, $discordMonitoring);
@@ -182,6 +199,11 @@ final class CheckUserMedicationInteractionsJobTest extends TestCase
         $alertService
             ->shouldNotReceive('createAlertsForInteractions');
 
+        $discordMonitoring
+            ->shouldReceive('notifyInteractionCheckSkipped')
+            ->once()
+            ->with($medication1->name, 'Todas as interações já foram checadas');
+
         $job = new CheckUserMedicationInteractionsJob($userMedication->id);
         $job->handle($interactionChecker, $alertService, $discordMonitoring);
     }
@@ -231,6 +253,11 @@ final class CheckUserMedicationInteractionsJobTest extends TestCase
 
         $alertService->shouldNotReceive('createAlertsForInteractions');
 
+        $discordMonitoring
+            ->shouldReceive('notifyInteractionCheckSkipped')
+            ->once()
+            ->with($medication1->name, 'Todas as interações já foram checadas');
+
         $job = new CheckUserMedicationInteractionsJob($userMedication->id);
         $job->handle($interactionChecker, $alertService, $discordMonitoring);
     }
@@ -271,6 +298,11 @@ final class CheckUserMedicationInteractionsJobTest extends TestCase
             ->andReturn(collect());
 
         $alertService->shouldNotReceive('createAlertsForInteractions');
+
+        $discordMonitoring
+            ->shouldReceive('notifyInteractionCheckSkipped')
+            ->once()
+            ->with($medication1->name, 'Todas as interações já foram checadas');
 
         $job = new CheckUserMedicationInteractionsJob($userMedication->id);
         $job->handle($interactionChecker, $alertService, $discordMonitoring);

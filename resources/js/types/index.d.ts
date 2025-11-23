@@ -285,6 +285,72 @@ export interface AdherenceReportResponse {
 
 export type ReportPeriod = 'week' | 'month' | 'quarter' | 'semester' | 'year';
 
+/**
+ * Notifications
+ */
+export type NotificationType = 'medication_reminder' | 'low_stock' | 'interaction_alert' | 'system';
+export type NotificationStatus = 'pending' | 'sent' | 'failed' | 'read';
+export type NotificationProvider = 'push' | 'whatsapp';
+
+export interface Notification {
+    id: number;
+    user_id: number;
+    user_medication_id?: number | null;
+    type: NotificationType;
+    title: string;
+    body: string;
+    scheduled_for: string;
+    sent_at?: string | null;
+    read_at?: string | null;
+    provider: NotificationProvider;
+    status: NotificationStatus;
+    metadata?: Record<string, unknown> | null;
+    created_at?: string;
+}
+
+export interface NotificationPreference {
+    id: number;
+    user_id: number;
+    medication_reminder: boolean;
+    low_stock_alert: boolean;
+    interaction_alert: boolean;
+    push_enabled: boolean;
+    whatsapp_enabled: boolean;
+    quiet_hours_start?: string | null;
+    quiet_hours_end?: string | null;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface UpdateNotificationPreferenceData {
+    medication_reminder?: boolean;
+    low_stock_alert?: boolean;
+    interaction_alert?: boolean;
+    push_enabled?: boolean;
+    whatsapp_enabled?: boolean;
+    quiet_hours_start?: string | null;
+    quiet_hours_end?: string | null;
+}
+
+export interface NotificationPreferenceResponse {
+    data: NotificationPreference;
+    message?: string;
+}
+
+export interface NotificationsResponse {
+    data: Notification[];
+    current_page: number;
+    last_page: number;
+    total: number;
+    per_page: number;
+}
+
+export interface UnreadCountResponse {
+    data: {
+        count: number;
+    };
+}
+
 declare global {
     interface Window {
         axios: typeof import('axios').default;

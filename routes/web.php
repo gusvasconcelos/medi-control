@@ -45,6 +45,11 @@ Route::middleware('auth')->group(function () {
     // Reports Routes
     Route::get('/reports', fn () => Inertia::render('Reports/Adherence'))->name('reports.adherence');
 
+    // Settings Routes (available to all authenticated users)
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/notifications', fn () => Inertia::render('Settings/Notifications/Index'))->name('notifications.index');
+    });
+
     // Settings Routes (super-admin only)
     Route::middleware('role:super-admin')->prefix('settings')->name('settings.')->group(function () {
         Route::get('/roles', fn () => Inertia::render('Settings/Roles/Index'))->name('roles.index');

@@ -41,7 +41,7 @@ class FileServiceProvider extends ServiceProvider
         Route::macro('file', function (string $resource) {
             Route::group([
                 'prefix' => "{$resource}/{fileableId}/files",
-                'middleware' => ['api', 'jwt'],
+                'middleware' => ['auth:sanctum'],
             ], function () use ($resource) {
                 Route::get('/', [FileController::class, 'index'])->name("file.{$resource}.index");
                 Route::post('/', [FileController::class, 'store'])->name("file.{$resource}.store");

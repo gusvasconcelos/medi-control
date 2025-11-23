@@ -9,7 +9,7 @@ class LogMedicationTakenRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'taken_at' => ['nullable', 'date_format:H:i'],
+            'taken_at' => ['nullable', 'date_format:Y-m-d H:i:s'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }
@@ -17,7 +17,7 @@ class LogMedicationTakenRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'taken_at.date' => __('validation.date', ['attribute' => 'taken_at']),
+            'taken_at.date_format' => __('validation.date_format', ['attribute' => 'taken_at', 'format' => 'Y-m-d H:i:s']),
             'notes.max' => __('validation.max.string', ['attribute' => 'notes', 'max' => 1000]),
         ];
     }

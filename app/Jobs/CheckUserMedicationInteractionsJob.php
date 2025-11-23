@@ -47,11 +47,6 @@ final class CheckUserMedicationInteractionsJob implements ShouldQueue
             ->find($this->userMedicationId);
 
         if (! $userMedication) {
-            $discordMonitoring->notifyInteractionCheckSkipped(
-                'Medicamento não encontrado',
-                'O medicamento não foi encontrado'
-            );
-
             return;
         }
 
@@ -64,11 +59,6 @@ final class CheckUserMedicationInteractionsJob implements ShouldQueue
             ->pluck('medication_id');
 
         if ($activeUserMedications->isEmpty()) {
-            $discordMonitoring->notifyInteractionCheckSkipped(
-                $userMedication->medication->name,
-                'Nenhum outro medicamento ativo'
-            );
-
             return;
         }
 

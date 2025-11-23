@@ -13,7 +13,7 @@ import { useMedications } from '@/hooks/useMedications';
 import { useToast } from '@/hooks/useToast';
 import { AuthenticatedLayout } from '@/Layouts/AuthenticatedLayout';
 import type { PageProps, UserMedication } from '@/types';
-import { dateString, today } from '@/utils/dateUtils';
+import { dateString, today, dateTimeString } from '@/utils/dateUtils';
 
 interface ConfirmModalState {
     medication: UserMedication | null;
@@ -81,8 +81,17 @@ export default function Dashboard({ auth }: PageProps) {
 
         setIsSubmitting(true);
         try {
+            let formattedTakenAt: string | undefined;
+            if (data.takenAt) {
+                const [hours, minutes] = data.takenAt.split(':');
+                const takenDate = new Date(selectedDate);
+                takenDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+
+                formattedTakenAt = dateTimeString(takenDate);
+            }
+
             await markAsTaken(confirmModal.medication.id, {
-                takenAt: data.takenAt,
+                takenAt: formattedTakenAt,
                 notes: data.notes,
             });
             const modal = document.getElementById('confirm-medication-modal') as HTMLElement & { hidePopover?: () => void };
@@ -91,7 +100,6 @@ export default function Dashboard({ auth }: PageProps) {
             }
             setTimeout(handleCloseConfirmModal, 300);
         } catch {
-            // Error is already handled by the hook
         } finally {
             setIsSubmitting(false);
         }

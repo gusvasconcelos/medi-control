@@ -1,6 +1,7 @@
 import { ReactNode, useState } from 'react';
 import { ChevronDown, ChevronRight, LogOut } from 'lucide-react';
 import { Link } from '@inertiajs/react';
+import { NotificationDropdown } from './NotificationDropdown';
 
 export interface NavItem {
     label: string;
@@ -150,8 +151,8 @@ export function Sidebar({ navItems, onLogout }: SidebarProps) {
             className="bg-base-100 border-r border-base-200 sticky top-0 h-screen flex flex-col w-72"
             aria-label="Main navigation"
         >
-            {/* Logo */}
-            <div className="flex justify-center items-center p-6">
+            {/* Logo and Notifications */}
+            <div className="flex justify-between items-center p-6">
                 <Link
                     href="/dashboard"
                     className="hover:opacity-80 transition-opacity"
@@ -163,6 +164,7 @@ export function Sidebar({ navItems, onLogout }: SidebarProps) {
                         className="h-8 w-auto"
                     />
                 </Link>
+                <NotificationDropdown />
             </div>
 
             {/* Navigation Menu */}

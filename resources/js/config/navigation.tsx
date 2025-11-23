@@ -181,6 +181,12 @@ export const mainNavigationItems: NavItem[] = [
                 active: false,
                 children: [
                     {
+                        label: 'Notificações',
+                        href: '/settings/notifications',
+                        icon: <Bell className="w-5 h-5" />,
+                        active: false,
+                    },
+                    {
                         label: 'Permissões',
                         href: '/settings/permissions',
                         icon: <Shield className="w-5 h-5" />,

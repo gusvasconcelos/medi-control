@@ -77,21 +77,26 @@ export const medicationService = {
 
     /**
      * Search medications by name or active principle
+     * Uses the index endpoint with search parameter
      */
     async searchMedications(
         query: string,
         limit = 10
     ): Promise<MedicationSearchResponse> {
-        const response = await axios.get<MedicationSearchResponse>(
-            `${API_BASE}/medications/search`,
+        const response = await axios.get(
+            `${API_BASE}/medications`,
             {
                 params: {
-                    search: query,
-                    limit,
+                    q: JSON.stringify({ text: query }),
+                    per_page: limit,
+                    page: 1,
                 },
             }
         );
-        return response.data;
+        // Transforma a resposta paginada para o formato esperado
+        return {
+            data: response.data.data || [],
+        };
     },
 
     /**

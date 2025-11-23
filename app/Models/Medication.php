@@ -9,14 +9,7 @@ class Medication extends Model
 {
     use HasFactory;
 
-    protected $searchable = [
-        'name',
-        'active_principle',
-        'manufacturer',
-        'category',
-        'therapeutic_class',
-        'registration_number',
-    ];
+    protected $searchable = ['name'];
 
     protected $fillable = [
         'name',
