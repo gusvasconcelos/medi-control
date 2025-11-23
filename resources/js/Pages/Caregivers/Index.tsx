@@ -265,7 +265,7 @@ export default function CaregiversIndex({ auth }: PageProps) {
                     onClick={() => setIsInviteModalOpen(true)}
                     title="Convidar Cuidador"
                 >
-                    <UserPlus className="size-8" />
+                    <UserPlus className="size-6" />
                 </button>
             </AuthenticatedLayout>
 
