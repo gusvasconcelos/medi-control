@@ -87,6 +87,7 @@ export const mainNavigationItems: NavItem[] = [
                 href: '/medications',
                 icon: <Pill className="w-5 h-5" />,
                 active: false,
+                roles: ['admin', 'super-admin'],
             },
             {
                 label: 'Calendário',

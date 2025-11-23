@@ -45,11 +45,10 @@ class AuthService
      * Attempt to authenticate and create a Sanctum token (for mobile API).
      *
      * @param array{email: string, password: string} $credentials
-     * @param string $deviceName
      * @return array{user: User, token: string}
      * @throws UnprocessableEntityException
      */
-    public function attemptLoginWithToken(array $credentials, string $deviceName): array
+    public function attemptLoginWithToken(array $credentials): array
     {
         if (! Auth::attempt($credentials)) {
             throw new UnprocessableEntityException(__('auth.invalid_credentials'), 'INVALID_CREDENTIALS');
@@ -58,7 +57,7 @@ class AuthService
         /** @var User $user */
         $user = Auth::user();
 
-        $token = $user->createToken($deviceName)->plainTextToken;
+        $token = $user->createToken('mobile')->plainTextToken;
 
         return [
             'user' => $user,

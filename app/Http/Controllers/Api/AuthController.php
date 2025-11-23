@@ -35,7 +35,6 @@ class AuthController extends Controller
                 'email' => $validated['email'],
                 'password' => $validated['password'],
             ],
-            deviceName: $validated['device_name']
         );
 
         return response()->json([

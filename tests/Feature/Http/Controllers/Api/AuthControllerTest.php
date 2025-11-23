@@ -40,7 +40,6 @@ class AuthControllerTest extends TestCase
         $form = [
             'email' => $user->email,
             'password' => 'password',
-            'device_name' => 'PHPUnit Test Device',
         ];
 
         $response = $this->postJson("$this->url/login", $form);
@@ -59,7 +58,6 @@ class AuthControllerTest extends TestCase
         $form = [
             'email' => $this->faker()->email(),
             'password' => 'password',
-            'device_name' => 'PHPUnit Test Device',
         ];
 
         $response = $this->postJson("$this->url/login", $form);

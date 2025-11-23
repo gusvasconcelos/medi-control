@@ -33,6 +33,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
     Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
+    Route::get('/medications', fn () => Inertia::render('Medications/Index'))->name('medications.index');
     Route::get('/metrics/overview', [OverviewController::class, 'create'])->name('metrics.overview');
 
     Route::middleware('can:viewPulse')->group(function () {

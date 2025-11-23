@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\File;
+use Illuminate\Http\Request;
 use App\Services\FileService;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -17,9 +18,9 @@ class FileController extends Controller
     ) {
     }
 
-    public function index(Model $fileable): JsonResponse
+    public function index(Request $request, Model $fileable): JsonResponse
     {
-        $filePaginator = $this->fileService->index($fileable);
+        $filePaginator = $this->fileService->index($fileable, collect($request->all()));
 
         return response()->json($filePaginator);
     }

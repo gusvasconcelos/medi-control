@@ -2,42 +2,46 @@
 
 namespace App\Packages\Filter;
 
-use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class FilterQ
 {
-    public static function apply(Builder $builder, ?Request $request = null): Builder
+    public static function apply(Builder $builder, ?Collection $queryParams = null): Builder
     {
-        $request = $request ?? request();
-
-        $queryParams = collect(json_decode($request->query('q'), true));
-
-        if ($queryParams->isEmpty()) {
+        if ($queryParams === null || $queryParams->isEmpty()) {
             return $builder;
         }
 
-        if ($queryParams->has('where')) {
-            $builder = Where::apply($builder, $queryParams->get('where'));
+        $q = collect(json_decode($queryParams->get('q'), true));
+
+        if ($q->isEmpty()) {
+            return $builder;
         }
 
-        if ($queryParams->has('orderBy')) {
-            $builder = OrderBy::apply($builder, $queryParams->get('orderBy'));
+        if ($q->has('where')) {
+            $builder = Where::apply($builder, $q->get('where'));
+        }
+
+        if ($q->has('text')) {
+            $builder = FullText::apply($builder, $q->get('text'));
+        }
+
+        if ($q->has('orderBy')) {
+            $builder = OrderBy::apply($builder, $q->get('orderBy'));
         }
 
         return $builder;
     }
 
-    public static function applyWithPagination(Builder $builder, ?Request $request = null): LengthAwarePaginator
+    public static function applyWithPagination(Builder $builder, ?Collection $queryParams = null): LengthAwarePaginator
     {
-        $request = $request ?? request();
+        $builder = self::apply($builder, $queryParams);
 
-        $builder = self::apply($builder, $request);
+        $perPage = $queryParams->get('per_page', 15);
 
-        $perPage = $request->query('per_page', 15);
-
-        $page = $request->query('page', 1);
+        $page = $queryParams->get('page', 1);
 
         return Pagination::apply($builder, $perPage, $page);
     }

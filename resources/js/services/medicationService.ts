@@ -105,4 +105,82 @@ export const medicationService = {
         );
         return response.data;
     },
+
+    /**
+     * Get paginated list of medications
+     */
+    async getMedications(params?: {
+        page?: number;
+        per_page?: number;
+        search?: string;
+    }): Promise<{
+        data: Medication[];
+        current_page: number;
+        last_page: number;
+        total: number;
+        per_page: number;
+    }> {
+        const queryParams: Record<string, string | number> = {};
+
+        if (params?.page) {
+            queryParams.page = params.page;
+        }
+
+        if (params?.per_page) {
+            queryParams.per_page = params.per_page;
+        }
+
+        if (params?.search && params.search.trim() !== '') {
+            queryParams.q = JSON.stringify({ text: params.search });
+        }
+
+        const response = await axios.get(`${API_BASE}/medications`, {
+            params: queryParams,
+        });
+        return response.data;
+    },
+
+    /**
+     * Get a single medication by ID
+     */
+    async getMedication(id: number): Promise<Medication> {
+        const response = await axios.get<{ data: Medication }>(
+            `${API_BASE}/medications/${id}`
+        );
+        return response.data.data;
+    },
+
+    /**
+     * Create a new medication
+     */
+    async createMedication(
+        data: Omit<Medication, 'id'>
+    ): Promise<Medication> {
+        const response = await axios.post<{ data: Medication }>(
+            `${API_BASE}/medications`,
+            data
+        );
+        return response.data.data;
+    },
+
+    /**
+     * Update an existing medication
+     */
+    async updateMedication(
+        id: number,
+        data: Partial<Omit<Medication, 'id'>>
+    ): Promise<Medication> {
+        const response = await axios.put<{ data: Medication }>(
+            `${API_BASE}/medications/${id}`,
+            data
+        );
+        return response.data.data;
+    },
+
+    /**
+     * Delete a medication
+     */
+    async deleteMedication(id: number): Promise<void> {
+        await axios.delete(`${API_BASE}/medications/${id}`);
+    },
 };

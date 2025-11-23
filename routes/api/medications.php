@@ -7,6 +7,11 @@ Route::group([
     'prefix' => 'medications',
     'middleware' => ['auth:sanctum'],
 ], function () {
+    Route::get('/', [MedicationController::class, 'index']);
+    Route::get('{id}', [MedicationController::class, 'show']);
+    Route::post('/', [MedicationController::class, 'store']);
+    Route::put('{id}', [MedicationController::class, 'update']);
+    Route::delete('{id}', [MedicationController::class, 'destroy']);
     Route::get('search', [MedicationController::class, 'search']);
     Route::post('{id}/check-interactions', [MedicationController::class, 'checkInteractions']);
 });

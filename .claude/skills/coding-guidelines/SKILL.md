@@ -99,16 +99,18 @@ All API routes are versioned under `/api/v1`. Route files are organized in [rout
 The application uses Laravel Sanctum with dual authentication strategies:
 
 **Web SPA (Inertia):**
+
 -   Session-based authentication via cookies
 -   Middleware: `auth:sanctum` with `EnsureFrontendRequestsAreStateful`
 -   User shared via Inertia props (`$request->user()`)
 
 **Mobile API:**
+
 -   Token-based authentication via Sanctum API tokens
 -   Middleware: `auth:sanctum`
--   Requires `device_name` on login to create tokens
 
 Configuration files:
+
 -   [config/sanctum.php](config/sanctum.php): Stateful domains, token expiration
 -   [config/auth.php](config/auth.php): Default guard is `web`
 

@@ -86,6 +86,11 @@ class FilterQueryBuilder
         return $this->where($field, 'IS NOT NULL', null);
     }
 
+    public function whereSearch(string $field, string $value): self
+    {
+        return $this->where($field, 'SEARCH', $value);
+    }
+
     public function orderBy(string $field, string $direction = 'ASC'): self
     {
         $this->orderBy[] = [

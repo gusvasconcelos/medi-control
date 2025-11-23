@@ -11,11 +11,11 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class FileService
 {
-    public function index(Model $fileable): LengthAwarePaginator
+    public function index(Model $fileable, Collection $queryParams): LengthAwarePaginator
     {
         $query = $fileable->files()->active()->getQuery();
 
-        return FilterQ::applyWithPagination($query);
+        return FilterQ::applyWithPagination($query, $queryParams);
     }
 
     public function store(Collection $data, Model $fileable): File
