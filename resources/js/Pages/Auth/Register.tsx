@@ -32,7 +32,7 @@ export default function Register({ auth }: PageProps) {
         try {
             await axios.post('/register', formData);
             showSuccess('Conta criada com sucesso!');
-            router.visit('/dashboard');
+            router.visit('/select-role');
         } catch (error: unknown) {
             if (axios.isAxiosError(error) && error.response) {
                 if (error.response.status === 422) {

@@ -31,4 +31,27 @@ class UserService
         $user->load('roles');
         return $user;
     }
+
+    /**
+     * Assign a selectable role (patient or caregiver) to a user.
+     * Only allows assignment if user doesn't already have one of these roles.
+     *
+     * @param User $user
+     * @param string $roleName Must be 'patient' or 'caregiver'
+     */
+    public function selectRole(User $user, string $roleName): User
+    {
+        if (! in_array($roleName, ['patient', 'caregiver'], true)) {
+            throw new \InvalidArgumentException('Invalid role. Must be patient or caregiver.');
+        }
+
+        if ($user->hasRole(['patient', 'caregiver'])) {
+            throw new \InvalidArgumentException('User already has a role assigned.');
+        }
+
+        $user->assignRole($roleName);
+        $user->load('roles');
+
+        return $user;
+    }
 }

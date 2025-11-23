@@ -89,5 +89,15 @@ class RoleController extends Controller
             'data' => $role,
         ]);
     }
+
+    /**
+     * Get roles available for user self-selection (patient, caregiver).
+     */
+    public function selectable(): JsonResponse
+    {
+        $roles = $this->roleService->getSelectableRoles();
+
+        return response()->json(['data' => $roles]);
+    }
 }
 

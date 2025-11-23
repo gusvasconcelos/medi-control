@@ -76,5 +76,18 @@ class RoleService
 
         return $role->load('permissions');
     }
+
+    /**
+     * Get roles that users can self-select during registration.
+     *
+     * @return Collection<int, Role>
+     */
+    public function getSelectableRoles(): Collection
+    {
+        return $this->role
+            ->whereIn('name', ['patient', 'caregiver'])
+            ->where('guard_name', 'web')
+            ->get(['id', 'name', 'display_name', 'description']);
+    }
 }
 

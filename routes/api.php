@@ -17,6 +17,8 @@ Route::group([
 
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('users/{id}/roles', [UserController::class, 'updateRoles']);
+        Route::get('roles/selectable', [RoleController::class, 'selectable']);
+        Route::post('users/me/select-role', [UserController::class, 'selectRole']);
     });
 
     // Roles and Permissions (super-admin only)
