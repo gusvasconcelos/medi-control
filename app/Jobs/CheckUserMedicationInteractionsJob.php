@@ -45,7 +45,12 @@ final class CheckUserMedicationInteractionsJob implements ShouldQueue
             ->with(['medication', 'user'])
             ->find($this->userMedicationId);
 
-        if ($userMedication === null) {
+        if (! $userMedication) {
+            $discordMonitoring->notifyInteractionCheckSkipped(
+                'Medicamento não encontrado',
+                'O medicamento não foi encontrado'
+            );
+
             return;
         }
 
