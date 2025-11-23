@@ -42,6 +42,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/my-caregivers', fn () => Inertia::render('Caregivers/Index'))->name('caregivers.index');
     Route::get('/my-patients', fn () => Inertia::render('Patients/Index'))->name('patients.index');
 
+    // Reports Routes
+    Route::get('/reports', fn () => Inertia::render('Reports/Adherence'))->name('reports.adherence');
+
     // Settings Routes (super-admin only)
     Route::middleware('role:super-admin')->prefix('settings')->name('settings.')->group(function () {
         Route::get('/roles', fn () => Inertia::render('Settings/Roles/Index'))->name('roles.index');

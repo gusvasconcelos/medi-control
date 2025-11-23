@@ -246,6 +246,45 @@ export interface MetricsOverviewData {
     top_medications: TopMedication[];
 }
 
+/**
+ * Adherence Report
+ */
+export type InteractionSeverity = 'mild' | 'moderate' | 'severe' | 'contraindicated';
+
+export interface MedicationInteraction {
+    id: number;
+    name: string;
+    severity: InteractionSeverity;
+}
+
+export interface MedicationAdherenceReport {
+    id: number;
+    name: string;
+    dosage: string;
+    time_slots: string[];
+    total_scheduled: number;
+    total_taken: number;
+    total_lost: number;
+    total_pending: number;
+    punctuality_rate: number;
+    interactions: MedicationInteraction[];
+}
+
+export interface AdherenceReportData {
+    adherence_rate: number;
+    total_taken: number;
+    total_lost: number;
+    total_pending: number;
+    punctuality_rate: number;
+    medications: MedicationAdherenceReport[];
+}
+
+export interface AdherenceReportResponse {
+    data: AdherenceReportData;
+}
+
+export type ReportPeriod = 'week' | 'month' | 'quarter' | 'semester' | 'year';
+
 declare global {
     interface Window {
         axios: typeof import('axios').default;

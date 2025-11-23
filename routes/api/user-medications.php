@@ -8,6 +8,8 @@ Route::group([
     'middleware' => ['auth:sanctum'],
 ], function () {
     Route::get('user-medications/indicators', [UserMedicationController::class, 'indicators']);
+    Route::get('user-medications/adherence-reports', [UserMedicationController::class, 'adherenceReport']);
+    Route::post('user-medications/adherence-reports', [UserMedicationController::class, 'adherenceReportPdf']);
     Route::get('user-medications', [UserMedicationController::class, 'getUserMedications']);
     Route::post('user-medications', [UserMedicationController::class, 'store']);
     Route::get('user-medications/{id}', [UserMedicationController::class, 'show']);

@@ -26,4 +26,11 @@ return [
         'low_stock_message' => 'O estoque do medicamento :medication está baixo (:stock unidades restantes).',
     ],
 
+    'interaction_severity' => [
+        'mild' => 'Leve',
+        'moderate' => 'Moderada',
+        'severe' => 'Severa',
+        'contraindicated' => 'Contraindicada',
+    ],
+
 ];

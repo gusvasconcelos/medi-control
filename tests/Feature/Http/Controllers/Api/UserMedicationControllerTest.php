@@ -3,6 +3,7 @@
 namespace Tests\Feature\Http\Controllers\Api;
 
 use App\Events\UserMedicationCreated;
+use App\Models\InteractionAlert;
 use App\Models\Medication;
 use App\Models\MedicationLog;
 use App\Models\User;
@@ -620,5 +621,393 @@ class UserMedicationControllerTest extends TestCase
                 'total_scheduled' => 1,
                 'total_taken' => 1,
             ]);
+    }
+
+    public function test_adherence_report_returns_correct_structure(): void
+    {
+        $user = User::factory()->create();
+        $medication = Medication::factory()->create();
+
+        $userMedication = UserMedication::factory()->create([
+            'user_id' => $user->id,
+            'medication_id' => $medication->id,
+            'dosage' => '1 comprimido',
+            'time_slots' => ['08:00', '20:00'],
+            'start_date' => '2025-10-19',
+            'end_date' => null,
+        ]);
+
+        MedicationLog::factory()->create([
+            'user_medication_id' => $userMedication->id,
+            'scheduled_at' => '2025-10-19 08:00:00',
+            'taken_at' => '2025-10-19 08:15:00',
+            'status' => 'taken',
+        ]);
+
+        MedicationLog::factory()->create([
+            'user_medication_id' => $userMedication->id,
+            'scheduled_at' => '2025-10-19 20:00:00',
+            'taken_at' => null,
+            'status' => 'missed',
+        ]);
+
+        $queryParams = [
+            'start_date' => '2025-10-19',
+            'end_date' => '2025-10-19',
+        ];
+
+        $response = $this->actingAsUser($user)
+            ->getJson("{$this->url}/adherence-reports?" . http_build_query($queryParams));
+
+        $response
+            ->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'adherence_rate',
+                    'total_taken',
+                    'total_lost',
+                    'total_pending',
+                    'punctuality_rate',
+                    'medications' => [
+                        '*' => [
+                            'id',
+                            'name',
+                            'dosage',
+                            'time_slots',
+                            'total_scheduled',
+                            'total_taken',
+                            'total_lost',
+                            'total_pending',
+                            'punctuality_rate',
+                            'interactions',
+                        ],
+                    ],
+                ],
+            ]);
+    }
+
+    public function test_adherence_report_calculates_adherence_rate_correctly(): void
+    {
+        $user = User::factory()->create();
+        $medication = Medication::factory()->create();
+
+        $userMedication = UserMedication::factory()->create([
+            'user_id' => $user->id,
+            'medication_id' => $medication->id,
+            'time_slots' => ['08:00', '20:00'],
+            'start_date' => '2025-10-19',
+            'end_date' => '2025-10-20',
+        ]);
+
+        MedicationLog::factory()->create([
+            'user_medication_id' => $userMedication->id,
+            'scheduled_at' => '2025-10-19 08:00:00',
+            'taken_at' => '2025-10-19 08:00:00',
+            'status' => 'taken',
+        ]);
+
+        MedicationLog::factory()->create([
+            'user_medication_id' => $userMedication->id,
+            'scheduled_at' => '2025-10-19 20:00:00',
+            'taken_at' => '2025-10-19 20:00:00',
+            'status' => 'taken',
+        ]);
+
+        MedicationLog::factory()->create([
+            'user_medication_id' => $userMedication->id,
+            'scheduled_at' => '2025-10-20 08:00:00',
+            'taken_at' => '2025-10-20 08:00:00',
+            'status' => 'taken',
+        ]);
+
+        MedicationLog::factory()->create([
+            'user_medication_id' => $userMedication->id,
+            'scheduled_at' => '2025-10-20 20:00:00',
+            'taken_at' => null,
+            'status' => 'missed',
+        ]);
+
+        $queryParams = [
+            'start_date' => '2025-10-19',
+            'end_date' => '2025-10-20',
+        ];
+
+        $response = $this->actingAsUser($user)
+            ->getJson("{$this->url}/adherence-reports?" . http_build_query($queryParams));
+
+        $response
+            ->assertStatus(200)
+            ->assertJsonFragment([
+                'adherence_rate' => 75.0,
+                'total_taken' => 3,
+                'total_lost' => 1,
+            ]);
+    }
+
+    public function test_adherence_report_calculates_punctuality_rate_correctly(): void
+    {
+        $user = User::factory()->create();
+        $medication = Medication::factory()->create();
+
+        $userMedication = UserMedication::factory()->create([
+            'user_id' => $user->id,
+            'medication_id' => $medication->id,
+            'time_slots' => ['08:00', '20:00'],
+            'start_date' => '2025-10-19',
+            'end_date' => null,
+        ]);
+
+        MedicationLog::factory()->create([
+            'user_medication_id' => $userMedication->id,
+            'scheduled_at' => '2025-10-19 08:00:00',
+            'taken_at' => '2025-10-19 08:15:00',
+            'status' => 'taken',
+        ]);
+
+        MedicationLog::factory()->create([
+            'user_medication_id' => $userMedication->id,
+            'scheduled_at' => '2025-10-19 20:00:00',
+            'taken_at' => '2025-10-19 21:30:00',
+            'status' => 'taken',
+        ]);
+
+        $queryParams = [
+            'start_date' => '2025-10-19',
+            'end_date' => '2025-10-19',
+        ];
+
+        $response = $this->actingAsUser($user)
+            ->getJson("{$this->url}/adherence-reports?" . http_build_query($queryParams));
+
+        $response
+            ->assertStatus(200)
+            ->assertJsonFragment([
+                'punctuality_rate' => 50.0,
+            ]);
+    }
+
+    public function test_adherence_report_includes_interactions(): void
+    {
+        $user = User::factory()->create();
+        $medication1 = Medication::factory()->create(['name' => 'Medication A']);
+        $medication2 = Medication::factory()->create(['name' => 'Medication B']);
+
+        $userMedication = UserMedication::factory()->create([
+            'user_id' => $user->id,
+            'medication_id' => $medication1->id,
+            'time_slots' => ['08:00'],
+            'start_date' => '2025-10-19',
+            'end_date' => null,
+        ]);
+
+        InteractionAlert::create([
+            'user_id' => $user->id,
+            'medication_1_id' => $medication1->id,
+            'medication_2_id' => $medication2->id,
+            'severity' => 'severe',
+            'description' => 'Interaction description',
+            'detected_at' => now(),
+        ]);
+
+        $queryParams = [
+            'start_date' => '2025-10-19',
+            'end_date' => '2025-10-19',
+        ];
+
+        $response = $this->actingAsUser($user)
+            ->getJson("{$this->url}/adherence-reports?" . http_build_query($queryParams));
+
+        $response
+            ->assertStatus(200)
+            ->assertJsonFragment([
+                'id' => $medication2->id,
+                'name' => 'Medication B',
+                'severity' => 'severe',
+            ]);
+    }
+
+    public function test_adherence_report_requires_start_and_end_date(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAsUser($user)
+            ->getJson("{$this->url}/adherence-reports");
+
+        $response->assertStatus(422);
+    }
+
+    public function test_adherence_report_validates_date_format(): void
+    {
+        $user = User::factory()->create();
+
+        $queryParams = [
+            'start_date' => 'invalid',
+            'end_date' => '2025-10-20',
+        ];
+
+        $response = $this->actingAsUser($user)
+            ->getJson("{$this->url}/adherence-reports?" . http_build_query($queryParams));
+
+        $response->assertStatus(422);
+    }
+
+    public function test_adherence_report_validates_period_max_length(): void
+    {
+        $user = User::factory()->create();
+
+        $queryParams = [
+            'start_date' => '2024-01-01',
+            'end_date' => '2025-04-01',
+        ];
+
+        $response = $this->actingAsUser($user)
+            ->getJson("{$this->url}/adherence-reports?" . http_build_query($queryParams));
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonFragment([
+                'code' => 'VALIDATION',
+            ]);
+    }
+
+    public function test_adherence_report_only_returns_authenticated_user_data(): void
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+
+        $medication = Medication::factory()->create();
+
+        $userMed1 = UserMedication::factory()->create([
+            'user_id' => $user1->id,
+            'medication_id' => $medication->id,
+            'time_slots' => ['08:00'],
+            'start_date' => '2025-10-19',
+            'end_date' => null,
+        ]);
+
+        $userMed2 = UserMedication::factory()->create([
+            'user_id' => $user2->id,
+            'medication_id' => $medication->id,
+            'time_slots' => ['08:00', '20:00'],
+            'start_date' => '2025-10-19',
+            'end_date' => null,
+        ]);
+
+        MedicationLog::factory()->create([
+            'user_medication_id' => $userMed1->id,
+            'scheduled_at' => '2025-10-19 08:00:00',
+            'taken_at' => '2025-10-19 08:00:00',
+            'status' => 'taken',
+        ]);
+
+        MedicationLog::factory()->create([
+            'user_medication_id' => $userMed2->id,
+            'scheduled_at' => '2025-10-19 08:00:00',
+            'taken_at' => '2025-10-19 08:00:00',
+            'status' => 'taken',
+        ]);
+
+        $queryParams = [
+            'start_date' => '2025-10-19',
+            'end_date' => '2025-10-19',
+        ];
+
+        $response = $this->actingAsUser($user1)
+            ->getJson("{$this->url}/adherence-reports?" . http_build_query($queryParams));
+
+        $response
+            ->assertStatus(200)
+            ->assertJsonCount(1, 'data.medications')
+            ->assertJsonFragment([
+                'id' => $userMed1->id,
+                'total_scheduled' => 1,
+                'total_taken' => 1,
+            ]);
+    }
+
+    public function test_adherence_report_returns_empty_medications_when_no_active_medications(): void
+    {
+        $user = User::factory()->create();
+        $medication = Medication::factory()->create();
+
+        UserMedication::factory()->create([
+            'user_id' => $user->id,
+            'medication_id' => $medication->id,
+            'active' => false,
+            'start_date' => '2025-10-19',
+        ]);
+
+        $queryParams = [
+            'start_date' => '2025-10-19',
+            'end_date' => '2025-10-19',
+        ];
+
+        $response = $this->actingAsUser($user)
+            ->getJson("{$this->url}/adherence-reports?" . http_build_query($queryParams));
+
+        $response
+            ->assertStatus(200)
+            ->assertJsonCount(0, 'data.medications')
+            ->assertJsonFragment([
+                'adherence_rate' => 0.0,
+                'total_taken' => 0,
+                'total_lost' => 0,
+                'total_pending' => 0,
+            ]);
+    }
+
+    public function test_unauthenticated_user_cannot_access_adherence_report(): void
+    {
+        $response = $this->getJson("{$this->url}/adherence-reports?start_date=2025-10-19&end_date=2025-10-19");
+
+        $response->assertStatus(401);
+    }
+
+    public function test_adherence_report_pdf_returns_pdf_file(): void
+    {
+        $user = User::factory()->create();
+        $medication = Medication::factory()->create();
+
+        UserMedication::factory()->create([
+            'user_id' => $user->id,
+            'medication_id' => $medication->id,
+            'dosage' => '1 comprimido',
+            'time_slots' => ['08:00', '20:00'],
+            'start_date' => '2025-10-19',
+            'end_date' => null,
+        ]);
+
+        $response = $this->actingAsUser($user)
+            ->postJson("{$this->url}/adherence-reports", [
+                'start_date' => '2025-10-19',
+                'end_date' => '2025-10-19',
+            ]);
+
+        $response
+            ->assertStatus(200)
+            ->assertHeader('content-type', 'application/pdf');
+    }
+
+    public function test_adherence_report_pdf_requires_authentication(): void
+    {
+        $response = $this->postJson("{$this->url}/adherence-reports", [
+            'start_date' => '2025-10-19',
+            'end_date' => '2025-10-19',
+        ]);
+
+        $response->assertStatus(401);
+    }
+
+    public function test_adherence_report_pdf_validates_date_parameters(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAsUser($user)
+            ->postJson("{$this->url}/adherence-reports", [
+                'start_date' => 'invalid',
+                'end_date' => '2025-10-19',
+            ]);
+
+        $response->assertStatus(422);
     }
 }

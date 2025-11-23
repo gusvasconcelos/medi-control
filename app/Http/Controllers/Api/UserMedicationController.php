@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserMedication\GetUserMedicationsRequest;
 use App\Http\Requests\UserMedication\StoreUserMedicationRequest;
 use App\Http\Requests\UserMedication\IndicatorsMedicationRequest;
 use App\Http\Requests\UserMedication\UpdateUserMedicationRequest;
+use App\Http\Requests\UserMedication\AdherenceReportRequest;
 use App\Services\UserMedicationService;
 
 class UserMedicationController extends Controller
@@ -74,5 +76,25 @@ class UserMedicationController extends Controller
         return response()->json([
             'message' => __('medications.user_medication.deleted'),
         ]);
+    }
+
+    public function adherenceReport(AdherenceReportRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $report = $this->userMedicationService->getAdherenceReport(collect($validated));
+
+        return response()->json(['data' => $report]);
+    }
+
+    public function adherenceReportPdf(AdherenceReportRequest $request): Response
+    {
+        $validated = $request->validated();
+
+        $pdf = $this->userMedicationService->generateAdherenceReportPdf(collect($validated));
+
+        $filename = 'relatorio-adesao-' . $validated['start_date'] . '-' . $validated['end_date'] . '.pdf';
+
+        return $pdf->download($filename);
     }
 }

@@ -251,7 +251,7 @@ export default function PermissionsIndex({ auth }: PageProps) {
                                     className={`btn btn-sm ${!selectedGroup ? 'btn-primary' : 'btn-outline'}`}
                                     onClick={() => handleGroupFilter('')}
                                 >
-                                    Todos
+                                    todos
                                 </button>
                                 {availableGroups.map((group) => (
                                     <button

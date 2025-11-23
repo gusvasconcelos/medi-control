@@ -7,6 +7,7 @@
 
 import axios from 'axios';
 import type {
+    AdherenceReportResponse,
     CreateUserMedicationData,
     IndicatorsResponse,
     MedicationSearchResponse,
@@ -182,5 +183,44 @@ export const medicationService = {
      */
     async deleteMedication(id: number): Promise<void> {
         await axios.delete(`${API_BASE}/medications/${id}`);
+    },
+
+    /**
+     * Get adherence report for a date range
+     */
+    async getAdherenceReport(
+        startDate: string,
+        endDate: string
+    ): Promise<AdherenceReportResponse> {
+        const response = await axios.get<AdherenceReportResponse>(
+            `${API_BASE}/user-medications/adherence-reports`,
+            {
+                params: {
+                    start_date: startDate,
+                    end_date: endDate,
+                },
+            }
+        );
+        return response.data;
+    },
+
+    /**
+     * Download adherence report as PDF
+     */
+    async downloadAdherenceReportPdf(
+        startDate: string,
+        endDate: string
+    ): Promise<Blob> {
+        const response = await axios.post(
+            `${API_BASE}/user-medications/adherence-reports`,
+            {
+                start_date: startDate,
+                end_date: endDate,
+            },
+            {
+                responseType: 'blob',
+            }
+        );
+        return response.data;
     },
 };
