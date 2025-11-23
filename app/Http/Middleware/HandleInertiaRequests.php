@@ -41,8 +41,8 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $user ? [
-                    ...$user->toArray(),
-                    'roles' => $user->getRoleNames(),
+                    ...$user->load('roles')->toArray(),
+                    'roles' => $user->roles,
                 ] : null,
             ],
             'flash' => [

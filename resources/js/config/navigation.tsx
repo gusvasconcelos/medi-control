@@ -9,8 +9,9 @@ import {
     Monitor,
     Activity,
     Gauge,
-    ExternalLink,
     Zap,
+    Shield,
+    Key,
 } from 'lucide-react';
 import { NavItem } from '@/Components/Layout/Sidebar';
 
@@ -45,6 +46,13 @@ function hasPermission(item: NavItem, userRoles?: string[]): boolean {
     return item.roles.some(role => userRoles.includes(role));
 }
 
+function extractRoleNames(roles: any[]): string[] {
+    if (!Array.isArray(roles)) {
+        return [];
+    }
+    return roles.map(r => typeof r === 'string' ? r : r?.name || r);
+}
+
 function filterByPermissions(items: NavItem[], userRoles?: string[]): NavItem[] {
     return items
         .filter(item => hasPermission(item, userRoles))
@@ -66,8 +74,9 @@ function filterByPermissions(items: NavItem[], userRoles?: string[]): NavItem[] 
         .filter((item): item is NavItem => item !== null);
 }
 
-export function getNavigationItems(currentPath: string = '/dashboard', userRoles?: string[]): NavItem[] {
-    const filteredItems = filterByPermissions(mainNavigationItems, userRoles);
+export function getNavigationItems(currentPath: string = '/dashboard', userRoles?: string[] | any[]): NavItem[] {
+    const roleNames = userRoles ? extractRoleNames(userRoles) : undefined;
+    const filteredItems = filterByPermissions(mainNavigationItems, roleNames);
     return setActiveRoute(filteredItems, currentPath);
 }
 
@@ -147,9 +156,22 @@ export const mainNavigationItems: NavItem[] = [
             },
             {
                 label: 'Configurações',
-                href: '/settings',
                 icon: <Settings className="w-5 h-5" />,
                 active: false,
+                children: [
+                    {
+                        label: 'Permissões',
+                        href: '/settings/permissions',
+                        icon: <Shield className="w-5 h-5" />,
+                        active: false,
+                    },
+                    {
+                        label: 'Cargos',
+                        href: '/settings/roles',
+                        icon: <Key className="w-5 h-5" />,
+                        active: false,
+                    },
+                ],
             },
         ],
     },

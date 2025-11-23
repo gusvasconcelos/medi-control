@@ -1,4 +1,15 @@
 /**
+ * Role
+ */
+export interface Role {
+    id: number;
+    name: string;
+    guard_name: string;
+    created_at: string;
+    updated_at: string;
+}
+
+/**
  * User
  */
 export interface User {
@@ -7,7 +18,9 @@ export interface User {
     email: string;
     phone?: string;
     email_verified_at?: string;
-    roles?: string[];
+    roles?: Role[];
+    created_at: string;
+    updated_at: string;
 }
 
 /**

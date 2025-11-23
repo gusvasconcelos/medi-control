@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 
 class User extends Authenticatable
 {
@@ -24,6 +26,12 @@ class User extends Authenticatable
     use Notifiable;
 
     protected $table = 'users';
+
+    protected $searchable = [
+        'name',
+        'email',
+        'phone',
+    ];
 
     protected $fillable = [
         'name',
@@ -106,5 +114,35 @@ class User extends Authenticatable
     public function sendPasswordResetNotification(#[\SensitiveParameter] $token)
     {
         $this->notify(new ResetPasswordNotification($token));
+    }
+
+    #[Scope]
+    public function whereFullText(Builder $query, string $field, ?string $value): Builder
+    {
+        if (is_null($value) || trim($value) === '') {
+            return $query;
+        }
+
+        $unaccented = cast()->unaccent($value);
+
+        return $query->orWhereRaw("UNACCENT({$field})::text ILIKE ?", ["%{$unaccented}%"]);
+    }
+
+    #[Scope]
+    public function search(Builder $query, ?string $value): Builder
+    {
+        if (is_null($value) || trim($value) === '') {
+            return $query;
+        }
+
+        $searchable = $this->searchable ?: $this->getFillable();
+
+        $query->where(function (Builder $q) use ($searchable, $value) {
+            foreach ($searchable as $field) {
+                $q->whereFullText($field, $value);
+            }
+        });
+
+        return $query;
     }
 }

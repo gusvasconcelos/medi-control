@@ -300,7 +300,7 @@ export default function MedicationsIndex({ auth }: PageProps) {
 
     return (
         <>
-            <Head title="Gerenciamento de Medicamentos - MediControl" />
+            <Head title="Medicamentos - MediControl" />
 
             <AuthenticatedLayout
                 navItems={getNavigationItems('/medications', userRoles)}
@@ -311,7 +311,7 @@ export default function MedicationsIndex({ auth }: PageProps) {
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                                 <div className="flex-1">
                                     <h1 className="mb-1 text-xl font-bold text-base-content sm:text-2xl md:text-3xl">
-                                        Gerenciamento de Medicamentos
+                                        Medicamentos
                                     </h1>
                                     <p className="text-xs sm:text-sm text-base-content/60">
                                         Gerencie o catálogo de medicamentos do

@@ -34,7 +34,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
     Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
     Route::get('/medications', fn () => Inertia::render('Medications/Index'))->name('medications.index');
+    Route::get('/users', fn () => Inertia::render('Users/Index'))->name('users.index');
     Route::get('/metrics/overview', [OverviewController::class, 'create'])->name('metrics.overview');
+
+    // Settings Routes (super-admin only)
+    Route::middleware('role:super-admin')->prefix('settings')->name('settings.')->group(function () {
+        Route::get('/roles', fn () => Inertia::render('Settings/Roles/Index'))->name('roles.index');
+        Route::get('/permissions', fn () => Inertia::render('Settings/Permissions/Index'))->name('permissions.index');
+    });
 
     Route::middleware('can:viewPulse')->group(function () {
         Route::get('/monitoring/pulse', [PulseDashboardController::class, 'index'])->name('pulse.dashboard');
