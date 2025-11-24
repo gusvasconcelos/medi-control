@@ -121,12 +121,12 @@ export default function Dashboard({ auth }: PageProps) {
     };
 
     const handleOpenChat = () => {
-        showInfo('Chat de suporte em desenvolvimento');
+        // Chat navigation is handled by FloatingActionButtons
     };
 
     return (
         <>
-            <Head title="Dashboard - MediControl" />
+            <Head title="Dashboard" />
 
             <AuthenticatedLayout navItems={getNavigationItems('/dashboard', userRoles)}>
                 <div className="min-h-screen bg-base-100">

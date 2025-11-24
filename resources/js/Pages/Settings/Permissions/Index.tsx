@@ -212,7 +212,7 @@ export default function PermissionsIndex({ auth }: PageProps) {
 
     return (
         <>
-            <Head title="Permissões - MediControl" />
+            <Head title="Permissões" />
 
             <AuthenticatedLayout navItems={getNavigationItems('/settings/permissions', userRoles)}>
                 <div className="min-h-screen bg-base-100">

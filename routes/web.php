@@ -42,6 +42,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/reports', fn () => Inertia::render('Reports/Adherence'))->name('reports.adherence');
 
+    Route::get('/chat', fn () => Inertia::render('Chat/Index'))->name('chat.index');
+
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/notifications', fn () => Inertia::render('Settings/Notifications/Index'))->name('notifications.index');
     });

@@ -198,7 +198,7 @@ export default function PatientsIndex({ auth }: PageProps) {
 
     return (
         <>
-            <Head title="Meus Pacientes - MediControl" />
+            <Head title="Meus Pacientes" />
 
             <AuthenticatedLayout navItems={getNavigationItems('/my-patients', userRoles)}>
                 <div className="min-h-screen bg-base-100">

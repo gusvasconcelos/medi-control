@@ -1,4 +1,5 @@
 import { MessageCircle, Plus } from 'lucide-react';
+import { router } from '@inertiajs/react';
 
 interface FloatingActionButtonsProps {
     onAddMedication?: () => void;
@@ -8,6 +9,14 @@ interface FloatingActionButtonsProps {
 export function FloatingActionButtons({
     onOpenChat,
 }: FloatingActionButtonsProps) {
+    const handleOpenChat = () => {
+        if (onOpenChat) {
+            onOpenChat();
+        } else {
+            router.visit('/chat');
+        }
+    };
+
     return (
         <div className="fixed bottom-24 right-4 z-50 flex flex-col gap-3 lg:bottom-6 lg:right-6">
             <button
@@ -20,16 +29,14 @@ export function FloatingActionButtons({
                 <Plus className="h-6 w-6" />
             </button>
 
-            {onOpenChat && (
                 <button
                     type="button"
-                    onClick={onOpenChat}
+                onClick={handleOpenChat}
                     className="btn btn-circle btn-ghost order-1 h-12 w-12 bg-base-100 shadow-lg hover:bg-base-200"
                     aria-label="Chat de suporte"
                 >
                     <MessageCircle className="h-5 w-5" />
                 </button>
-            )}
         </div>
     );
 }

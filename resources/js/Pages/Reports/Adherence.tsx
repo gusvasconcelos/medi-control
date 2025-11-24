@@ -268,7 +268,7 @@ export default function Adherence({ auth }: PageProps) {
 
     return (
         <>
-            <Head title="Relatório de Adesão - MediControl" />
+            <Head title="Relatório de Adesão" />
 
             <AuthenticatedLayout navItems={getNavigationItems('/reports', userRoles)}>
                 <div className="min-h-screen bg-base-100">

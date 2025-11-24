@@ -110,7 +110,7 @@ export default function MetricsOverview({ auth, metrics }: MetricsOverviewProps)
 
     return (
         <>
-            <Head title="Métricas - MediControl" />
+            <Head title="Métricas" />
 
             <AuthenticatedLayout navItems={getNavigationItems('/kpis/metrics', userRoles)}>
                 <div className="min-h-screen bg-base-100">

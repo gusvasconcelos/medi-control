@@ -98,7 +98,7 @@ export default function HorizonMonitoringShow({
 
     return (
         <>
-            <Head title={`Tag: ${tag} - Horizon`} />
+            <Head title={`Tag: ${tag}`} />
 
             <AuthenticatedLayout navItems={getNavigationItems('/monitoring/horizon', userRoles)}>
                 <div className="min-h-screen bg-base-100">

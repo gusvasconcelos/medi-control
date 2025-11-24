@@ -118,7 +118,7 @@ export default function PulseDashboard({ auth, metrics }: PulseDashboardProps) {
 
     return (
         <>
-            <Head title="Pulse - MediControl" />
+            <Head title="Pulse" />
 
             <AuthenticatedLayout navItems={getNavigationItems('/monitoring/pulse', userRoles)}>
                 <div className="min-h-screen bg-base-100">

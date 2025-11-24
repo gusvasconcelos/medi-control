@@ -60,7 +60,7 @@ export default function HorizonMonitoringIndex({ auth, tags }: HorizonMonitoring
 
     return (
         <>
-            <Head title="Monitoramento de Tags - Horizon" />
+            <Head title="Monitoramento de Tags" />
 
             <AuthenticatedLayout navItems={getNavigationItems('/monitoring/horizon', userRoles)}>
                 <div className="min-h-screen bg-base-100">

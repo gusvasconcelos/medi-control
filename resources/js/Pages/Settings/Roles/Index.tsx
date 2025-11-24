@@ -188,7 +188,7 @@ export default function RolesIndex({ auth }: PageProps) {
 
     return (
         <>
-            <Head title="Roles - MediControl" />
+            <Head title="Roles" />
 
             <AuthenticatedLayout navItems={getNavigationItems('/settings/roles', userRoles)}>                <div className="min-h-screen bg-base-100">
                     <div className="container mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8">

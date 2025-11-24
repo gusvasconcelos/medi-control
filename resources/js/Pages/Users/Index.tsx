@@ -197,7 +197,7 @@ export default function UsersIndex({ auth }: PageProps) {
 
     return (
         <>
-            <Head title="Usuários - MediControl" />
+            <Head title="Usuários" />
 
             <AuthenticatedLayout
                 navItems={getNavigationItems('/users', userRoles)}

@@ -78,7 +78,7 @@ export default function NotificationPreferencesIndex({ auth }: PageProps) {
     if (isLoading) {
         return (
             <>
-                <Head title="Preferências de Notificação - MediControl" />
+                <Head title="Preferências de Notificação" />
                 <AuthenticatedLayout navItems={getNavigationItems('/settings/notifications', userRoles)}>
                     <div className="min-h-screen bg-base-100 flex items-center justify-center">
                         <span className="loading loading-spinner loading-lg" />
@@ -90,7 +90,7 @@ export default function NotificationPreferencesIndex({ auth }: PageProps) {
 
     return (
         <>
-            <Head title="Preferências de Notificação - MediControl" />
+            <Head title="Preferências de Notificação" />
 
             <AuthenticatedLayout navItems={getNavigationItems('/settings/notifications', userRoles)}>
                 <div className="min-h-screen bg-base-100">

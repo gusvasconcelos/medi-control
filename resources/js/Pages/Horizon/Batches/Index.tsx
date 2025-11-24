@@ -97,7 +97,7 @@ export default function HorizonBatchesIndex({ auth, batches }: HorizonBatchesInd
 
     return (
         <>
-            <Head title="Batches - Horizon" />
+            <Head title="Batches" />
 
             <AuthenticatedLayout navItems={getNavigationItems('/monitoring/horizon', userRoles)}>
                 <div className="min-h-screen bg-base-100">

@@ -51,7 +51,7 @@ export default function HorizonMetricsJobs({
 
     return (
         <>
-            <Head title="Métricas de Jobs - Horizon" />
+            <Head title="Métricas de Jobs" />
 
             <AuthenticatedLayout navItems={getNavigationItems('/monitoring/horizon', userRoles)}>
                 <div className="min-h-screen bg-base-100">

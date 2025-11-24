@@ -61,7 +61,7 @@ export default function HorizonJobsIndex({
 
     return (
         <>
-            <Head title={`Jobs ${currentTab.label} - Horizon`} />
+            <Head title={`Jobs ${currentTab.label}`} />
 
             <AuthenticatedLayout navItems={getNavigationItems('/monitoring/horizon', userRoles)}>
                 <div className="min-h-screen bg-base-100">

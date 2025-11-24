@@ -52,7 +52,7 @@ export default function HorizonDashboard({ auth, stats, workload, masters }: Hor
 
     return (
         <>
-            <Head title="Horizon - MediControl" />
+            <Head title="Horizon" />
 
             <AuthenticatedLayout navItems={getNavigationItems('/monitoring/horizon', userRoles)}>
                 <div className="min-h-screen bg-base-100">

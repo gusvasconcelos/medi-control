@@ -82,7 +82,7 @@ export default function HorizonJobShow({ auth, job }: HorizonJobShowProps) {
     if (!job) {
         return (
             <>
-                <Head title="Job não encontrado - Horizon" />
+                <Head title="Job não encontrado" />
                 <AuthenticatedLayout navItems={getNavigationItems('/monitoring/horizon', userRoles)}>
                     <div className="min-h-screen bg-base-100 flex items-center justify-center">
                         <div className="text-center">
@@ -112,7 +112,7 @@ export default function HorizonJobShow({ auth, job }: HorizonJobShowProps) {
 
     return (
         <>
-            <Head title={`${jobName} - Horizon`} />
+            <Head title={`${jobName}`} />
 
             <AuthenticatedLayout navItems={getNavigationItems('/monitoring/horizon', userRoles)}>
                 <div className="min-h-screen bg-base-100">

@@ -51,7 +51,7 @@ export default function HorizonMetricsQueues({
 
     return (
         <>
-            <Head title="Métricas de Filas - Horizon" />
+            <Head title="Métricas de Filas" />
 
             <AuthenticatedLayout navItems={getNavigationItems('/monitoring/horizon', userRoles)}>
                 <div className="min-h-screen bg-base-100">

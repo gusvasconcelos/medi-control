@@ -89,7 +89,7 @@ export default function HorizonBatchShow({ auth, batch, failedJobs }: HorizonBat
     if (!batch) {
         return (
             <>
-                <Head title="Batch não encontrado - Horizon" />
+                <Head title="Batch não encontrado" />
                 <AuthenticatedLayout navItems={getNavigationItems('/monitoring/horizon', userRoles)}>
                     <div className="min-h-screen bg-base-100 flex items-center justify-center">
                         <div className="text-center">
@@ -122,7 +122,7 @@ export default function HorizonBatchShow({ auth, batch, failedJobs }: HorizonBat
 
     return (
         <>
-            <Head title={`${batch.name} - Horizon`} />
+            <Head title={`${batch.name}`} />
 
             <AuthenticatedLayout navItems={getNavigationItems('/monitoring/horizon', userRoles)}>
                 <div className="min-h-screen bg-base-100">

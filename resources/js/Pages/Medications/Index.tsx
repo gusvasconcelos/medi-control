@@ -300,7 +300,7 @@ export default function MedicationsIndex({ auth }: PageProps) {
 
     return (
         <>
-            <Head title="Medicamentos - MediControl" />
+            <Head title="Medicamentos" />
 
             <AuthenticatedLayout
                 navItems={getNavigationItems('/medications', userRoles)}

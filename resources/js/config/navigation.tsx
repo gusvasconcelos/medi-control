@@ -14,6 +14,7 @@ import {
     Key,
     Heart,
     UserCheck,
+    MessageCircle,
 } from 'lucide-react';
 import { NavItem } from '@/Components/Layout/Sidebar';
 
@@ -95,6 +96,13 @@ export const mainNavigationItems: NavItem[] = [
                 showInToolbar: true,
             },
             {
+                label: 'Chat',
+                href: '/chat',
+                icon: <MessageCircle className="w-5 h-5" />,
+                active: false,
+                showInToolbar: true,
+            },
+            {
                 label: 'Medicamentos',
                 href: '/medications',
                 icon: <Pill className="w-5 h-5" />,
@@ -118,59 +126,50 @@ export const mainNavigationItems: NavItem[] = [
                 showInToolbar: true,
             },
             {
-                label: 'Calendário',
-                href: '/calendar',
-                icon: <Calendar className="w-5 h-5" />,
-                active: false,
-                showInToolbar: true,
-            },
-            {
-                label: 'Lembretes',
-                href: '/reminders',
-                icon: <Bell className="w-5 h-5" />,
-                active: false,
-            },
-            {
                 label: 'Relatórios',
                 href: '/reports',
                 icon: <FileText className="w-5 h-5" />,
                 active: false,
                 showInToolbar: true,
-            }
+            },
         ],
     },
     {
         label: 'Sistema',
         section: true,
-        roles: ['super-admin'],
         children: [
             {
                 label: 'Usuários',
                 href: '/users',
                 icon: <Users className="w-5 h-5" />,
+                roles: ['super-admin'],
                 active: false,
             },
             {
                 label: 'Métricas',
                 href: '/metrics/overview',
                 icon: <Activity className="w-5 h-5" />,
+                roles: ['super-admin'],
                 active: false,
             },
             {
                 label: 'Monitoramento',
                 icon: <Monitor className="w-5 h-5" />,
+                roles: ['super-admin'],
                 active: false,
                 children: [
                     {
                         label: 'Pulse',
                         href: '/monitoring/pulse',
                         icon: <Zap className="w-5 h-5" />,
+                        roles: ['super-admin'],
                         active: false,
                     },
                     {
                         label: 'Horizon',
                         href: '/monitoring/horizon',
                         icon: <Gauge className="w-5 h-5" />,
+                        roles: ['super-admin'],
                         active: false,
                     },
                 ],
@@ -191,12 +190,14 @@ export const mainNavigationItems: NavItem[] = [
                         href: '/settings/permissions',
                         icon: <Shield className="w-5 h-5" />,
                         active: false,
+                        roles: ['super-admin'],
                     },
                     {
                         label: 'Cargos',
                         href: '/settings/roles',
                         icon: <Key className="w-5 h-5" />,
                         active: false,
+                        roles: ['super-admin'],
                     },
                 ],
             },
