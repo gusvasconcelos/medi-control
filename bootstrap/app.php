@@ -7,7 +7,7 @@ use App\Exceptions\HttpException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Application;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\Schedule;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Auth\AuthenticationException;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Validation\ValidationException;
