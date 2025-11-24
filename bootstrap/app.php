@@ -7,6 +7,7 @@ use App\Exceptions\HttpException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Application;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Schedule;
 use Illuminate\Auth\AuthenticationException;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Validation\ValidationException;
@@ -15,9 +16,9 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Spatie\Permission\Middleware\PermissionMiddleware;
-use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 use GusVasconcelos\MarkdownConverter\MarkdownConverter;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
@@ -50,6 +51,10 @@ return Application::configure(basePath: dirname(__DIR__))
             Request::HEADER_X_FORWARDED_PORT |
             Request::HEADER_X_FORWARDED_PROTO |
             Request::HEADER_X_FORWARDED_AWS_ELB);
+    })
+    ->withSchedule(function (Schedule $schedule) {
+        $schedule->command('notifications:schedule')->dailyAt('00:00');
+        $schedule->command('medications:mark-missed')->dailyAt('02:00');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->dontReport([
@@ -130,7 +135,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (QueryException $e) use ($reqId) {
-            $userId = auth()->id() ?? 'N/A';
+            $userId = auth('web')->id() ?? 'N/A';
 
             $message = __('errors.query_not_acceptable');
 
@@ -203,7 +208,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (Throwable $e) use ($reqId) {
-            $userId = auth()->id() ?? 'N/A';
+            $userId = auth('web')->id() ?? 'N/A';
 
             $message = __('errors.internal_server');
 
