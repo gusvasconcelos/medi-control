@@ -6,7 +6,7 @@ import type { ChatMessage, SuggestedPrompt } from '@/types/chat';
 
 export interface UseChatReturn {
     messages: ChatMessage[];
-    sendMessage: (text: string) => Promise<void>;
+    sendMessage: (text: string, isSuggestion?: boolean) => Promise<void>;
     clearHistory: () => Promise<void>;
     isLoading: boolean;
     error: string | null;
@@ -51,7 +51,7 @@ export function useChat(): UseChatReturn {
     }, [showError]);
 
     const sendMessage = useCallback(
-        async (text: string) => {
+        async (text: string, isSuggestion = false) => {
             if (!text.trim() || isLoading) return;
 
             setIsLoading(true);
@@ -70,7 +70,7 @@ export function useChat(): UseChatReturn {
             setMessages((prev) => [...prev, optimisticUserMessage]);
 
             try {
-                const response = await chatService.sendMessage(text);
+                const response = await chatService.sendMessage(text, isSuggestion);
 
                 // Replace optimistic message with actual user message and add assistant response
                 setMessages((prev) => [

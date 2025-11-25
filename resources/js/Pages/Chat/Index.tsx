@@ -40,7 +40,7 @@ export default function ChatIndex({ auth }: PageProps) {
     };
 
     const handlePromptSelect = (promptText: string) => {
-        sendMessage(promptText);
+        sendMessage(promptText, true);
     };
 
     return (

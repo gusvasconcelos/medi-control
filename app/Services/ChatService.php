@@ -12,7 +12,8 @@ class ChatService
 {
     public function __construct(
         private readonly HealthAssistantService $healthAssistantService,
-        private readonly MedicationReorganizationService $medicationReorganizationService
+        private readonly MedicationReorganizationService $medicationReorganizationService,
+        private readonly ChatInteractionCheckerService $chatInteractionChecker
     ) {
     }
 
@@ -36,7 +37,7 @@ class ChatService
     /**
      * @return array{userMessage: ChatMessage, assistantMessage: ChatMessage, sessionId: int, toolExecution?: array{success: bool, message: string, reorganized_medications: array<int, array{id: int, name: string, old_time_slots: array<int, string>, new_time_slots: array<int, string>, start_date: string}>}}
      */
-    public function sendMessage(User $user, string $message): array
+    public function sendMessage(User $user, string $message, bool $isSuggestion = false): array
     {
         $session = $this->getOrCreateSession($user);
 
@@ -51,7 +52,8 @@ class ChatService
         $aiResponse = $this->healthAssistantService->generateResponse(
             $user,
             $message,
-            $conversationHistory
+            $conversationHistory,
+            $isSuggestion
         );
 
         $toolExecutionResult = null;
@@ -154,18 +156,23 @@ class ChatService
 
     /**
      * @param array<int, array{id: string, type: string, function: array{name: string, arguments: string}}> $toolCalls
-     * @return array{success: bool, message: string, reorganized_medications: array<int, array{id: int, name: string, old_time_slots: array<int, string>, new_time_slots: array<int, string>, start_date: string}>}|null
+     * @return array{success: bool, message: string, reorganized_medications?: array<int, array{id: int, name: string, old_time_slots: array<int, string>, new_time_slots: array<int, string>, start_date: string}>, interactions_found?: int, severe_count?: int, moderate_count?: int, mild_count?: int, alerts_created?: int}|null
      */
     private function executeToolCalls(User $user, array $toolCalls): ?array
     {
         foreach ($toolCalls as $toolCall) {
-            if ($toolCall['function']['name'] === 'reorganize_medications') {
-                $arguments = json_decode($toolCall['function']['arguments'], true);
+            $functionName = $toolCall['function']['name'];
+            $arguments = json_decode($toolCall['function']['arguments'], true);
 
+            if ($functionName === 'reorganize_medications') {
                 return $this->medicationReorganizationService->reorganizeMedications(
                     $user,
                     $arguments['medication_schedules']
                 );
+            }
+
+            if ($functionName === 'check_medication_interactions') {
+                return $this->chatInteractionChecker->checkAllMedicationInteractions($user);
             }
         }
 
@@ -174,31 +181,41 @@ class ChatService
 
     /**
      * @param array<int, array{id: string, type: string, function: array{name: string, arguments: string}}> $toolCalls
-     * @param array{success: bool, message: string, reorganized_medications: array<int, array{id: int, name: string, old_time_slots: array<int, string>, new_time_slots: array<int, string>, start_date: string}>} $executionResult
+     * @param array{success: bool, message: string, reorganized_medications?: array<int, array{id: int, name: string, old_time_slots: array<int, string>, new_time_slots: array<int, string>, start_date: string}>, interactions_found?: int, severe_count?: int, moderate_count?: int, mild_count?: int, alerts_created?: int} $executionResult
      */
     private function buildToolExecutionMessage(array $toolCalls, array $executionResult): string
     {
-        if (!$executionResult['success']) {
-            return "Não foi possível reorganizar os medicamentos. " . $executionResult['message'];
+        $functionName = $toolCalls[0]['function']['name'];
+
+        if ($functionName === 'check_medication_interactions') {
+            return $executionResult['message'];
         }
 
-        $arguments = json_decode($toolCalls[0]['function']['arguments'], true);
-        $reason = $arguments['reason'] ?? 'Reorganização solicitada';
+        if ($functionName === 'reorganize_medications') {
+            if (!$executionResult['success']) {
+                return "Não foi possível reorganizar os medicamentos. " . $executionResult['message'];
+            }
 
-        $message = "**Medicamentos reorganizados com sucesso!**\n\n";
-        $message .= "**Motivo:** {$reason}\n\n";
-        $message .= "**Alterações realizadas:**\n\n";
+            $arguments = json_decode($toolCalls[0]['function']['arguments'], true);
+            $reason = $arguments['reason'] ?? 'Reorganização solicitada';
 
-        foreach ($executionResult['reorganized_medications'] as $medication) {
-            $message .= "**{$medication['name']}**\n";
-            $message .= "- Horários anteriores: " . implode(', ', $medication['old_time_slots']) . "\n";
-            $message .= "- Novos horários: " . implode(', ', $medication['new_time_slots']) . "\n";
-            $message .= "- Início da nova programação: {$medication['start_date']}\n\n";
+            $message = "**Medicamentos reorganizados com sucesso!**\n\n";
+            $message .= "**Motivo:** {$reason}\n\n";
+            $message .= "**Alterações realizadas:**\n\n";
+
+            foreach ($executionResult['reorganized_medications'] as $medication) {
+                $message .= "**{$medication['name']}**\n";
+                $message .= "- Horários anteriores: " . implode(', ', $medication['old_time_slots']) . "\n";
+                $message .= "- Novos horários: " . implode(', ', $medication['new_time_slots']) . "\n";
+                $message .= "- Início da nova programação: {$medication['start_date']}\n\n";
+            }
+
+            $message .= "**Importante:** A reorganização começa a partir de amanhã para não afetar medicamentos já tomados ou programados para hoje.\n\n";
+            $message .= "As notificações foram atualizadas automaticamente. Você receberá lembretes nos novos horários.";
+
+            return $message;
         }
 
-        $message .= "**Importante:** A reorganização começa a partir de amanhã para não afetar medicamentos já tomados ou programados para hoje.\n\n";
-        $message .= "As notificações foram atualizadas automaticamente. Você receberá lembretes nos novos horários.";
-
-        return $message;
+        return $executionResult['message'];
     }
 }

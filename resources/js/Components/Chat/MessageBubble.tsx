@@ -10,6 +10,30 @@ export interface MessageBubbleProps {
     isLatest?: boolean;
 }
 
+const markdownComponents = {
+    p: ({ children }: { children: React.ReactNode }) => <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>,
+    strong: ({ children }: { children: React.ReactNode }) => <strong className="font-bold">{children}</strong>,
+    em: ({ children }: { children: React.ReactNode }) => <em className="italic">{children}</em>,
+    ul: ({ children }: { children: React.ReactNode }) => <ul className="list-disc pl-6 space-y-2 my-3">{children}</ul>,
+    ol: ({ children }: { children: React.ReactNode }) => <ol className="list-decimal pl-6 space-y-2 my-3">{children}</ol>,
+    li: ({ children }: { children: React.ReactNode }) => <li className="leading-relaxed">{children}</li>,
+    h1: ({ children }: { children: React.ReactNode }) => <h1 className="text-xl font-bold mt-4 mb-2">{children}</h1>,
+    h2: ({ children }: { children: React.ReactNode }) => <h2 className="text-lg font-bold mt-3 mb-2">{children}</h2>,
+    h3: ({ children }: { children: React.ReactNode }) => <h3 className="text-base font-bold mt-2 mb-1">{children}</h3>,
+    code: ({ children, className }: { children: React.ReactNode; className?: string }) => {
+        const isInline = !className;
+        return isInline ? (
+            <code className="bg-base-300 px-1.5 py-0.5 rounded text-sm">{children}</code>
+        ) : (
+            <code className={className}>{children}</code>
+        );
+    },
+    pre: ({ children }: { children: React.ReactNode }) => <pre className="bg-base-300 p-3 rounded-lg overflow-x-auto my-3 text-sm">{children}</pre>,
+    blockquote: ({ children }: { children: React.ReactNode }) => <blockquote className="border-l-4 border-base-300 pl-4 italic my-3">{children}</blockquote>,
+    a: ({ children, href }: { children: React.ReactNode; href?: string }) => <a href={href} className="underline hover:opacity-80" target="_blank" rel="noopener noreferrer">{children}</a>,
+    hr: () => <hr className="my-4 border-base-300" />,
+};
+
 export function MessageBubble({ message, isLatest = false }: MessageBubbleProps) {
     const isUser = message.role === 'user';
     const isSystem = message.role === 'system';
@@ -57,29 +81,17 @@ export function MessageBubble({ message, isLatest = false }: MessageBubbleProps)
                     isUser
                         ? 'chat-bubble-primary'
                         : 'chat-bubble-secondary'
-                } ${message.metadata?.tool_execution ? '' : 'whitespace-pre-wrap'}`}
+                } prose prose-sm max-w-none`}
             >
                 {message.metadata?.tool_execution ? (
                     <div>
-                        <ReactMarkdown
-                            components={{
-                                p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                                strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-                                ul: ({ children }) => <ul className="list-disc pl-5 space-y-1">{children}</ul>,
-                            }}
-                        >
+                        <ReactMarkdown components={markdownComponents}>
                             {message.content}
                         </ReactMarkdown>
                         <ToolExecutionResult toolExecution={message.metadata.tool_execution} />
                     </div>
                 ) : (
-                    <ReactMarkdown
-                        components={{
-                            p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                            strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-                            ul: ({ children }) => <ul className="list-disc pl-5 space-y-1">{children}</ul>,
-                        }}
-                    >
+                    <ReactMarkdown components={markdownComponents}>
                         {message.content}
                     </ReactMarkdown>
                 )}

@@ -3,18 +3,12 @@ import { router } from '@inertiajs/react';
 
 interface FloatingActionButtonsProps {
     onAddMedication?: () => void;
-    onOpenChat?: () => void;
 }
 
 export function FloatingActionButtons({
-    onOpenChat,
 }: FloatingActionButtonsProps) {
     const handleOpenChat = () => {
-        if (onOpenChat) {
-            onOpenChat();
-        } else {
-            router.visit('/chat');
-        }
+        router.visit('/chat');
     };
 
     return (

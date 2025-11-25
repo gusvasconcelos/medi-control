@@ -64,5 +64,30 @@ export const userService = {
         );
         return response.data.data;
     },
+
+    /**
+     * Get current user profile
+     */
+    async getProfile(): Promise<User> {
+        const response = await axios.get<{ data: User }>(
+            `${API_BASE}/users/me/profile`
+        );
+        return response.data.data;
+    },
+
+    /**
+     * Update current user profile
+     */
+    async updateProfile(data: {
+        name: string;
+        email: string;
+        phone?: string;
+    }): Promise<User> {
+        const response = await axios.put<{ data: User }>(
+            `${API_BASE}/users/me/profile`,
+            data
+        );
+        return response.data.data;
+    },
 };
 

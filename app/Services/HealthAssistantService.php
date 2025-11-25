@@ -20,12 +20,13 @@ class HealthAssistantService
     public function generateResponse(
         User $user,
         string $userMessage,
-        Collection $conversationHistory
+        Collection $conversationHistory,
+        bool $isSuggestion = false
     ): array {
         $systemPrompt = $this->buildSystemPrompt();
-        $userContext = $this->getUserContext($user);
+        $userContext = $isSuggestion ? $this->getUserContext($user) : null;
         $messages = $this->buildMessages($systemPrompt, $userContext, $conversationHistory, $userMessage);
-        $tools = $this->getToolDefinitions($user);
+        $tools = $isSuggestion ? $this->getToolDefinitions($user) : [];
 
         $startTime = microtime(true);
 
@@ -138,19 +139,23 @@ class HealthAssistantService
      */
     private function buildMessages(
         string $systemPrompt,
-        array $userContext,
+        ?array $userContext,
         Collection $conversationHistory,
         string $newMessage
     ): array {
-        $contextString = $this->formatUserContext($userContext);
+        if ($userContext !== null) {
+            $contextString = $this->formatUserContext($userContext);
 
-        $systemMessageWithContext = <<<XML
-        {$systemPrompt}
+            $systemMessageWithContext = <<<XML
+            {$systemPrompt}
 
-        <user_context>
-            {$contextString}
-        </user_context>
-        XML;
+            <user_context>
+                {$contextString}
+            </user_context>
+            XML;
+        } else {
+            $systemMessageWithContext = $systemPrompt;
+        }
 
         $messages = [
             ['role' => 'system', 'content' => $systemMessageWithContext],
@@ -241,6 +246,23 @@ class HealthAssistantService
         })->unique()->values()->toArray();
 
         return [
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'check_medication_interactions',
+                    'description' => 'Verifica todas as interações medicamentosas entre os medicamentos ativos do usuário. Use esta ferramenta APENAS quando o usuário solicitar explicitamente verificar interações entre seus medicamentos, ou quando você precisar obter informações atualizadas sobre interações. Para responder perguntas gerais sobre interações já conhecidas, use o contexto fornecido no sistema sem executar esta tool.',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'reason' => [
+                                'type' => 'string',
+                                'description' => 'Breve explicação do motivo da verificação (ex: "Usuário solicitou verificação completa", "Verificar interações após adicionar novo medicamento")',
+                            ],
+                        ],
+                        'required' => ['reason'],
+                    ],
+                ],
+            ],
             [
                 'type' => 'function',
                 'function' => [

@@ -46,7 +46,11 @@ class ChatController extends Controller
 
         $validated = $request->validated();
 
-        $result = $this->chatService->sendMessage($user, $validated['message']);
+        $result = $this->chatService->sendMessage(
+            $user,
+            $validated['message'],
+            $validated['is_suggestion'] ?? false
+        );
 
         return response()->json([
             'message' => $result['assistantMessage'],

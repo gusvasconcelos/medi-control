@@ -22,6 +22,8 @@ Route::group([
         Route::put('users/{id}/roles', [UserController::class, 'updateRoles']);
         Route::get('roles/selectable', [RoleController::class, 'selectable']);
         Route::post('users/me/select-role', [UserController::class, 'selectRole']);
+        Route::get('users/me/profile', [UserController::class, 'profile']);
+        Route::put('users/me/profile', [UserController::class, 'updateProfile']);
     });
 
     // Roles and Permissions (super-admin only)

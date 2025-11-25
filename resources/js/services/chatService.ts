@@ -39,10 +39,10 @@ export const chatService = {
     /**
      * Send a message to the chat assistant
      */
-    async sendMessage(message: string): Promise<SendMessageResponse> {
+    async sendMessage(message: string, isSuggestion = false): Promise<SendMessageResponse> {
         const response = await axios.post<SendMessageResponse>(
             `${API_BASE}/chat/messages`,
-            { message }
+            { message, is_suggestion: isSuggestion }
         );
         return response.data;
     },

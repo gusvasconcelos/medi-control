@@ -120,10 +120,6 @@ export default function Dashboard({ auth }: PageProps) {
         refetch();
     };
 
-    const handleOpenChat = () => {
-        // Chat navigation is handled by FloatingActionButtons
-    };
-
     return (
         <>
             <Head title="Dashboard" />
@@ -159,7 +155,7 @@ export default function Dashboard({ auth }: PageProps) {
                         />
                     </div>
 
-                    <FloatingActionButtons onOpenChat={handleOpenChat} />
+                    <FloatingActionButtons />
 
                     <AddMedicationModal onSuccess={handleMedicationSuccess} />
 

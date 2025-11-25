@@ -72,4 +72,34 @@ class UserController extends Controller
             ], 422);
         }
     }
+
+    public function profile(): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $user->load('roles');
+
+        return response()->json([
+            'data' => $user,
+        ]);
+    }
+
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . Auth::id(),
+            'phone' => 'nullable|string|max:20',
+        ]);
+
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        $user->update($request->only(['name', 'email', 'phone']));
+
+        return response()->json([
+            'message' => 'Perfil atualizado com sucesso',
+            'data' => $user->load('roles'),
+        ]);
+    }
 }

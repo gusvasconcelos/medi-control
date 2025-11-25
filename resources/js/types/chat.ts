@@ -19,7 +19,12 @@ export interface ReorganizedMedication {
 export interface ToolExecution {
     success: boolean;
     message: string;
-    reorganized_medications: ReorganizedMedication[];
+    reorganized_medications?: ReorganizedMedication[];
+    interactions_found?: number;
+    severe_count?: number;
+    moderate_count?: number;
+    mild_count?: number;
+    alerts_created?: number;
 }
 
 export interface ChatMessage {

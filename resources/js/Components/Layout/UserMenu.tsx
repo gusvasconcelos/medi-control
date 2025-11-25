@@ -1,3 +1,5 @@
+import { Link } from '@inertiajs/react';
+import { UserCircle, LogOut } from 'lucide-react';
 import { User } from '@/types';
 
 interface UserMenuProps {
@@ -30,8 +32,16 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
                         {user.email}
                     </span>
                 </li>
+                <div className="divider my-1" />
                 <li>
-                    <button onClick={onLogout} className="text-error">
+                    <Link href="/profile" className="flex items-center gap-2">
+                        <UserCircle className="w-4 h-4" />
+                        Meu Perfil
+                    </Link>
+                </li>
+                <li>
+                    <button onClick={onLogout} className="text-error flex items-center gap-2">
+                        <LogOut className="w-4 h-4" />
                         Sair
                     </button>
                 </li>

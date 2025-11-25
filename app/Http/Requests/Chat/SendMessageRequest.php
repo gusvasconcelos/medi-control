@@ -13,6 +13,7 @@ class SendMessageRequest extends FormRequest
     {
         return [
             'message' => ['required', 'string', 'min:1', 'max:2000'],
+            'is_suggestion' => ['nullable', 'boolean'],
         ];
     }
 
