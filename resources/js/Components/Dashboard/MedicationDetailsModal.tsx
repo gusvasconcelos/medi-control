@@ -203,14 +203,27 @@ export function MedicationDetailsModal({
                 {med?.interactions && med.interactions.length > 0 && (
                     <section>
                         <SectionHeader icon={AlertTriangle} title="Interações" />
-                        <div className="bg-error/10 border border-error/30 rounded-lg p-4">
-                            <ul className="list-disc list-inside space-y-1">
-                                {med.interactions.map((interaction, index) => (
-                                    <li key={index} className="text-error-content">
-                                        {interaction}
-                                    </li>
-                                ))}
-                            </ul>
+                        <div className="bg-error/10 border border-error/30 rounded-lg p-4 space-y-3">
+                            {med.interactions.map((interaction, index) => (
+                                <div key={index} className="border-b border-error/20 last:border-0 pb-2 last:pb-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className={`badge badge-sm ${
+                                            interaction.severity === 'severe' || interaction.severity === 'contraindicated' 
+                                                ? 'badge-error' 
+                                                : interaction.severity === 'moderate' 
+                                                ? 'badge-warning' 
+                                                : 'badge-info'
+                                        }`}>
+                                            {interaction.severity === 'severe' ? 'Severa' :
+                                             interaction.severity === 'contraindicated' ? 'Contraindicação' :
+                                             interaction.severity === 'moderate' ? 'Moderada' : 'Leve'}
+                                        </span>
+                                    </div>
+                                    <p className="text-error-content text-sm">
+                                        {interaction.description}
+                                    </p>
+                                </div>
+                            ))}
                         </div>
                     </section>
                 )}

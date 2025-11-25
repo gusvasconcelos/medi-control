@@ -94,6 +94,14 @@ export interface ToastContextType {
 /**
  * Medications
  */
+export interface MedicationInteraction {
+    medication_id: number;
+    has_interaction: boolean;
+    severity: string;
+    description: string;
+    calculated_at: string;
+}
+
 export interface Medication {
     id: number;
     name: string;
@@ -106,7 +114,7 @@ export interface Medication {
     form?: string | null;
     description?: string | null;
     warnings?: string | null;
-    interactions?: string[] | null;
+    interactions?: MedicationInteraction[] | null;
 }
 
 export interface MedicationSearchResult {

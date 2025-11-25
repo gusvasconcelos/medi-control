@@ -147,17 +147,34 @@ export function MedicationDetailsModal({
 
                 {medication.interactions &&
                     medication.interactions.length > 0 && (
-                        <div className="rounded-lg bg-error/10 p-3 sm:p-4">
+                        <div className="rounded-lg bg-error/10 border border-error/30 p-3 sm:p-4">
                             <h4 className="mb-3 text-base sm:text-lg font-semibold text-error">
                                 Interações Conhecidas
                             </h4>
-                            <ul className="list-disc list-inside space-y-1 text-sm sm:text-base">
+                            <div className="space-y-3">
                                 {medication.interactions.map(
                                     (interaction, index) => (
-                                        <li key={index}>{interaction}</li>
+                                        <div key={index} className="border-b border-error/20 last:border-0 pb-2 last:pb-0">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className={`badge badge-sm ${
+                                                    interaction.severity === 'severe' || interaction.severity === 'contraindicated' 
+                                                        ? 'badge-error' 
+                                                        : interaction.severity === 'moderate' 
+                                                        ? 'badge-warning' 
+                                                        : 'badge-info'
+                                                }`}>
+                                                    {interaction.severity === 'severe' ? 'Severa' :
+                                                     interaction.severity === 'contraindicated' ? 'Contraindicação' :
+                                                     interaction.severity === 'moderate' ? 'Moderada' : 'Leve'}
+                                                </span>
+                                            </div>
+                                            <p className="text-error-content text-sm sm:text-base">
+                                                {interaction.description}
+                                            </p>
+                                        </div>
                                     )
                                 )}
-                            </ul>
+                            </div>
                         </div>
                     )}
             </div>
