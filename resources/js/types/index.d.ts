@@ -98,6 +98,7 @@ export interface ToastContextType {
  */
 export interface MedicationInteraction {
     medication_id: number;
+    medication_name?: string;
     has_interaction: boolean;
     severity: string;
     description: string;

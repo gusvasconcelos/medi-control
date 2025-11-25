@@ -1,6 +1,8 @@
 import { AlertTriangle, Calendar, Clock, Info, Package, Pill } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 import { ResponsiveModal } from '@/Components/Modal/ResponsiveModal';
+import { medicationService } from '@/services/medicationService';
 import type { UserMedication, ViaAdministration } from '@/types';
 
 interface MedicationDetailsModalProps {
@@ -49,6 +51,32 @@ export function MedicationDetailsModal({
         ? (medication.current_stock / medication.initial_stock) * 100
         : 0;
     const isLowStock = medication.current_stock <= medication.low_stock_threshold;
+    const [interactionMedications, setInteractionMedications] = useState<Record<number, string>>({});
+
+    // Buscar nomes dos medicamentos das interações
+    useEffect(() => {
+        if (med?.interactions && med.interactions.length > 0) {
+            const medicationIds = med.interactions
+                .filter(interaction => !interaction.medication_name && interaction.medication_id)
+                .map(interaction => interaction.medication_id);
+
+            if (medicationIds.length > 0) {
+                Promise.all(
+                    medicationIds.map(id =>
+                        medicationService.getMedication(id)
+                            .then(med => ({ id, name: med.name }))
+                            .catch(() => ({ id, name: 'Medicamento desconhecido' }))
+                    )
+                ).then(results => {
+                    const medicationMap: Record<number, string> = {};
+                    results.forEach(({ id, name }) => {
+                        medicationMap[id] = name;
+                    });
+                    setInteractionMedications(medicationMap);
+                });
+            }
+        }
+    }, [med?.interactions]);
 
     const closeModal = () => {
         const modal = document.getElementById('medication-details-modal') as HTMLElement & { hidePopover?: () => void };
@@ -204,26 +232,35 @@ export function MedicationDetailsModal({
                     <section>
                         <SectionHeader icon={AlertTriangle} title="Interações" />
                         <div className="bg-error/10 border border-error/30 rounded-lg p-4 space-y-3">
-                            {med.interactions.map((interaction, index) => (
-                                <div key={index} className="border-b border-error/20 last:border-0 pb-2 last:pb-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className={`badge badge-sm ${
-                                            interaction.severity === 'severe' || interaction.severity === 'contraindicated' 
-                                                ? 'badge-error' 
-                                                : interaction.severity === 'moderate' 
-                                                ? 'badge-warning' 
-                                                : 'badge-info'
-                                        }`}>
-                                            {interaction.severity === 'severe' ? 'Severa' :
-                                             interaction.severity === 'contraindicated' ? 'Contraindicação' :
-                                             interaction.severity === 'moderate' ? 'Moderada' : 'Leve'}
-                                        </span>
+                            {med.interactions.map((interaction, index) => {
+                                const medicationName = interaction.medication_name ||
+                                    interactionMedications[interaction.medication_id] ||
+                                    'Medicamento desconhecido';
+
+                                return (
+                                    <div key={index} className="border-b border-error/20 last:border-0 pb-2 last:pb-0">
+                                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                            <span className="font-semibold text-base-content">
+                                                Com: {medicationName}
+                                            </span>
+                                            <span className={`badge badge-sm ${
+                                                interaction.severity === 'severe' || interaction.severity === 'contraindicated'
+                                                    ? 'badge-error'
+                                                    : interaction.severity === 'moderate'
+                                                    ? 'badge-warning'
+                                                    : 'badge-info'
+                                            }`}>
+                                                {interaction.severity === 'severe' ? 'Severa' :
+                                                 interaction.severity === 'contraindicated' ? 'Contraindicação' :
+                                                 interaction.severity === 'moderate' ? 'Moderada' : 'Leve'}
+                                            </span>
+                                        </div>
+                                        <p className="text-base-content/90 text-sm mt-1">
+                                            {interaction.description}
+                                        </p>
                                     </div>
-                                    <p className="text-error-content text-sm">
-                                        {interaction.description}
-                                    </p>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </section>
                 )}

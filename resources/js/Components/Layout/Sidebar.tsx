@@ -435,7 +435,7 @@ export function Sidebar({ navItems }: SidebarProps) {
                     <img
                         src={isCollapsed ? "/storage/icon.svg" : "/storage/logo.svg"}
                         alt="Logo do MediControl"
-                        className="h-8 w-auto"
+                        className="h-8 w-auto brightness-0 dark:brightness-100"
                     />
                 </Link>
                 {!isCollapsed && (

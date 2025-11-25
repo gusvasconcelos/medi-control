@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ResponsiveModal } from '@/Components/Modal/ResponsiveModal';
+import { medicationService } from '@/services/medicationService';
 import type { Medication } from '@/types';
 
 interface MedicationDetailsModalProps {
@@ -26,6 +27,8 @@ export function MedicationDetailsModal({
     isOpen,
     onClose,
 }: MedicationDetailsModalProps) {
+    const [interactionMedications, setInteractionMedications] = useState<Record<number, string>>({});
+
     useEffect(() => {
         if (isOpen && medication) {
             const modal = document.getElementById(
@@ -34,6 +37,31 @@ export function MedicationDetailsModal({
             modal?.showPopover?.();
         }
     }, [isOpen, medication]);
+
+    // Buscar nomes dos medicamentos das interações
+    useEffect(() => {
+        if (medication?.interactions && medication.interactions.length > 0) {
+            const medicationIds = medication.interactions
+                .filter(interaction => !interaction.medication_name && interaction.medication_id)
+                .map(interaction => interaction.medication_id);
+
+            if (medicationIds.length > 0) {
+                Promise.all(
+                    medicationIds.map(id =>
+                        medicationService.getMedication(id)
+                            .then(med => ({ id, name: med.name }))
+                            .catch(() => ({ id, name: 'Medicamento desconhecido' }))
+                    )
+                ).then(results => {
+                    const medicationMap: Record<number, string> = {};
+                    results.forEach(({ id, name }) => {
+                        medicationMap[id] = name;
+                    });
+                    setInteractionMedications(medicationMap);
+                });
+            }
+        }
+    }, [medication?.interactions]);
 
     if (!medication) return null;
 
@@ -153,26 +181,35 @@ export function MedicationDetailsModal({
                             </h4>
                             <div className="space-y-3">
                                 {medication.interactions.map(
-                                    (interaction, index) => (
-                                        <div key={index} className="border-b border-error/20 last:border-0 pb-2 last:pb-0">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className={`badge badge-sm ${
-                                                    interaction.severity === 'severe' || interaction.severity === 'contraindicated' 
-                                                        ? 'badge-error' 
-                                                        : interaction.severity === 'moderate' 
-                                                        ? 'badge-warning' 
-                                                        : 'badge-info'
-                                                }`}>
-                                                    {interaction.severity === 'severe' ? 'Severa' :
-                                                     interaction.severity === 'contraindicated' ? 'Contraindicação' :
-                                                     interaction.severity === 'moderate' ? 'Moderada' : 'Leve'}
-                                                </span>
+                                    (interaction, index) => {
+                                        const medicationName = interaction.medication_name ||
+                                            interactionMedications[interaction.medication_id] ||
+                                            'Medicamento desconhecido';
+
+                                        return (
+                                            <div key={index} className="border-b border-error/20 last:border-0 pb-2 last:pb-0">
+                                                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                                    <span className="font-semibold text-base-content">
+                                                        Com: {medicationName}
+                                                    </span>
+                                                    <span className={`badge badge-sm ${
+                                                        interaction.severity === 'severe' || interaction.severity === 'contraindicated'
+                                                            ? 'badge-error'
+                                                            : interaction.severity === 'moderate'
+                                                            ? 'badge-warning'
+                                                            : 'badge-info'
+                                                    }`}>
+                                                        {interaction.severity === 'severe' ? 'Severa' :
+                                                         interaction.severity === 'contraindicated' ? 'Contraindicação' :
+                                                         interaction.severity === 'moderate' ? 'Moderada' : 'Leve'}
+                                                    </span>
+                                                </div>
+                                                <p className="text-base-content/90 text-sm sm:text-base mt-1">
+                                                    {interaction.description}
+                                                </p>
                                             </div>
-                                            <p className="text-error-content text-sm sm:text-base">
-                                                {interaction.description}
-                                            </p>
-                                        </div>
-                                    )
+                                        );
+                                    }
                                 )}
                             </div>
                         </div>

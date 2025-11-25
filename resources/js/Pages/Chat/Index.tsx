@@ -85,7 +85,7 @@ export default function ChatIndex({ auth }: PageProps) {
                             <div className="flex items-center justify-between p-4 bg-base-200 border-b border-base-300">
                                 <div className="flex items-center justify-center">
                                     <img src="/storage/staff.webp" alt="Hermes" className="size-8" />
-                                    <h1 className="text-xl font-bold text-white">
+                                    <h1 className="text-xl font-bold text-base-content">
                                         Hermes
                                     </h1>
                                 </div>
