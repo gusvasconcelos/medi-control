@@ -35,6 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/select-role', fn () => Inertia::render('Auth/SelectRole'))->name('select-role');
     Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
     Route::get('/profile', fn () => Inertia::render('Profile/Index'))->name('profile.index');
+    Route::get('/notifications', fn () => Inertia::render('Settings/Notifications/Index'))->name('notifications.index');
     Route::get('/medications', fn () => Inertia::render('Medications/Index'))->name('medications.index');
     Route::get('/chat', fn () => Inertia::render('Chat/Index'))->name('chat.index');
     Route::get('/metrics/overview', [OverviewController::class, 'create'])->name('metrics.overview');
@@ -43,10 +44,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/my-patients', fn () => Inertia::render('Patients/Index'))->name('patients.index');
 
     Route::get('/reports', fn () => Inertia::render('Reports/Adherence'))->name('reports.adherence');
-
-    Route::prefix('settings')->name('settings.')->group(function () {
-        Route::get('/notifications', fn () => Inertia::render('Settings/Notifications/Index'))->name('notifications.index');
-    });
 
     Route::get('/users', fn () => Inertia::render('Users/Index'))->name('system.users.index');
 

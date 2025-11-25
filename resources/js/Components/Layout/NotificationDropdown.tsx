@@ -309,7 +309,7 @@ export function NotificationDropdown({ onNotificationClick }: NotificationDropdo
     const handleOpenPreferences = () => {
         setIsDropdownOpen(false);
         setIsModalOpen(false);
-        router.visit('/settings/notifications');
+        router.visit('/notifications');
     };
 
     return (

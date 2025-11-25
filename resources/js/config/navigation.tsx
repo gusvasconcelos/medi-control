@@ -181,20 +181,6 @@ export const mainNavigationItems: NavItem[] = [
                 active: false,
                 children: [
                     {
-                        label: 'Notificações',
-                        href: '/settings/notifications',
-                        icon: <Bell className="w-5 h-5" />,
-                        active: false,
-                    },
-                    {
-                        label: 'Perfil',
-                        href: '/settings/profile',
-                        icon: <User className="w-5 h-5" />,
-                        active: false,
-                        roles: ['super-admin', 'admin', 'patient', 'caregiver'],
-                        showInToolbar: true,
-                    },
-                    {
                         label: 'Permissões',
                         href: '/settings/permissions',
                         icon: <Shield className="w-5 h-5" />,
@@ -209,6 +195,20 @@ export const mainNavigationItems: NavItem[] = [
                         roles: ['super-admin'],
                     },
                 ],
+            },
+            {
+                label: 'Notificações',
+                href: '/notifications',
+                icon: <Bell className="w-5 h-5" />,
+                active: false,
+            },
+            {
+                label: 'Perfil',
+                href: '/profile',
+                icon: <User className="w-5 h-5" />,
+                active: false,
+                roles: ['super-admin', 'admin', 'patient', 'caregiver'],
+                showInToolbar: true,
             },
         ],
     },

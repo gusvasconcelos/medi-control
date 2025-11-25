@@ -79,7 +79,7 @@ export default function NotificationPreferencesIndex({ auth }: PageProps) {
         return (
             <>
                 <Head title="Preferências de Notificação" />
-                <AuthenticatedLayout navItems={getNavigationItems('/settings/notifications', userRoles)}>
+                <AuthenticatedLayout navItems={getNavigationItems('/notifications', userRoles)}>
                     <div className="min-h-screen bg-base-100 flex items-center justify-center">
                         <span className="loading loading-spinner loading-lg" />
                     </div>
@@ -92,7 +92,7 @@ export default function NotificationPreferencesIndex({ auth }: PageProps) {
         <>
             <Head title="Preferências de Notificação" />
 
-            <AuthenticatedLayout navItems={getNavigationItems('/settings/notifications', userRoles)}>
+            <AuthenticatedLayout navItems={getNavigationItems('/notifications', userRoles)}>
                 <div className="min-h-screen bg-base-100">
                     <div className="container mx-auto max-w-4xl px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8">
                         <div className="mb-6 sm:mb-8">
