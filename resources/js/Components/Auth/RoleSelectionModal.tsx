@@ -45,7 +45,7 @@ export function RoleSelectionModal({ onSelect, isLoading }: RoleSelectionModalPr
                     <img
                         src="/storage/icon.svg"
                         alt="Logo do MediControl"
-                        className="w-24 h-auto mb-8 mx-auto hover:opacity-80 transition-opacity brightness-0 dark:brightness-100"
+                        className="w-24 h-auto mb-8 mx-auto hover:opacity-80 transition-opacity"
                     />
                 </Link>
 

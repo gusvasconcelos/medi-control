@@ -18,7 +18,7 @@ export function Navbar({ variant, auth, onLogout }: NavbarProps) {
                     <img
                         src="/storage/logo.svg"
                         alt="Logo do MediControl"
-                        className="h-8 w-auto hover:opacity-80 transition-opacity brightness-0 dark:brightness-100"
+                        className="h-8 w-auto hover:opacity-80 transition-opacity"
                     />
                 </a>
             </div>
