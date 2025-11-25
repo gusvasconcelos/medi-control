@@ -168,12 +168,11 @@ export default function ProfileIndex({ auth }: PageProps) {
                                             accept="image/*"
                                             onChange={handlePhotoChange}
                                             className="hidden"
-                                            capture="environment"
                                         />
                                     </div>
                                     <div className="text-center">
                                         <p className="text-sm text-base-content/60">
-                                            Clique no botão da câmera para alterar sua foto
+                                            Clique no botão para escolher uma foto da galeria ou tirar uma nova
                                         </p>
                                         <p className="text-xs text-base-content/40 mt-1">
                                             PNG, JPG ou JPEG (máx. 5MB)
