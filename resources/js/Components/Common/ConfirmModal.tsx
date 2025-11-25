@@ -27,9 +27,13 @@ export function ConfirmModal({
     onConfirm,
 }: ConfirmModalProps) {
     useEffect(() => {
+        const modal = document.getElementById(modalId) as HTMLDialogElement;
+        if (!modal) return;
+
         if (isOpen) {
-            const modal = document.getElementById(modalId) as HTMLDialogElement;
-            modal?.showModal?.();
+            modal.showModal();
+        } else {
+            modal.close();
         }
     }, [isOpen, modalId]);
 
@@ -60,7 +64,10 @@ export function ConfirmModal({
                     <button
                         type="button"
                         className="btn btn-circle btn-ghost btn-sm absolute right-2 top-2"
-                        onClick={onClose}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            onClose();
+                        }}
                         disabled={isSubmitting}
                     >
                         <X className="h-5 w-5" />
@@ -81,7 +88,10 @@ export function ConfirmModal({
                     <button
                         type="button"
                         className="btn btn-ghost"
-                        onClick={onClose}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            onClose();
+                        }}
                         disabled={isSubmitting}
                     >
                         {cancelText}
@@ -89,7 +99,10 @@ export function ConfirmModal({
                     <button
                         type="button"
                         className={`btn ${styles.buttonClass}`}
-                        onClick={onConfirm}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            onConfirm();
+                        }}
                         disabled={isSubmitting}
                     >
                         {isSubmitting ? (
@@ -103,7 +116,10 @@ export function ConfirmModal({
             <form method="dialog" className="modal-backdrop">
                 <button
                     type="button"
-                    onClick={onClose}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        onClose();
+                    }}
                     disabled={isSubmitting}
                 >
                     close

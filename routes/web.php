@@ -35,6 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/select-role', fn () => Inertia::render('Auth/SelectRole'))->name('select-role');
     Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
     Route::get('/medications', fn () => Inertia::render('Medications/Index'))->name('medications.index');
+    Route::get('/chat', fn () => Inertia::render('Chat/Index'))->name('chat.index');
     Route::get('/metrics/overview', [OverviewController::class, 'create'])->name('metrics.overview');
 
     Route::get('/my-caregivers', fn () => Inertia::render('Caregivers/Index'))->name('caregivers.index');

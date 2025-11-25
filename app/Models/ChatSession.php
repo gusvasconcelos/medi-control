@@ -11,21 +11,18 @@ class ChatSession extends Model
 {
     use UserRelation;
 
-    public $timestamps = false;
-
     protected $fillable = [
         'user_id',
+        'title',
         'started_at',
-        'ended_at',
+        'last_message_at',
         'expires_at',
-        'context_type',
     ];
 
     protected $casts = [
         'started_at' => 'datetime',
-        'ended_at' => 'datetime',
+        'last_message_at' => 'datetime',
         'expires_at' => 'datetime',
-        'created_at' => 'datetime',
     ];
 
     public function user(): BelongsTo
@@ -35,6 +32,25 @@ class ChatSession extends Model
 
     public function messages(): HasMany
     {
-        return $this->hasMany(Message::class);
+        return $this->hasMany(ChatMessage::class)->orderBy('created_at', 'asc');
+    }
+
+    public static function getOrCreateForUser(User $user): ChatSession
+    {
+        return self::firstOrCreate(
+            ['user_id' => $user->id],
+            [
+                'started_at' => now(),
+                'expires_at' => now()->addHours(24),
+            ]
+        );
+    }
+
+    public function updateLastMessageTimestamp(): void
+    {
+        $this->update([
+            'last_message_at' => now(),
+            'expires_at' => now()->addHours(24),
+        ]);
     }
 }

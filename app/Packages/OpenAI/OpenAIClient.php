@@ -20,14 +20,16 @@ final class OpenAIClient implements OpenAIClientInterface
 
     /**
      * @param array<int, array{role: string, content: string}> $messages
+     * @param array<int, array{type: string, function: array{name: string, description: string, parameters: array<string, mixed>}}> $tools
      * @return array<string, mixed>
      * @throws \RuntimeException
      */
     public function chatCompletion(
         array $messages,
-        float $temperature = 1,
         string $model,
+        float $temperature = 1,
         bool $jsonFormat = true,
+        array $tools = [],
     ): array {
         $startTime = microtime(true);
 
@@ -43,6 +45,11 @@ final class OpenAIClient implements OpenAIClientInterface
                 $params['response_format'] = ['type' => 'json_object'];
             }
 
+            if (!empty($tools)) {
+                $params['tools'] = $tools;
+                $params['tool_choice'] = 'auto';
+            }
+
             $response = $this->client->chat()->create($params);
 
             $duration = round((microtime(true) - $startTime) * 1000, 2);
@@ -54,6 +61,20 @@ final class OpenAIClient implements OpenAIClientInterface
                 'finish_reason' => $response->choices[0]->finishReason ?? null,
             ]);
 
+            $toolCalls = [];
+            if (isset($response->choices[0]->message->toolCalls)) {
+                foreach ($response->choices[0]->message->toolCalls as $toolCall) {
+                    $toolCalls[] = [
+                        'id' => $toolCall->id,
+                        'type' => $toolCall->type,
+                        'function' => [
+                            'name' => $toolCall->function->name,
+                            'arguments' => $toolCall->function->arguments,
+                        ],
+                    ];
+                }
+            }
+
             return [
                 'content' => $response->choices[0]->message->content ?? '',
                 'usage' => [
@@ -62,6 +83,7 @@ final class OpenAIClient implements OpenAIClientInterface
                     'total_tokens' => $response->usage->totalTokens ?? 0,
                 ],
                 'finish_reason' => $response->choices[0]->finishReason ?? 'unknown',
+                'tool_calls' => $toolCalls,
             ];
         } catch (ErrorException $e) {
             Log::error('OpenAI API error', [

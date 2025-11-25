@@ -15,7 +15,7 @@ return new class () extends Migration {
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->dateTime('started_at')->useCurrent();
             $table->dateTime('ended_at')->nullable();
-            $table->dateTime('expires_at'); // Sessão expira após 24h de inatividade
+            $table->dateTime('expires_at');
             $table->enum('context_type', [
                 'general',
                 'medication',
@@ -27,7 +27,7 @@ return new class () extends Migration {
 
             // Indexes
             $table->index('user_id');
-            $table->index('expires_at'); // Para limpeza automática
+            $table->index('expires_at');
         });
     }
 

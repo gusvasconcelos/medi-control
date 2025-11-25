@@ -49,8 +49,8 @@ class InteractionCheckerService
 
         $response = $this->openAIClient->chatCompletion(
             messages: $messages,
-            temperature: config('openai.check_interactions.temperature'),
             model: config('openai.check_interactions.model'),
+            temperature: config('openai.check_interactions.temperature'),
             jsonFormat: true
         );
 

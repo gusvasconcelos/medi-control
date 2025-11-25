@@ -63,4 +63,3 @@ class MarkMissedMedicationsCommand extends Command
         return $failed > 0 ? Command::FAILURE : Command::SUCCESS;
     }
 }
-

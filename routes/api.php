@@ -13,6 +13,7 @@ Route::group([
     require __DIR__ . '/api/user-medications.php';
     require __DIR__ . '/api/caregiver-patient.php';
     require __DIR__ . '/api/notifications.php';
+    require __DIR__ . '/api/chat.php';
 
     Route::file('users');
     Route::apiResource('users', UserController::class)->only(['index', 'show']);

@@ -194,8 +194,8 @@ class UserMedicationService
      */
     public function getAdherenceReport(Collection $data): array
     {
-        $startDate = Carbon::parse($data->get('start_date'));
-        $endDate = Carbon::parse($data->get('end_date'));
+        $startDate = Carbon::parse($data->get('start_date'))->startOfDay();
+        $endDate = Carbon::parse($data->get('end_date'))->startOfDay();
 
         $userMedications = $this->userMedication
             ->with(['medication', 'logs' => function ($query) use ($startDate, $endDate) {
@@ -316,15 +316,26 @@ class UserMedicationService
         $timeSlots = $userMedication->time_slots ?? [];
         $timeSlotsCount = count($timeSlots);
 
-        $effectiveStartDate = $userMedication->start_date->gt($startDate)
-            ? $userMedication->start_date
-            : $startDate;
+        // Normaliza as datas para garantir comparação correta (apenas data, sem hora)
+        $reportStartDate = $startDate->copy()->startOfDay();
+        $reportEndDate = $endDate->copy()->startOfDay();
+        $medStartDate = $userMedication->start_date->copy()->startOfDay();
+        $medEndDate = $userMedication->end_date
+            ? $userMedication->end_date->copy()->startOfDay()
+            : null;
 
-        $effectiveEndDate = $userMedication->end_date && $userMedication->end_date->lt($endDate)
-            ? $userMedication->end_date
-            : $endDate;
+        // Calcula o período efetivo considerando a interseção entre o período do relatório e do medicamento
+        $effectiveStartDate = $medStartDate->gt($reportStartDate)
+            ? $medStartDate
+            : $reportStartDate;
 
-        $daysInPeriod = (int) $effectiveStartDate->diffInDays($effectiveEndDate) + 1;
+        $effectiveEndDate = $medEndDate && $medEndDate->lt($reportEndDate)
+            ? $medEndDate
+            : $reportEndDate;
+
+        // Calcula o número de dias no período (garantindo que seja pelo menos 1)
+        // diffInDays retorna a diferença em dias completos, então adicionamos 1 para incluir ambos os dias
+        $daysInPeriod = max(1, (int) $effectiveStartDate->diffInDays($effectiveEndDate) + 1);
         $totalScheduled = $daysInPeriod * $timeSlotsCount;
 
         $logs = $userMedication->logs;

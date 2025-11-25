@@ -63,9 +63,9 @@ class User extends Authenticatable
         return $this->hasMany(Notification::class);
     }
 
-    public function chatSessions(): HasMany
+    public function chatSession(): HasOne
     {
-        return $this->hasMany(ChatSession::class);
+        return $this->hasOne(ChatSession::class);
     }
 
     public function adherenceReports(): HasMany
