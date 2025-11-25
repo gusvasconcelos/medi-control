@@ -15,6 +15,7 @@ import {
     Heart,
     UserCheck,
     MessageCircle,
+    User,
 } from 'lucide-react';
 import { NavItem } from '@/Components/Layout/Sidebar';
 
@@ -184,6 +185,14 @@ export const mainNavigationItems: NavItem[] = [
                         href: '/settings/notifications',
                         icon: <Bell className="w-5 h-5" />,
                         active: false,
+                    },
+                    {
+                        label: 'Perfil',
+                        href: '/settings/profile',
+                        icon: <User className="w-5 h-5" />,
+                        active: false,
+                        roles: ['super-admin', 'admin', 'patient', 'caregiver'],
+                        showInToolbar: true,
                     },
                     {
                         label: 'Permissões',

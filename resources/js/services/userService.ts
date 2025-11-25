@@ -82,6 +82,7 @@ export const userService = {
         name: string;
         email: string;
         phone?: string;
+        profile_photo_path?: string;
     }): Promise<User> {
         const response = await axios.put<{ data: User }>(
             `${API_BASE}/users/me/profile`,

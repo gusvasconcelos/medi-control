@@ -90,12 +90,13 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . Auth::id(),
             'phone' => 'nullable|string|max:20',
+            'profile_photo_path' => 'nullable|string|max:2048',
         ]);
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        $user->update($request->only(['name', 'email', 'phone']));
+        $user->update($request->only(['name', 'email', 'phone', 'profile_photo_path']));
 
         return response()->json([
             'message' => 'Perfil atualizado com sucesso',

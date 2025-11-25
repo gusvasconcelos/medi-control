@@ -86,4 +86,16 @@ class NotificationController extends Controller
 
         return response()->json(['data' => $notifications]);
     }
+
+    public function clearAll(): JsonResponse
+    {
+        $deletedCount = Notification::query()
+            ->where('user_id', auth()->id())
+            ->delete();
+
+        return response()->json([
+            'message' => __('notifications.all_cleared'),
+            'data' => ['count' => $deletedCount],
+        ]);
+    }
 }

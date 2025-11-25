@@ -38,6 +38,7 @@ class User extends Authenticatable
         'email',
         'password',
         'phone',
+        'profile_photo_path',
     ];
 
     protected $hidden = [
@@ -52,6 +53,49 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Get the profile photo URL attribute.
+     */
+    public function getProfilePhotoUrlAttribute(): ?string
+    {
+        if (! $this->profile_photo_path) {
+            return null;
+        }
+
+        // Check if it's already a full URL
+        if (str_starts_with($this->profile_photo_path, 'http://') ||
+            str_starts_with($this->profile_photo_path, 'https://')) {
+            return $this->profile_photo_path;
+        }
+
+        // Determine the disk from files table or default to 's3'
+        /** @var \App\Models\File|null $file */
+        $file = $this->files()->where('path', $this->profile_photo_path)->first();
+        $disk = $file ? $file->disk : 's3';
+
+        // Try to generate URL based on disk type
+        try {
+            if ($disk === 's3') {
+                return \App\Services\FileStorageService::generateTemporaryUrl(
+                    $this->profile_photo_path,
+                    's3',
+                    60 * 24 * 7 // 7 days
+                );
+            }
+
+            // For local/public disk, use storage URL
+            return \Illuminate\Support\Facades\Storage::disk($disk)->url($this->profile_photo_path);
+        } catch (\Exception $e) {
+            // Fallback to public storage URL
+            return url('/storage/' . $this->profile_photo_path);
+        }
+    }
+
+    /**
+     * Append profile_photo_url to array/JSON serialization.
+     */
+    protected $appends = ['profile_photo_url'];
 
     public function medications(): HasMany
     {

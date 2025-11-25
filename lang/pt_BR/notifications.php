@@ -39,4 +39,5 @@ return [
 
     'marked_as_read' => 'Notificação marcada como lida',
     'all_marked_as_read' => 'Todas as notificações foram marcadas como lidas',
+    'all_cleared' => 'Todas as notificações foram removidas',
 ];

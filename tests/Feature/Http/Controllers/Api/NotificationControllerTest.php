@@ -158,4 +158,53 @@ class NotificationControllerTest extends TestCase
 
         $response->assertStatus(401);
     }
+
+    public function test_clear_all_deletes_all_user_notifications(): void
+    {
+        $user = User::factory()->create();
+        Notification::factory()->count(10)->create(['user_id' => $user->id]);
+
+        $response = $this->actingAsUser($user)->deleteJson('/api/v1/notifications/clear-all');
+
+        $response
+            ->assertStatus(200)
+            ->assertJsonPath('data.count', 10);
+
+        $remainingCount = Notification::where('user_id', $user->id)->count();
+        $this->assertEquals(0, $remainingCount);
+    }
+
+    public function test_clear_all_only_deletes_current_user_notifications(): void
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+
+        // Create notifications one by one with explicit attributes
+        for ($i = 0; $i < 5; $i++) {
+            Notification::factory()->create([
+                'user_id' => $user1->id,
+                'status' => 'sent',
+                'sent_at' => now(),
+            ]);
+        }
+
+        for ($i = 0; $i < 3; $i++) {
+            Notification::factory()->create([
+                'user_id' => $user2->id,
+                'status' => 'sent',
+                'sent_at' => now(),
+            ]);
+        }
+
+        $response = $this->actingAsUser($user1)->deleteJson('/api/v1/notifications/clear-all');
+
+        $response
+            ->assertStatus(200)
+            ->assertJsonPath('data.count', 5);
+
+        // Verificar que apenas as notificações do user1 foram deletadas
+        // Precisamos desabilitar o UserScope global para verificar as notificações de outros usuários
+        $this->assertEquals(0, Notification::withoutGlobalScopes()->where('user_id', $user1->id)->count());
+        $this->assertEquals(3, Notification::withoutGlobalScopes()->where('user_id', $user2->id)->count());
+    }
 }

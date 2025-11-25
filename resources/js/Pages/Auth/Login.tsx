@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import axios from 'axios';
+import { Eye, EyeOff } from 'lucide-react';
 import { AuthCard } from '@/Components/Auth/AuthCard';
 import { InputField } from '@/Components/Auth/InputField';
 import { useToast } from '@/hooks/useToast';
@@ -21,6 +22,7 @@ export default function Login({ auth }: PageProps) {
     });
     const [errors, setErrors] = useState<Partial<LoginCredentials>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -69,17 +71,40 @@ export default function Login({ auth }: PageProps) {
                             placeholder="exemplo@email.com"
                         />
 
-                        <InputField
-                            label="Senha"
-                            type="password"
-                            name="password"
-                            autoComplete="current-password"
-                            required
-                            value={formData.password}
-                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            error={errors.password}
-                            placeholder="Digite sua senha"
-                        />
+                        <div className="form-control w-full">
+                            <label className="label">
+                                <span className="label-text font-medium">Senha</span>
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="password"
+                                    autoComplete="current-password"
+                                    required
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    placeholder="Digite sua senha"
+                                    className={`input input-bordered w-full pr-10 ${errors.password ? 'input-error' : ''}`}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/60 hover:text-base-content transition-colors"
+                                    aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="w-5 h-5" />
+                                    ) : (
+                                        <Eye className="w-5 h-5" />
+                                    )}
+                                </button>
+                            </div>
+                            {errors.password && (
+                                <label className="label">
+                                    <span className="label-text-alt text-error">{errors.password}</span>
+                                </label>
+                            )}
+                        </div>
 
                         <div className="flex items-center justify-between">
                             <label className="label cursor-pointer gap-2 p-0">

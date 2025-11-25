@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Bell, Clock, AlertTriangle, Package, Check, ExternalLink, Settings } from 'lucide-react';
+import { Bell, Clock, AlertTriangle, Package, Check, ExternalLink, Settings, Trash2 } from 'lucide-react';
 import { notificationService } from '@/services/notificationService';
 import { ResponsiveModal } from '@/Components/Modal/ResponsiveModal';
 import type { Notification, NotificationType } from '@/types';
@@ -211,6 +211,19 @@ export function NotificationDropdown({ onNotificationClick }: NotificationDropdo
         }
     };
 
+    const handleClearAll = async () => {
+        try {
+            await notificationService.clearAll();
+            setRecentNotifications([]);
+            setAllNotifications([]);
+            setUnreadCount(0);
+            fetchUnreadCount();
+            fetchRecentNotifications();
+        } catch {
+            // Silently fail
+        }
+    };
+
     const handleOpenModal = () => {
         setIsDropdownOpen(false);
         setIsModalOpen(true);
@@ -411,7 +424,7 @@ export function NotificationDropdown({ onNotificationClick }: NotificationDropdo
                     onClose={handleCloseModal}
                     footer={modalFooter}
                 >
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center justify-between mb-4 gap-2">
                         {unreadCount > 0 && (
                             <button
                                 type="button"
@@ -420,6 +433,16 @@ export function NotificationDropdown({ onNotificationClick }: NotificationDropdo
                             >
                                 <Check className="w-4 h-4 mr-1" />
                                 Marcar todas
+                            </button>
+                        )}
+                        {allNotifications.length > 0 && (
+                            <button
+                                type="button"
+                                className="btn btn-error btn-sm"
+                                onClick={handleClearAll}
+                            >
+                                <Trash2 className="w-4 h-4 mr-1" />
+                                Limpar todas
                             </button>
                         )}
                     </div>

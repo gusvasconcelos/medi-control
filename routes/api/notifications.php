@@ -17,4 +17,5 @@ Route::group([
     Route::get('notifications/recent', [NotificationController::class, 'recent']);
     Route::patch('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     Route::patch('notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+    Route::delete('notifications/clear-all', [NotificationController::class, 'clearAll']);
 });

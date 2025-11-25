@@ -122,24 +122,10 @@ class ChatInteractionCheckerService
             return 'Verificação concluída! Não foram encontradas interações medicamentosas significativas entre seus medicamentos.';
         }
 
-        $message = "Verificação concluída! Foram encontradas {$totalInteractions} interação(ões) medicamentosa(s):\n\n";
-
-        if ($severityCount['severe'] > 0) {
-            $message .= "⚠️ **{$severityCount['severe']} interação(ões) grave(s)** - Consulte seu médico imediatamente\n";
+        if ($totalInteractions === 1) {
+            return 'Verificação concluída! Foi encontrada 1 interação medicamentosa significativa entre seus medicamentos.';
         }
 
-        if ($severityCount['moderate'] > 0) {
-            $message .= "⚠️ **{$severityCount['moderate']} interação(ões) moderada(s)** - Informe seu médico\n";
-        }
-
-        if ($severityCount['minor'] > 0) {
-            $message .= "ℹ️ {$severityCount['minor']} interação(ões) leve(s) - Monitore possíveis efeitos\n";
-        }
-
-        if ($alertsCreated > 0) {
-            $message .= "\n{$alertsCreated} novo(s) alerta(s) foi(ram) criado(s) para interações graves ou moderadas.";
-        }
-
-        return $message;
+        return "Verificação concluída! Foram encontradas {$totalInteractions} interações medicamentosas significativas entre seus medicamentos.";
     }
 }

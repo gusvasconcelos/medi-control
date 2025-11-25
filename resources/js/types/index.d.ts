@@ -17,6 +17,8 @@ export interface User {
     name: string;
     email: string;
     phone?: string;
+    profile_photo_path?: string;
+    profile_photo_url?: string;
     email_verified_at?: string;
     roles?: Role[];
     created_at: string;

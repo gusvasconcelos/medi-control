@@ -9,6 +9,7 @@ interface UserMenuProps {
 
 export function UserMenu({ user, onLogout }: UserMenuProps) {
     const userInitial = user.name.charAt(0).toUpperCase();
+    const profilePhotoUrl = user.profile_photo_url;
 
     return (
         <div className="dropdown dropdown-end">
@@ -18,13 +19,21 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
                 className="btn btn-ghost btn-circle avatar placeholder"
                 aria-label="Menu do usuário"
             >
-                <div className="bg-primary text-primary-content w-10 rounded-full">
-                    <span className="text-xl">{userInitial}</span>
+                <div className="bg-primary text-primary-content w-12 rounded-full">
+                    {profilePhotoUrl ? (
+                        <img
+                            src={profilePhotoUrl}
+                            alt={user.name}
+                            className="w-12 h-12 rounded-full object-cover"
+                        />
+                    ) : (
+                        <span className="text-xl">{userInitial}</span>
+                    )}
                 </div>
             </div>
             <ul
                 tabIndex={0}
-                className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow-lg border border-base-300"
+                className="menu menu-md dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-64 p-3 shadow-lg border border-base-300"
             >
                 <li className="menu-title">
                     <span className="text-base-content">{user.name}</span>

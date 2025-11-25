@@ -42,6 +42,11 @@ export const notificationService = {
         await axios.patch(`${API_BASE}/notifications/mark-all-read`);
     },
 
+    async clearAll(): Promise<number> {
+        const response = await axios.delete<{ data: { count: number } }>(`${API_BASE}/notifications/clear-all`);
+        return response.data.data.count;
+    },
+
     async getPreferences(): Promise<NotificationPreference> {
         const response = await axios.get<NotificationPreferenceResponse>(`${API_BASE}/notification-preferences`);
         return response.data.data;
