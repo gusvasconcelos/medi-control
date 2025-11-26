@@ -2,16 +2,17 @@
 
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\Web\Auth\LoginController;
 use App\Http\Controllers\Web\Auth\RegisterController;
-use App\Http\Controllers\Web\Auth\ResetPasswordController;
 use App\Http\Controllers\Web\Metrics\OverviewController;
-use App\Http\Controllers\Web\Pulse\DashboardController as PulseDashboardController;
+use App\Http\Controllers\Web\Auth\ResetPasswordController;
 use App\Http\Controllers\Web\Auth\ForgotPasswordController;
-use App\Http\Controllers\Web\Horizon\DashboardController as HorizonDashboardController;
 use App\Http\Controllers\Web\Horizon\JobsController as HorizonJobsController;
 use App\Http\Controllers\Web\Horizon\BatchesController as HorizonBatchesController;
 use App\Http\Controllers\Web\Horizon\MetricsController as HorizonMetricsController;
+use App\Http\Controllers\Web\Pulse\DashboardController as PulseDashboardController;
+use App\Http\Controllers\Web\Horizon\DashboardController as HorizonDashboardController;
 use App\Http\Controllers\Web\Horizon\MonitoringController as HorizonMonitoringController;
 
 Route::get('/', fn () => Inertia::render('Welcome'))->name('welcome');
@@ -31,6 +32,8 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
+    Broadcast::routes();
+
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
     Route::get('/select-role', fn () => Inertia::render('Auth/SelectRole'))->name('select-role');
     Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');

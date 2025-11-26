@@ -117,7 +117,6 @@ class UserMedicationService
             'dosage' => $data->get('dosage'),
             'time_slots' => $data->get('time_slots'),
             'via_administration' => $data->get('via_administration'),
-            'duration' => $data->get('duration'),
             'start_date' => $data->get('start_date'),
             'end_date' => $data->get('end_date'),
             'initial_stock' => $data->get('initial_stock'),

@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
+        channels: __DIR__.'/../routes/channels.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
@@ -53,6 +54,7 @@ return Application::configure(basePath: dirname(__DIR__))
             Request::HEADER_X_FORWARDED_AWS_ELB);
     })
     ->withSchedule(function (Schedule $schedule) {
+        $schedule->command('notifications:send')->everyMinute();
         $schedule->command('notifications:schedule')->dailyAt('00:00');
         $schedule->command('medications:mark-missed')->dailyAt('02:00');
     })

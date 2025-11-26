@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\RealTimeNotificationEvent;
 use App\Models\MedicationLog;
 use App\Models\Notification;
 use App\Models\NotificationPreference;
@@ -107,7 +108,7 @@ class MedicationLogService
             return;
         }
 
-        Notification::create([
+        $notification = Notification::create([
             'user_id' => $userMedication->user_id,
             'user_medication_id' => $userMedication->id,
             'type' => 'low_stock',
@@ -124,6 +125,8 @@ class MedicationLogService
                 'threshold' => $userMedication->low_stock_threshold,
             ],
         ]);
+
+        RealTimeNotificationEvent::dispatch($userMedication->user_id, $notification);
     }
 
     private function lowStockNotificationExists(UserMedication $userMedication): bool

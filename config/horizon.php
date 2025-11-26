@@ -97,7 +97,6 @@ return [
     */
 
     'waits' => [
-        'redis:default' => 60,
         'rabbitmq:medication-interactions' => 120,
     ],
 
@@ -233,6 +232,8 @@ return [
         'local' => [
             'supervisor-1' => [
                 'maxProcesses' => 3,
+                'balanceMaxShift' => 1,
+                'balanceCooldown' => 3,
             ],
         ],
     ],

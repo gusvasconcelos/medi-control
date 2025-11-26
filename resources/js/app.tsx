@@ -7,6 +7,11 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { ToastContainer } from '@/Components/ToastContainer';
 import AppLayout from '@/Layouts/AppLayout';
+import { configureEcho } from '@laravel/echo-react';
+
+configureEcho({
+    broadcaster: 'reverb',
+});
 
 const appName = import.meta.env.VITE_APP_NAME || 'MediControl';
 

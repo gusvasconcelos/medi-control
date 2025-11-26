@@ -2,6 +2,7 @@
 
 namespace App\Services\Notification;
 
+use App\Events\RealTimeNotificationEvent;
 use App\Models\InteractionAlert;
 use App\Models\Notification;
 use App\Models\NotificationPreference;
@@ -186,7 +187,7 @@ class NotificationSchedulerService
         string $title,
         string $body
     ): Notification {
-        return Notification::create([
+        $notification = Notification::create([
             'user_id' => $user->id,
             'user_medication_id' => $medication->id,
             'type' => $type,
@@ -200,6 +201,10 @@ class NotificationSchedulerService
                 'medication_name' => $medication->medication->name ?? null,
             ],
         ]);
+
+        RealTimeNotificationEvent::dispatch($user->id, $notification);
+
+        return $notification;
     }
 
     private function createInteractionNotification(
@@ -209,7 +214,7 @@ class NotificationSchedulerService
     ): Notification {
         $severityLabel = __('medications.interaction_severity.' . $alert->severity);
 
-        return Notification::create([
+        $notification = Notification::create([
             'user_id' => $user->id,
             'user_medication_id' => null,
             'type' => 'interaction_alert',
@@ -229,6 +234,10 @@ class NotificationSchedulerService
                 'medication_2_id' => $alert->medication_2_id,
             ],
         ]);
+
+        RealTimeNotificationEvent::dispatch($user->id, $notification);
+
+        return $notification;
     }
 
     private function notificationExists(

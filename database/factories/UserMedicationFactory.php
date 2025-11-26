@@ -25,7 +25,6 @@ class UserMedicationFactory extends Factory
                 ['08:00', '14:00', '20:00'],
             ]),
             'via_administration' => fake()->randomElement($vias),
-            'duration' => fake()->optional()->numberBetween(7, 90),
             'start_date' => fake()->date(),
             'end_date' => fake()->optional()->date(),
             'initial_stock' => fake()->numberBetween(10, 100),

@@ -365,5 +365,7 @@ export interface UnreadCountResponse {
 declare global {
     interface Window {
         axios: typeof import('axios').default;
+        Pusher: typeof import('pusher-js').default;
+        Echo: import('laravel-echo').default;
     }
 }

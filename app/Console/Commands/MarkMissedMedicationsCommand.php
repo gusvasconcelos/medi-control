@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Models\MedicationLog;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Log;
 
 class MarkMissedMedicationsCommand extends Command
 {
@@ -15,8 +14,6 @@ class MarkMissedMedicationsCommand extends Command
 
     public function handle(): int
     {
-        $this->info('Verificando MedicationLogs pendentes...');
-
         $oneDayAgo = Carbon::now()->subDay();
 
         $missedLogs = MedicationLog::query()
@@ -25,7 +22,6 @@ class MarkMissedMedicationsCommand extends Command
             ->get();
 
         if ($missedLogs->isEmpty()) {
-            $this->info('Nenhum MedicationLog encontrado para marcar como missed.');
             return Command::SUCCESS;
         }
 
@@ -40,24 +36,9 @@ class MarkMissedMedicationsCommand extends Command
 
                 $updated++;
 
-                Log::info('MedicationLog marcado como missed', [
-                    'medication_log_id' => $log->id,
-                    'user_medication_id' => $log->user_medication_id,
-                    'scheduled_at' => $log->scheduled_at,
-                ]);
             } catch (\Throwable $e) {
                 $failed++;
-                Log::error('Falha ao marcar MedicationLog como missed', [
-                    'medication_log_id' => $log->id,
-                    'error' => $e->getMessage(),
-                ]);
             }
-        }
-
-        $this->info("MedicationLogs atualizados: {$updated}");
-
-        if ($failed > 0) {
-            $this->error("Falhas: {$failed}");
         }
 
         return $failed > 0 ? Command::FAILURE : Command::SUCCESS;

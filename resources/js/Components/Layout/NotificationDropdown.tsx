@@ -3,7 +3,8 @@ import { Bell, Clock, AlertTriangle, Package, Check, ExternalLink, Settings, Tra
 import { notificationService } from '@/services/notificationService';
 import { ResponsiveModal } from '@/Components/Modal/ResponsiveModal';
 import type { Notification, NotificationType } from '@/types';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
+import { useNotifications } from '@/hooks/useNotifications';
 
 interface NotificationDropdownProps {
     onNotificationClick?: (notification: Notification) => void;
@@ -51,36 +52,24 @@ function getNotificationColor(type: NotificationType): string {
 }
 
 export function NotificationDropdown({ onNotificationClick }: NotificationDropdownProps) {
-    const [recentNotifications, setRecentNotifications] = useState<Notification[]>([]);
+    const { props } = usePage<{ auth: { user: { id: number } } }>();
+    const userId = props.auth?.user?.id;
+
+    const {
+        recentNotifications,
+        unreadCount,
+        isLoading: isLoadingRecent,
+        markAsRead: markNotificationAsRead,
+        markAllAsRead: markAllNotificationsAsRead,
+        clearAll: clearAllNotifications,
+    } = useNotifications(userId);
+
     const [allNotifications, setAllNotifications] = useState<Notification[]>([]);
-    const [unreadCount, setUnreadCount] = useState(0);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoadingModal, setIsLoadingModal] = useState(false);
-    const [isLoadingRecent, setIsLoadingRecent] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-
-    const fetchUnreadCount = useCallback(async () => {
-        try {
-            const count = await notificationService.getUnreadCount();
-            setUnreadCount(count);
-        } catch {
-            // Silently fail
-        }
-    }, []);
-
-    const fetchRecentNotifications = useCallback(async () => {
-        setIsLoadingRecent(true);
-        try {
-            const recent = await notificationService.getRecent();
-            setRecentNotifications(recent);
-        } catch {
-            // Silently fail
-        } finally {
-            setIsLoadingRecent(false);
-        }
-    }, []);
 
     const fetchAllNotifications = useCallback(async (page: number = 1) => {
         setIsLoadingModal(true);
@@ -98,17 +87,6 @@ export function NotificationDropdown({ onNotificationClick }: NotificationDropdo
             setIsLoadingModal(false);
         }
     }, []);
-
-    useEffect(() => {
-        fetchUnreadCount();
-        fetchRecentNotifications();
-
-        const interval = setInterval(() => {
-            fetchUnreadCount();
-            fetchRecentNotifications();
-        }, 60000);
-        return () => clearInterval(interval);
-    }, [fetchUnreadCount, fetchRecentNotifications]);
 
     // Fechar dropdown ao clicar fora
     useEffect(() => {
@@ -175,53 +153,28 @@ export function NotificationDropdown({ onNotificationClick }: NotificationDropdo
     const handleMarkAsRead = async (notification: Notification) => {
         if (notification.read_at) return;
 
-        try {
-            await notificationService.markAsRead(notification.id);
-            setRecentNotifications((prev) =>
-                prev.map((n) =>
-                    n.id === notification.id ? { ...n, read_at: new Date().toISOString(), status: 'read' } : n
-                )
-            );
-            setAllNotifications((prev) =>
-                prev.map((n) =>
-                    n.id === notification.id ? { ...n, read_at: new Date().toISOString(), status: 'read' } : n
-                )
-            );
-            setUnreadCount((prev) => Math.max(0, prev - 1));
-        } catch {
-            // Silently fail
-        }
+        await markNotificationAsRead(notification.id);
+
+        setAllNotifications((prev) =>
+            prev.map((n) =>
+                n.id === notification.id ? { ...n, read_at: new Date().toISOString(), status: 'read' } : n
+            )
+        );
 
         onNotificationClick?.(notification);
     };
 
     const handleMarkAllAsRead = async () => {
-        try {
-            await notificationService.markAllAsRead();
-            setRecentNotifications((prev) =>
-                prev.map((n) => ({ ...n, read_at: new Date().toISOString(), status: 'read' as const }))
-            );
-            setAllNotifications((prev) =>
-                prev.map((n) => ({ ...n, read_at: new Date().toISOString(), status: 'read' as const }))
-            );
-            setUnreadCount(0);
-            fetchUnreadCount();
-        } catch {
-            // Silently fail
-        }
+        await markAllNotificationsAsRead();
+
+        setAllNotifications((prev) =>
+            prev.map((n) => ({ ...n, read_at: new Date().toISOString(), status: 'read' as const }))
+        );
     };
 
     const handleClearAll = async () => {
-        try {
-            await notificationService.clearAll();
-            setRecentNotifications([]);
-            setAllNotifications([]);
-            setUnreadCount(0);
-            fetchUnreadCount();
-            fetchRecentNotifications();
-        } catch {
-            // Silently fail
-        }
+        await clearAllNotifications();
+        setAllNotifications([]);
     };
 
     const handleOpenModal = () => {
@@ -236,9 +189,6 @@ export function NotificationDropdown({ onNotificationClick }: NotificationDropdo
             modal.hidePopover();
         }
         setIsModalOpen(false);
-        // Recarregar notificações recentes quando fechar o modal
-        fetchRecentNotifications();
-        fetchUnreadCount();
     };
 
     // Listener para quando o popover é fechado pelo backdrop
@@ -251,12 +201,9 @@ export function NotificationDropdown({ onNotificationClick }: NotificationDropdo
         const handleToggle = (e: Event) => {
             const target = e.target as HTMLElement;
             if (target.id === 'notifications-modal') {
-                // Verificar se o popover foi fechado
                 const isOpen = target.matches(':popover-open');
                 if (!isOpen && isModalOpen) {
                     setIsModalOpen(false);
-                    fetchRecentNotifications();
-                    fetchUnreadCount();
                 }
             }
         };
@@ -265,7 +212,7 @@ export function NotificationDropdown({ onNotificationClick }: NotificationDropdo
         return () => {
             modal.removeEventListener('toggle', handleToggle);
         };
-    }, [isModalOpen, fetchRecentNotifications, fetchUnreadCount]);
+    }, [isModalOpen]);
 
     const handlePageChange = (page: number) => {
         fetchAllNotifications(page);
