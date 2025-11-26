@@ -97,6 +97,7 @@ return [
     */
 
     'waits' => [
+        'redis:default' => 60,
         'rabbitmq:medication-interactions' => 120,
     ],
 
