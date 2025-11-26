@@ -47,31 +47,36 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/users', fn () => Inertia::render('Users/Index'))->name('system.users.index');
 
-    Route::middleware('role:super-admin')->prefix('settings')->name('settings.')->group(function () {
-        Route::get('/roles', fn () => Inertia::render('Settings/Roles/Index'))->name('roles.index');
-        Route::get('/permissions', fn () => Inertia::render('Settings/Permissions/Index'))->name('permissions.index');
-        Route::get('/monitoring/pulse', [PulseDashboardController::class, 'index'])->name('pulse.dashboard');
-        Route::prefix('monitoring/horizon')->name('monitoring.horizon.')->group(function () {
-            Route::get('/', [HorizonDashboardController::class, 'index'])->name('dashboard');
+    Route::middleware('role:super-admin')->group(function () {
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('/roles', fn () => Inertia::render('Settings/Roles/Index'))->name('roles.index');
+            Route::get('/permissions', fn () => Inertia::render('Settings/Permissions/Index'))->name('permissions.index');
+        });
 
-            Route::get('/jobs/{status}', [HorizonJobsController::class, 'index'])
-                ->where('status', 'pending|completed|failed|silenced')
-                ->name('jobs.index');
-            Route::get('/jobs/show/{id}', [HorizonJobsController::class, 'show'])->name('jobs.show');
-            Route::post('/jobs/{id}/retry', [HorizonJobsController::class, 'retry'])->name('jobs.retry');
+        Route::prefix('monitoring')->name('monitoring.')->group(function () {
+            Route::get('/pulse', [PulseDashboardController::class, 'index'])->name('pulse.dashboard');
+            Route::prefix('/horizon')->name('horizon.')->group(function () {
+                Route::get('/', [HorizonDashboardController::class, 'index'])->name('dashboard');
 
-            Route::get('/batches', [HorizonBatchesController::class, 'index'])->name('batches.index');
-            Route::get('/batches/{id}', [HorizonBatchesController::class, 'show'])->name('batches.show');
-            Route::post('/batches/{id}/retry', [HorizonBatchesController::class, 'retry'])->name('batches.retry');
+                Route::get('/jobs/{status}', [HorizonJobsController::class, 'index'])
+                    ->where('status', 'pending|completed|failed|silenced')
+                    ->name('jobs.index');
+                Route::get('/jobs/show/{id}', [HorizonJobsController::class, 'show'])->name('jobs.show');
+                Route::post('/jobs/{id}/retry', [HorizonJobsController::class, 'retry'])->name('jobs.retry');
 
-            Route::get('/metrics/{type}', [HorizonMetricsController::class, 'index'])
-                ->where('type', 'jobs|queues')
-                ->name('metrics.index');
+                Route::get('/batches', [HorizonBatchesController::class, 'index'])->name('batches.index');
+                Route::get('/batches/{id}', [HorizonBatchesController::class, 'show'])->name('batches.show');
+                Route::post('/batches/{id}/retry', [HorizonBatchesController::class, 'retry'])->name('batches.retry');
 
-            Route::get('/monitoring', [HorizonMonitoringController::class, 'index'])->name('monitoring.index');
-            Route::post('/monitoring', [HorizonMonitoringController::class, 'store'])->name('monitoring.store');
-            Route::get('/monitoring/{tag}', [HorizonMonitoringController::class, 'show'])->name('monitoring.show');
-            Route::delete('/monitoring/{tag}', [HorizonMonitoringController::class, 'destroy'])->name('monitoring.destroy');
+                Route::get('/metrics/{type}', [HorizonMetricsController::class, 'index'])
+                    ->where('type', 'jobs|queues')
+                    ->name('metrics.index');
+
+                Route::get('/monitoring', [HorizonMonitoringController::class, 'index'])->name('monitoring.index');
+                Route::post('/monitoring', [HorizonMonitoringController::class, 'store'])->name('monitoring.store');
+                Route::get('/monitoring/{tag}', [HorizonMonitoringController::class, 'show'])->name('monitoring.show');
+                Route::delete('/monitoring/{tag}', [HorizonMonitoringController::class, 'destroy'])->name('monitoring.destroy');
+            });
         });
     });
 });
