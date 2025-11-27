@@ -1,0 +1,37 @@
+{
+    "name": "MediControl",
+    "short_name": "MediControl",
+    "description": "Gerencie seus medicamentos com inteligência e segurança",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#0D7FFF",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/storage/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/storage/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "health",
+        "medical",
+        "productivity"
+    ],
+    "lang": "pt-BR",
+    "dir": "ltr"
+}
