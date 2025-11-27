@@ -48,6 +48,105 @@ export const chatService = {
     },
 
     /**
+     * Send a message to the chat assistant with streaming response
+     */
+    async sendMessageStream(
+        message: string,
+        isSuggestion: boolean,
+        onChunk: (chunk: {
+            type: string;
+            content?: string;
+            userMessageId?: number;
+            sessionId?: number;
+            assistantMessageId?: number;
+            tool_calls?: Array<{
+                id: string;
+                type: string;
+                function: {
+                    name: string;
+                    arguments: string;
+                };
+            }>;
+            tool_execution?: {
+                success: boolean;
+                message: string;
+                reorganized_medications?: Array<{
+                    id: number;
+                    name: string;
+                    old_time_slots: string[];
+                    new_time_slots: string[];
+                    start_date: string;
+                }>;
+            };
+        }) => void
+    ): Promise<void> {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        const authToken = localStorage.getItem('auth_token');
+
+        const response = await fetch(`${API_BASE}/chat/messages/stream`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'text/event-stream',
+                'X-CSRF-TOKEN': csrfToken || '',
+                ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+            },
+            credentials: 'include',
+            body: JSON.stringify({ message, is_suggestion: isSuggestion }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+
+        if (!reader) {
+            throw new Error('Response body is not readable');
+        }
+
+        let buffer = '';
+
+        console.log('[SSE] Starting to read stream...');
+
+        while (true) {
+            const { done, value } = await reader.read();
+
+            if (done) {
+                console.log('[SSE] Stream completed');
+                break;
+            }
+
+            const chunk = decoder.decode(value, { stream: true });
+            console.log('[SSE] Received chunk:', chunk);
+
+            buffer += chunk;
+
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    const data = line.slice(6);
+                    try {
+                        const parsed = JSON.parse(data);
+                        console.log('[SSE] Parsed event:', parsed);
+
+                        if (parsed.type !== 'done') {
+                            onChunk(parsed);
+                        }
+                    } catch (e) {
+                        console.error('[SSE] Failed to parse SSE data:', e, 'Raw:', data);
+                    }
+                } else if (line.startsWith(':')) {
+                    console.log('[SSE] Comment:', line);
+                }
+            }
+        }
+    },
+
+    /**
      * Clear chat history
      */
     async clearHistory(): Promise<void> {

@@ -57,9 +57,10 @@ export function useChat(): UseChatReturn {
             setIsLoading(true);
             setError(null);
 
-            // Optimistic UI update - add user message immediately
+            const userMessageId = Date.now();
+
             const optimisticUserMessage: ChatMessage = {
-                id: Date.now(),
+                id: userMessageId,
                 chat_session_id: 0,
                 role: 'user',
                 content: text,
@@ -69,20 +70,91 @@ export function useChat(): UseChatReturn {
 
             setMessages((prev) => [...prev, optimisticUserMessage]);
 
-            try {
-                const response = await chatService.sendMessage(text, isSuggestion);
+            const streamingAssistantMessageId = Date.now() + 1;
+            const streamingAssistantMessage: ChatMessage = {
+                id: streamingAssistantMessageId,
+                chat_session_id: 0,
+                role: 'assistant',
+                content: '',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+            };
 
-                // Replace optimistic message with actual user message and add assistant response
-                setMessages((prev) => [
-                    ...prev.filter((msg) => msg.id !== optimisticUserMessage.id),
-                    // The backend returns only the assistant message, we keep the user message
-                    optimisticUserMessage,
-                    response.message,
-                ]);
+            setMessages((prev) => [...prev, streamingAssistantMessage]);
+
+            try {
+                let actualUserMessageId: number | null = null;
+                let actualAssistantMessageId: number | null = null;
+
+                await chatService.sendMessageStream(
+                    text,
+                    isSuggestion,
+                    (chunk) => {
+                        if (chunk.type === 'user_message_created') {
+                            actualUserMessageId = chunk.userMessageId!;
+                            setMessages((prev) =>
+                                prev.map((msg) =>
+                                    msg.id === userMessageId
+                                        ? { ...msg, id: actualUserMessageId!, chat_session_id: chunk.sessionId! }
+                                        : msg
+                                )
+                            );
+                        } else if (chunk.type === 'content_delta') {
+                            setMessages((prev) =>
+                                prev.map((msg) =>
+                                    msg.id === streamingAssistantMessageId
+                                        ? { ...msg, content: msg.content + chunk.content! }
+                                        : msg
+                                )
+                            );
+                        } else if (chunk.type === 'tool_calls') {
+                            setMessages((prev) =>
+                                prev.map((msg) =>
+                                    msg.id === streamingAssistantMessageId
+                                        ? {
+                                              ...msg,
+                                              metadata: {
+                                                  ...msg.metadata,
+                                                  tool_calls: chunk.tool_calls,
+                                              },
+                                          }
+                                        : msg
+                                )
+                            );
+                        } else if (chunk.type === 'tool_execution') {
+                            setMessages((prev) =>
+                                prev.map((msg) =>
+                                    msg.id === streamingAssistantMessageId
+                                        ? {
+                                              ...msg,
+                                              content: chunk.content!,
+                                              metadata: {
+                                                  ...msg.metadata,
+                                                  tool_execution: chunk.tool_execution,
+                                              },
+                                          }
+                                        : msg
+                                )
+                            );
+                        } else if (chunk.type === 'message_completed') {
+                            actualAssistantMessageId = chunk.assistantMessageId!;
+                            setMessages((prev) =>
+                                prev.map((msg) =>
+                                    msg.id === streamingAssistantMessageId
+                                        ? { ...msg, id: actualAssistantMessageId! }
+                                        : msg
+                                )
+                            );
+                        }
+                    }
+                );
             } catch (err) {
-                // Rollback optimistic update on error
                 setMessages((prev) =>
-                    prev.filter((msg) => msg.id !== optimisticUserMessage.id)
+                    prev.filter(
+                        (msg) =>
+                            msg.id !== userMessageId &&
+                            msg.id !== streamingAssistantMessageId
+                    )
                 );
 
                 if (axios.isAxiosError(err)) {

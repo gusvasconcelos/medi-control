@@ -48,6 +48,29 @@ class HealthAssistantService
         ];
     }
 
+    /**
+     * @param Collection<int, array{role: string, content: string}> $conversationHistory
+     * @return \Generator<int, array{type: string, content?: string, tool_calls?: array<int, array{id: string, type: string, function: array{name: string, arguments: string}}>, usage?: array{prompt_tokens: int, completion_tokens: int, total_tokens: int}}>
+     */
+    public function generateResponseStream(
+        User $user,
+        string $userMessage,
+        Collection $conversationHistory,
+        bool $isSuggestion = false
+    ): \Generator {
+        $systemPrompt = $this->buildSystemPrompt();
+        $userContext = $isSuggestion ? $this->getUserContext($user) : null;
+        $messages = $this->buildMessages($systemPrompt, $userContext, $conversationHistory, $userMessage);
+        $tools = $isSuggestion ? $this->getToolDefinitions($user) : [];
+
+        yield from $this->openAIClient->chatCompletionStream(
+            messages: $messages,
+            model: config('openai.health_assistant.model'),
+            temperature: config('openai.health_assistant.temperature'),
+            tools: $tools
+        );
+    }
+
     private function buildSystemPrompt(): string
     {
         return <<<'XML'

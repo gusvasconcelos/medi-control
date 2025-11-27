@@ -94,6 +94,90 @@ class ChatService
         return $result;
     }
 
+    /**
+     * @return \Generator<int, array{type: string, content?: string, userMessageId?: int, sessionId?: int, tool_calls?: array<int, array{id: string, type: string, function: array{name: string, arguments: string}}>, usage?: array{prompt_tokens: int, completion_tokens: int, total_tokens: int}, tool_execution?: array{success: bool, message: string, reorganized_medications?: array<int, array{id: int, name: string, old_time_slots: array<int, string>, new_time_slots: array<int, string>, start_date: string}>}}>
+     */
+    public function sendMessageStream(User $user, string $message, bool $isSuggestion = false): \Generator
+    {
+        $session = $this->getOrCreateSession($user);
+
+        $userMessage = ChatMessage::create([
+            'chat_session_id' => $session->id,
+            'role' => MessageRole::USER,
+            'content' => $message,
+        ]);
+
+        yield [
+            'type' => 'user_message_created',
+            'userMessageId' => $userMessage->id,
+            'sessionId' => $session->id,
+        ];
+
+        $conversationHistory = $this->getConversationHistory($session);
+
+        $contentBuffer = '';
+        $toolCallsBuffer = [];
+        $usageData = null;
+        $startTime = microtime(true);
+
+        $stream = $this->healthAssistantService->generateResponseStream(
+            $user,
+            $message,
+            $conversationHistory,
+            $isSuggestion
+        );
+
+        foreach ($stream as $chunk) {
+            if ($chunk['type'] === 'content_delta') {
+                $contentBuffer .= $chunk['content'];
+                yield $chunk;
+            } elseif ($chunk['type'] === 'tool_calls') {
+                $toolCallsBuffer = $chunk['tool_calls'];
+                yield $chunk;
+            } elseif ($chunk['type'] === 'usage') {
+                $usageData = $chunk['usage'];
+            }
+        }
+
+        $durationMs = (int) ((microtime(true) - $startTime) * 1000);
+
+        $toolExecutionResult = null;
+
+        if (!empty($toolCallsBuffer)) {
+            $toolExecutionResult = $this->executeToolCalls($user, $toolCallsBuffer);
+
+            if ($toolExecutionResult) {
+                $contentBuffer = $this->buildToolExecutionMessage($toolCallsBuffer, $toolExecutionResult);
+
+                yield [
+                    'type' => 'tool_execution',
+                    'tool_execution' => $toolExecutionResult,
+                    'content' => $contentBuffer,
+                ];
+            }
+        }
+
+        $assistantMessage = ChatMessage::create([
+            'chat_session_id' => $session->id,
+            'role' => MessageRole::ASSISTANT,
+            'content' => $contentBuffer,
+            'metadata' => [
+                'tokens_used' => $usageData['total_tokens'] ?? 0,
+                'duration_ms' => $durationMs,
+                'model' => config('openai.health_assistant.model'),
+                'tool_calls' => $toolCallsBuffer,
+                'tool_execution' => $toolExecutionResult,
+            ],
+        ]);
+
+        $session->updateLastMessageTimestamp();
+
+        yield [
+            'type' => 'message_completed',
+            'assistantMessageId' => $assistantMessage->id,
+        ];
+    }
+
     public function clearHistory(ChatSession $session): void
     {
         $session->messages()->delete();
