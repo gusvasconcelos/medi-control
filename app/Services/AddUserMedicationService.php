@@ -23,14 +23,8 @@ class AddUserMedicationService
             return [];
         }
 
-        $medications = Medication::whereRaw(
-            "LOWER(UNACCENT(name)) LIKE LOWER(UNACCENT(?))",
-            ["%{$searchTerm}%"]
-        )
-            ->orWhereRaw(
-                "LOWER(UNACCENT(active_principle)) LIKE LOWER(UNACCENT(?))",
-                ["%{$searchTerm}%"]
-            )
+        $medications = Medication::query()
+            ->search($searchTerm)
             ->limit(5)
             ->get(['id', 'name', 'active_principle', 'strength', 'form']);
 
