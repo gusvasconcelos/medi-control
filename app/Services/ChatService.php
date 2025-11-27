@@ -13,7 +13,8 @@ class ChatService
     public function __construct(
         private readonly HealthAssistantService $healthAssistantService,
         private readonly MedicationReorganizationService $medicationReorganizationService,
-        private readonly ChatInteractionCheckerService $chatInteractionChecker
+        private readonly ChatInteractionCheckerService $chatInteractionChecker,
+        private readonly AddUserMedicationService $addUserMedicationService
     ) {
     }
 
@@ -258,6 +259,51 @@ class ChatService
             if ($functionName === 'check_medication_interactions') {
                 return $this->chatInteractionChecker->checkAllMedicationInteractions($user);
             }
+
+            if ($functionName === 'add_user_medication') {
+                // Se é apenas busca
+                if (!empty($arguments['search_step']) && $arguments['search_step'] === true) {
+                    $searchResults = $this->addUserMedicationService->searchMedications(
+                        $arguments['medication_name'] ?? ''
+                    );
+
+                    if (empty($searchResults)) {
+                        return [
+                            'success' => false,
+                            'message' => "Nenhum medicamento encontrado com o nome '{$arguments['medication_name']}'. Por favor, verifique o nome e tente novamente.",
+                        ];
+                    }
+
+                    return [
+                        'success' => true,
+                        'message' => 'Medicamentos encontrados',
+                        'search_results' => $searchResults,
+                    ];
+                }
+
+                // Se tem todos os campos necessários, adicionar
+                if (
+                    !empty($arguments['medication_id']) &&
+                    !empty($arguments['dosage']) &&
+                    !empty($arguments['time_slots']) &&
+                    !empty($arguments['via_administration']) &&
+                    !empty($arguments['start_date']) &&
+                    isset($arguments['initial_stock']) &&
+                    isset($arguments['current_stock']) &&
+                    isset($arguments['low_stock_threshold'])
+                ) {
+                    return $this->addUserMedicationService->addUserMedication(
+                        $user,
+                        $arguments
+                    );
+                }
+
+                // Campos faltando - AI deve pedir
+                return [
+                    'success' => false,
+                    'message' => 'Campos obrigatórios faltando. A AI deve solicitar os campos necessários ao usuário.',
+                ];
+            }
         }
 
         return null;
@@ -273,6 +319,40 @@ class ChatService
 
         if ($functionName === 'check_medication_interactions') {
             return $executionResult['message'];
+        }
+
+        if ($functionName === 'add_user_medication') {
+            // Se foi busca de medicamento
+            if (!empty($executionResult['search_results'])) {
+                $results = $executionResult['search_results'];
+
+                $message = "Encontrei os seguintes medicamentos:\n\n";
+                foreach ($results as $idx => $med) {
+                    $message .= ($idx + 1) . ". **{$med['name']}**";
+                    if ($med['active_principle']) {
+                        $message .= " - {$med['active_principle']}";
+                    }
+                    if ($med['strength']) {
+                        $message .= " ({$med['strength']})";
+                    }
+                    if ($med['form']) {
+                        $message .= " - {$med['form']}";
+                    }
+                    $message .= " (ID: {$med['id']})\n";
+                }
+
+                $message .= "\nQual desses medicamentos você deseja adicionar? Por favor, me informe o número ou nome.";
+
+                return $message;
+            }
+
+            // Se foi adição bem-sucedida
+            if ($executionResult['success']) {
+                return "✅ {$executionResult['message']}\n\nO medicamento foi adicionado ao seu tratamento e as notificações foram programadas automaticamente nos horários definidos.";
+            }
+
+            // Se falhou
+            return "❌ {$executionResult['message']}";
         }
 
         if ($functionName === 'reorganize_medications') {

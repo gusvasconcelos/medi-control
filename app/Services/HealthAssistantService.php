@@ -24,9 +24,9 @@ class HealthAssistantService
         bool $isSuggestion = false
     ): array {
         $systemPrompt = $this->buildSystemPrompt();
-        $userContext = $isSuggestion ? $this->getUserContext($user) : null;
+        $userContext = $this->getUserContext($user);
         $messages = $this->buildMessages($systemPrompt, $userContext, $conversationHistory, $userMessage);
-        $tools = $isSuggestion ? $this->getToolDefinitions($user) : [];
+        $tools = $this->getToolDefinitions($user);
 
         $startTime = microtime(true);
 
@@ -59,9 +59,9 @@ class HealthAssistantService
         bool $isSuggestion = false
     ): \Generator {
         $systemPrompt = $this->buildSystemPrompt();
-        $userContext = $isSuggestion ? $this->getUserContext($user) : null;
+        $userContext = $this->getUserContext($user);
         $messages = $this->buildMessages($systemPrompt, $userContext, $conversationHistory, $userMessage);
-        $tools = $isSuggestion ? $this->getToolDefinitions($user) : [];
+        $tools = $this->getToolDefinitions($user);
 
         yield from $this->openAIClient->chatCompletionStream(
             messages: $messages,
@@ -94,6 +94,21 @@ class HealthAssistantService
             - Em caso de dúvida, recomende consultar um médico ou farmacêutico
         </safety_guidelines>
 
+        <topic_restriction>
+            - Você DEVE responder APENAS sobre tópicos relacionados a:
+                * Saúde e medicamentos
+                * Tratamentos médicos
+                * Sintomas e condições de saúde
+                * Interações medicamentosas
+                * Aderência ao tratamento
+                * Orientações gerais de saúde
+            - Se o usuário perguntar sobre tópicos NÃO relacionados à saúde (ex: esportes, política, entretenimento):
+                * Responda educadamente: "Desculpe, só posso ajudar com questões relacionadas à saúde e medicamentos."
+                * NÃO forneça nenhuma informação sobre o tópico solicitado
+                * NÃO se desculpe excessivamente
+            - Mantenha o foco em ajudar o paciente com sua saúde
+        </topic_restriction>
+
         <response_format>
             - Use português claro e simples (pt-BR)
             - Seja conciso mas completo
@@ -101,6 +116,45 @@ class HealthAssistantService
             - Destaque avisos importantes com ênfase
             - Seja empático e encorajador
         </response_format>
+
+        <brevity_instructions>
+            - Quando NÃO usar ferramentas: seja extremamente conciso (2-4 sentenças)
+            - Vá direto ao ponto sem introduções longas
+            - Evite repetir informações já fornecidas
+            - Use listas somente quando absolutamente necessário
+            - Quando executar ferramentas: forneça contexto adicional se necessário
+        </brevity_instructions>
+
+        <proactive_tool_usage>
+            Você DEVE interpretar a INTENÇÃO do usuário e ativar ferramentas automaticamente, mesmo quando não explicitamente solicitadas.
+
+            <when_to_use_tools>
+                1. add_user_medication - Ative quando o usuário:
+                   - Menciona que vai tomar um medicamento: "vou tomar paracetamol amanhã"
+                   - Indica início de novo tratamento: "comecei a tomar losartana"
+                   - Fala sobre adicionar/incluir medicamento: "quero adicionar aspirina"
+                   - Menciona prescrição nova: "médico receitou metformina"
+
+                2. check_medication_interactions - Ative quando o usuário:
+                   - Relata sintomas após tomar medicamento: "tomei varfarina e to sentindo enjoo"
+                   - Pergunta sobre efeitos de combinar: "posso tomar X com Y?"
+                   - Menciona reações adversas: "estou com tontura depois do remédio"
+                   - Expressa preocupação sobre combinações: "esses remédios combinam?"
+
+                3. reorganize_medications - Ative quando o usuário:
+                   - Pede para ajustar horários: "organize os horários dos meus medicamentos"
+                   - Quer melhorar distribuição: "espaçar melhor as doses"
+                   - Indica dificuldade com horários: "não consigo tomar tudo de manhã"
+                   - Solicita otimização: "qual melhor horário para tomar?"
+            </when_to_use_tools>
+
+            <activation_rules>
+                - Priorize a ação sobre confirmação - ative a ferramenta quando detectar intenção clara
+                - Não peça permissão para usar ferramentas, apenas use-as
+                - Pode executar múltiplas ferramentas em sequência se necessário
+                - Seja proativo: é melhor ativar uma ferramenta do que apenas responder com texto
+            </activation_rules>
+        </proactive_tool_usage>
 
         <interaction_severity_levels>
             - grave (severe): Pode ser fatal ou causar danos permanentes. Contraindicado.
@@ -273,7 +327,7 @@ class HealthAssistantService
                 'type' => 'function',
                 'function' => [
                     'name' => 'check_medication_interactions',
-                    'description' => 'Verifica todas as interações medicamentosas entre os medicamentos ativos do usuário. Use esta ferramenta APENAS quando o usuário solicitar explicitamente verificar interações entre seus medicamentos, ou quando você precisar obter informações atualizadas sobre interações. Para responder perguntas gerais sobre interações já conhecidas, use o contexto fornecido no sistema sem executar esta tool.',
+                    'description' => 'Verifica interações medicamentosas entre medicamentos ativos. ATIVE quando o usuário: relatar sintomas após tomar medicamento (ex: "tomei X e sinto enjoo"), perguntar sobre combinar medicamentos, mencionar reações adversas, ou expressar preocupação sobre suas medicações. Não peça confirmação, apenas execute a verificação.',
                     'parameters' => [
                         'type' => 'object',
                         'properties' => [
@@ -290,7 +344,7 @@ class HealthAssistantService
                 'type' => 'function',
                 'function' => [
                     'name' => 'reorganize_medications',
-                    'description' => 'Reorganiza os horários dos medicamentos do usuário de acordo com sugestões de espaçamento adequado entre doses. A reorganização SEMPRE começa a partir de amanhã para não afetar medicamentos já tomados ou programados para hoje. Use esta ferramenta quando o usuário solicitar ajustes nos horários de medicação para evitar interações ou melhorar a aderência.',
+                    'description' => 'Reorganiza horários dos medicamentos com espaçamento adequado. A reorganização SEMPRE começa amanhã. ATIVE quando o usuário: pedir para organizar/ajustar horários (ex: "organize os horários"), mencionar dificuldade com distribuição atual, quiser melhorar espaçamento entre doses, ou perguntar sobre melhores horários. Seja proativo e execute a reorganização.',
                     'parameters' => [
                         'type' => 'object',
                         'properties' => [
@@ -323,6 +377,78 @@ class HealthAssistantService
                             ],
                         ],
                         'required' => ['medication_schedules', 'reason'],
+                    ],
+                ],
+            ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'add_user_medication',
+                    'description' => 'Adiciona novo medicamento ao tratamento. ATIVE quando o usuário: mencionar que vai tomar medicamento (ex: "vou tomar paracetamol amanhã"), indicar início de tratamento (ex: "comecei a tomar X"), falar sobre adicionar medicamento, ou mencionar prescrição nova. Primeiro busque por nome, depois colete campos obrigatórios faltantes em conversação natural. Seja proativo.',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'medication_name' => [
+                                'type' => 'string',
+                                'description' => 'Nome do medicamento para buscar no banco de dados (ex: "Paracetamol", "Losartana")',
+                            ],
+                            'medication_id' => [
+                                'type' => 'integer',
+                                'description' => 'ID do medicamento confirmado pelo usuário após busca',
+                            ],
+                            'dosage' => [
+                                'type' => 'string',
+                                'description' => 'Dosagem do medicamento (ex: "1 comprimido", "500mg", "2 cápsulas")',
+                            ],
+                            'time_slots' => [
+                                'type' => 'array',
+                                'description' => 'Horários de tomada no formato HH:MM (24h)',
+                                'items' => [
+                                    'type' => 'string',
+                                    'pattern' => '^([01][0-9]|2[0-3]):[0-5][0-9]$',
+                                ],
+                                'minItems' => 1,
+                            ],
+                            'via_administration' => [
+                                'type' => 'string',
+                                'description' => 'Via de administração do medicamento',
+                                'enum' => ['oral', 'topical', 'injection', 'inhalation', 'sublingual', 'rectal', 'other'],
+                            ],
+                            'start_date' => [
+                                'type' => 'string',
+                                'description' => 'Data de início do tratamento no formato YYYY-MM-DD',
+                                'pattern' => '^\d{4}-\d{2}-\d{2}$',
+                            ],
+                            'end_date' => [
+                                'type' => 'string',
+                                'description' => 'Data de término do tratamento no formato YYYY-MM-DD (opcional para tratamentos contínuos)',
+                                'pattern' => '^\d{4}-\d{2}-\d{2}$',
+                            ],
+                            'initial_stock' => [
+                                'type' => 'integer',
+                                'description' => 'Estoque inicial do medicamento (quantidade de doses/comprimidos)',
+                                'minimum' => 0,
+                            ],
+                            'current_stock' => [
+                                'type' => 'integer',
+                                'description' => 'Estoque atual (geralmente igual ao inicial no cadastro)',
+                                'minimum' => 0,
+                            ],
+                            'low_stock_threshold' => [
+                                'type' => 'integer',
+                                'description' => 'Limite de estoque baixo para alertas (geralmente 5-10)',
+                                'minimum' => 0,
+                            ],
+                            'notes' => [
+                                'type' => 'string',
+                                'description' => 'Observações adicionais sobre o medicamento (opcional)',
+                            ],
+                            'search_step' => [
+                                'type' => 'boolean',
+                                'description' => 'true se esta chamada é apenas para buscar medicamentos por nome',
+                            ],
+                        ],
+                        'required' => [],
                     ],
                 ],
             ],

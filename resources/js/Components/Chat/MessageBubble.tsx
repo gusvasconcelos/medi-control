@@ -1,8 +1,9 @@
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Bot, User } from 'lucide-react';
+import { Stethoscope, User } from 'lucide-react';
 import type { ChatMessage } from '@/types/chat';
 import { ToolExecutionResult } from './ToolExecutionResult';
+import { StatusBadge } from './StatusBadge';
 import ReactMarkdown from 'react-markdown';
 
 export interface MessageBubbleProps {
@@ -10,12 +11,12 @@ export interface MessageBubbleProps {
 }
 
 const markdownComponents = {
-    p: (props: React.HTMLAttributes<HTMLParagraphElement>) => <p {...props} className="mb-3 last:mb-0 leading-relaxed" />,
+    p: (props: React.HTMLAttributes<HTMLParagraphElement>) => <p {...props} className="mb-4 last:mb-0 leading-relaxed text-[15px]" />,
     strong: (props: React.HTMLAttributes<HTMLElement>) => <strong {...props} className="font-bold" />,
     em: (props: React.HTMLAttributes<HTMLElement>) => <em {...props} className="italic" />,
     ul: (props: React.HTMLAttributes<HTMLUListElement>) => <ul {...props} className="list-disc pl-6 space-y-2 my-3" />,
     ol: (props: React.HTMLAttributes<HTMLOListElement>) => <ol {...props} className="list-decimal pl-6 space-y-2 my-3" />,
-    li: (props: React.HTMLAttributes<HTMLLIElement>) => <li {...props} className="leading-relaxed" />,
+    li: (props: React.HTMLAttributes<HTMLLIElement>) => <li {...props} className="leading-relaxed text-[15px]" />,
     h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => <h1 {...props} className="text-xl font-bold mt-4 mb-2" />,
     h2: (props: React.HTMLAttributes<HTMLHeadingElement>) => <h2 {...props} className="text-lg font-bold mt-3 mb-2" />,
     h3: (props: React.HTMLAttributes<HTMLHeadingElement>) => <h3 {...props} className="text-base font-bold mt-2 mb-1" />,
@@ -60,28 +61,31 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                     className={`w-10 rounded-full flex items-center justify-center ${
                         isUser
                             ? 'bg-primary text-primary-content'
-                            : 'bg-secondary text-secondary-content'
+                            : 'bg-blue-600 text-white shadow-md'
                     }`}
                 >
                     {isUser ? (
                         <User className="w-5 h-5" />
                     ) : (
-                        <Bot className="w-5 h-5" />
+                        <Stethoscope className="w-5 h-5" />
                     )}
                 </div>
             </div>
-            <div className="chat-header mb-1">
+            <div className="chat-header mb-1 flex items-center gap-2">
                 <span className="text-sm text-base-content/70">
                     {isUser ? 'Você' : 'Hermes'}
                 </span>
-                <time className="text-xs opacity-50 ml-2">{formattedTime}</time>
+                <time className="text-xs opacity-50">{formattedTime}</time>
+                {!isUser && message.metadata?.tool_calls && message.metadata.tool_calls.length > 0 && (
+                    <StatusBadge type="tool_executed" text="Ferramenta usada" />
+                )}
             </div>
             <div
                 className={`chat-bubble ${
                     isUser
                         ? 'chat-bubble-primary'
                         : 'chat-bubble-secondary'
-                } prose prose-sm max-w-none`}
+                } prose prose-sm max-w-none leading-relaxed py-3 px-4`}
             >
                 {!isUser && !message.content.trim() ? (
                     // Show loading dots inside the bubble when content is empty

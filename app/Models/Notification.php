@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\NotificationStatus;
 use App\Traits\UserRelation;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -34,6 +35,7 @@ class Notification extends Model
         'read_at' => 'datetime',
         'created_at' => 'datetime',
         'metadata' => 'array',
+        'status' => NotificationStatus::class,
     ];
 
     public function user(): BelongsTo

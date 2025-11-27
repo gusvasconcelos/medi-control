@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\NotificationStatus;
 use App\Models\Notification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -14,10 +15,29 @@ class SendPendingNotificationsCommand extends Command
 
     public function handle(): int
     {
+        $maxDelayMinutes = 30;
+        $now = now();
+        $cutoffTime = $now->copy()->subMinutes($maxDelayMinutes);
+
+        $expiredCount = Notification::query()
+            ->disableUserScope()
+            ->where('status', NotificationStatus::PENDING->value)
+            ->where('scheduled_for', '<', $cutoffTime)
+            ->whereNull('sent_at')
+            ->update([
+                'status' => NotificationStatus::EXPIRED->value,
+                'updated_at' => $now,
+            ]);
+
+        if ($expiredCount > 0) {
+            Log::info("Marked {$expiredCount} notifications as expired (>{$maxDelayMinutes} min late)");
+        }
+
         $pendingNotifications = Notification::query()
             ->disableUserScope()
-            ->where('status', 'pending')
-            ->where('scheduled_for', '<=', now())
+            ->where('status', NotificationStatus::PENDING->value)
+            ->where('scheduled_for', '<=', $now)
+            ->where('scheduled_for', '>=', $cutoffTime)
             ->whereNull('sent_at')
             ->with(['user', 'userMedication.medication'])
             ->limit(100)
@@ -51,7 +71,7 @@ class SendPendingNotificationsCommand extends Command
     {
         try {
             $notification->update([
-                'status' => 'sent',
+                'status' => NotificationStatus::SENT,
                 'sent_at' => now(),
             ]);
 
@@ -65,7 +85,7 @@ class SendPendingNotificationsCommand extends Command
             return true;
         } catch (\Throwable $e) {
             $notification->update([
-                'status' => 'failed',
+                'status' => NotificationStatus::FAILED,
             ]);
 
             Log::error('Failed to send notification', [

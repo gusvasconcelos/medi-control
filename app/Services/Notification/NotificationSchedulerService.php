@@ -2,6 +2,7 @@
 
 namespace App\Services\Notification;
 
+use App\Enums\NotificationStatus;
 use App\Events\RealTimeNotificationEvent;
 use App\Models\InteractionAlert;
 use App\Models\Notification;
@@ -111,9 +112,10 @@ class NotificationSchedulerService
                             $medication,
                             $reminderTime,
                             'medication_reminder',
-                            __('notifications.reminder.title_before', ['minutes' => self::REMINDER_MINUTES_BEFORE]),
+                            __('notifications.reminder.title_before'),
                             __('notifications.reminder.body_before', [
-                                'medication' => $medication->medication->name ?? 'Medicamento',
+                                'minutes' => self::REMINDER_MINUTES_BEFORE,
+                                'medication' => $medication->medication->name,
                                 'time' => $scheduledTime->format('H:i'),
                             ])
                         );
@@ -194,7 +196,7 @@ class NotificationSchedulerService
             'title' => $title,
             'body' => $body,
             'scheduled_for' => $scheduledFor,
-            'status' => 'pending',
+            'status' => NotificationStatus::PENDING,
             'provider' => 'push',
             'metadata' => [
                 'time_slot' => $scheduledFor->format('H:i'),
@@ -225,7 +227,7 @@ class NotificationSchedulerService
                 'severity' => $severityLabel,
             ]),
             'scheduled_for' => $scheduledFor,
-            'status' => 'pending',
+            'status' => NotificationStatus::PENDING,
             'provider' => 'push',
             'metadata' => [
                 'interaction_alert_id' => $alert->id,

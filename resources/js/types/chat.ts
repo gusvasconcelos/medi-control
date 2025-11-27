@@ -16,6 +16,14 @@ export interface ReorganizedMedication {
     start_date: string;
 }
 
+export interface MedicationSearchResult {
+    id: number;
+    name: string;
+    active_principle: string;
+    strength: string;
+    form: string;
+}
+
 export interface ToolExecution {
     success: boolean;
     message: string;
@@ -25,6 +33,9 @@ export interface ToolExecution {
     moderate_count?: number;
     mild_count?: number;
     alerts_created?: number;
+    search_results?: MedicationSearchResult[];
+    user_medication_id?: number;
+    medication_name?: string;
 }
 
 export interface ChatMessage {

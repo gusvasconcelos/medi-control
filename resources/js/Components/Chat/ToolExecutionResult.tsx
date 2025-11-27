@@ -6,7 +6,7 @@ interface ToolExecutionResultProps {
 }
 
 export function ToolExecutionResult({ toolExecution }: ToolExecutionResultProps) {
-    const { success, reorganized_medications, interactions_found, severe_count, moderate_count, mild_count, alerts_created } = toolExecution;
+    const { success, reorganized_medications, interactions_found, severe_count, moderate_count, mild_count, alerts_created, search_results, user_medication_id, medication_name } = toolExecution;
 
     if (!success) {
         return (
@@ -16,6 +16,68 @@ export function ToolExecutionResult({ toolExecution }: ToolExecutionResultProps)
                     <div>
                         <h4 className="font-semibold text-error text-sm">Erro na operação</h4>
                         <p className="text-sm text-error/80 mt-1">{toolExecution.message}</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Medication search results
+    if (search_results && search_results.length > 0) {
+        return (
+            <div className="mt-3 p-4 bg-white/10 border border-white/20 rounded-lg">
+                <div className="flex items-start gap-3 mb-3">
+                    <Info className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
+                    <div>
+                        <h4 className="font-semibold text-white text-sm">Medicamentos encontrados</h4>
+                        <p className="text-sm text-white/80 mt-1">
+                            {search_results.length} {search_results.length === 1 ? 'resultado' : 'resultados'}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    {search_results.map((med, idx) => (
+                        <div
+                            key={med.id}
+                            className="bg-base-100 p-3 rounded-md border border-base-300"
+                        >
+                            <div className="flex items-start gap-2">
+                                <span className="badge badge-sm badge-primary">{idx + 1}</span>
+                                <div className="flex-1">
+                                    <h5 className="font-semibold text-sm text-base-content">
+                                        {med.name}
+                                    </h5>
+                                    {med.active_principle && (
+                                        <p className="text-xs text-base-content/70 mt-1">
+                                            Princípio ativo: {med.active_principle}
+                                        </p>
+                                    )}
+                                    <div className="flex gap-2 mt-1 text-xs text-base-content/60">
+                                        {med.strength && <span>{med.strength}</span>}
+                                        {med.form && <span>• {med.form}</span>}
+                                    </div>
+                                    <p className="text-xs text-base-content/50 mt-1">ID: {med.id}</p>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    // Medication added successfully
+    if (user_medication_id && medication_name) {
+        return (
+            <div className="mt-3 p-4 bg-success/10 border border-success/20 rounded-lg">
+                <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                    <div>
+                        <h4 className="font-semibold text-success text-sm">Medicamento adicionado</h4>
+                        <p className="text-sm text-success/80 mt-1">
+                            {medication_name} foi adicionado ao seu tratamento com sucesso!
+                        </p>
                     </div>
                 </div>
             </div>
