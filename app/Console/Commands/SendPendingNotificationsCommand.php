@@ -15,7 +15,7 @@ class SendPendingNotificationsCommand extends Command
 
     public function handle(): int
     {
-        $maxDelayMinutes = 30;
+        $maxDelayMinutes = 5;
         $now = now();
         $cutoffTime = $now->copy()->subMinutes($maxDelayMinutes);
 
