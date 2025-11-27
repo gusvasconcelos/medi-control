@@ -90,7 +90,7 @@ export function PermissionFormModal({
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="form-control">
                         <label className="label">
-                            <span className="label-text">Nome (slug) *</span>
+                            <span className="label-text">Nome (slug) <span className="text-error text-base">*</span></span>
                         </label>
                         <input
                             type="text"
@@ -106,7 +106,7 @@ export function PermissionFormModal({
 
                     <div className="form-control">
                         <label className="label">
-                            <span className="label-text">Nome de Exibição *</span>
+                            <span className="label-text">Nome de Exibição <span className="text-error text-base">*</span></span>
                         </label>
                         <input
                             type="text"
@@ -122,7 +122,7 @@ export function PermissionFormModal({
 
                     <div className="form-control">
                         <label className="label">
-                            <span className="label-text">Grupo</span>
+                            <span className="label-text">Grupo <span className="text-error text-base">*</span></span>
                         </label>
                         <input
                             type="text"

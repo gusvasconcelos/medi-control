@@ -47,7 +47,7 @@ export function StockManagementStep({
                     </label>
                 )}
                 <label className="label">
-                    <span className="label-text-alt text-base-content/60">
+                    <span className="label-text-alt text-base-content/60 text-xs">
                         Quantidade total de unidades que você possui
                     </span>
                 </label>
@@ -63,7 +63,10 @@ export function StockManagementStep({
                     type="number"
                     placeholder="5"
                     value={lowStockThreshold || ''}
-                    onChange={(e) => onChange('lowStockThreshold', parseInt(e.target.value) || 5)}
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        onChange('lowStockThreshold', value === '' ? 0 : parseInt(value) || 0);
+                    }}
                     min={0}
                     className={`input input-bordered w-full ${errors.lowStockThreshold ? 'input-error' : ''}`}
                     required
@@ -76,7 +79,7 @@ export function StockManagementStep({
                     </label>
                 )}
                 <label className="label">
-                    <span className="label-text-alt text-base-content/60">
+                    <span className="label-text-alt text-base-content/60 text-xs">
                         Você receberá um alerta quando o estoque atingir este valor
                     </span>
                 </label>

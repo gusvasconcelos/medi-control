@@ -49,10 +49,10 @@ export default function ChatIndex({ auth }: PageProps) {
             <AuthenticatedLayout
                 navItems={getNavigationItems('/chat', userRoles)}
             >
-                <div className="flex flex-col h-[calc(100vh-6rem)] sm:h-[calc(96vh-4rem)] bg-base-200 pb-24 lg:pb-0">
+                <div className="flex flex-col h-full bg-base-200 overflow-hidden">
                     {messages.length === 0 ? (
                         // Welcome Screen
-                        <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 overflow-y-auto">
+                        <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 overflow-y-auto pb-32 lg:pb-8">
                             <div className="max-w-4xl w-full space-y-4 sm:space-y-8">
                                 {/* Greeting */}
                                 <div className="text-center space-y-2">
@@ -84,7 +84,7 @@ export default function ChatIndex({ auth }: PageProps) {
                             {/* Header with clear button */}
                             <div className="flex items-center justify-between p-4 bg-base-200 border-b border-base-300">
                                 <div className="flex items-center justify-center">
-                                    <img src="/storage/staff.webp" alt="Hermes" className="size-8" />
+                                    <img src="/storage/staff.webp" alt="Hermes" className="size-8 invert dark:invert-0" />
                                     <h1 className="text-xl font-bold text-base-content">
                                         Hermes
                                     </h1>
@@ -102,29 +102,14 @@ export default function ChatIndex({ auth }: PageProps) {
                             </div>
 
                             {/* Messages Area */}
-                            <div className="flex-1 overflow-y-auto">
+                            <div className="flex-1 overflow-y-auto pb-32 lg:pb-0">
                                 <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-4">
-                                    {messages.map((message, index) => (
+                                    {messages.map((message) => (
                                         <MessageBubble
                                             key={message.id}
                                             message={message}
-                                            isLatest={
-                                                index === messages.length - 1
-                                            }
                                         />
                                     ))}
-                                    {isLoading && (
-                                        <div className="chat chat-start">
-                                            <div className="chat-image avatar">
-                                                <div className="w-10 rounded-full bg-secondary text-secondary-content flex items-center justify-center">
-                                                    <span className="loading loading-dots loading-sm"></span>
-                                                </div>
-                                            </div>
-                                            <div className="chat-bubble chat-bubble-secondary">
-                                                Digitando...
-                                            </div>
-                                        </div>
-                                    )}
                                     <div ref={messagesEndRef} />
                                 </div>
                             </div>

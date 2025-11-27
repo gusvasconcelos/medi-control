@@ -336,7 +336,7 @@ export default function MedicationsIndex({ auth }: PageProps) {
                                 <input
                                     type="text"
                                     className="input input-bordered w-full pl-10 text-sm sm:text-base bg-base-100"
-                                    placeholder="Buscar por nome, princípio ativo, fabricante, categoria..."
+                                    placeholder="Buscar por nome, princípio ativo, categoria..."
                                     value={searchQuery}
                                     onChange={(e) =>
                                         setSearchQuery(e.target.value)

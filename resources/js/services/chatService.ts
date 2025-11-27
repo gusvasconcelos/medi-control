@@ -80,7 +80,26 @@ export const chatService = {
             };
         }) => void
     ): Promise<void> {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        // Get XSRF token from cookie (Laravel uses XSRF-TOKEN cookie name)
+        // The cookie is URL encoded, so we need to decode it
+        const getCookie = (name: string): string | null => {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) {
+                const cookieValue = parts.pop()?.split(';').shift();
+                return cookieValue ? decodeURIComponent(cookieValue) : null;
+            }
+            return null;
+        };
+
+        // Try to get XSRF token from cookie first (preferred for stateful requests)
+        let xsrfToken = getCookie('XSRF-TOKEN');
+
+        // Fallback to meta tag if cookie is not available
+        if (!xsrfToken) {
+            xsrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || null;
+        }
+
         const authToken = localStorage.getItem('auth_token');
 
         const response = await fetch(`${API_BASE}/chat/messages/stream`, {
@@ -88,7 +107,7 @@ export const chatService = {
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'text/event-stream',
-                'X-CSRF-TOKEN': csrfToken || '',
+                'X-XSRF-TOKEN': xsrfToken || '',
                 ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
             },
             credentials: 'include',

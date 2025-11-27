@@ -7,34 +7,34 @@ import ReactMarkdown from 'react-markdown';
 
 export interface MessageBubbleProps {
     message: ChatMessage;
-    isLatest?: boolean;
 }
 
 const markdownComponents = {
-    p: ({ children }: { children: React.ReactNode }) => <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>,
-    strong: ({ children }: { children: React.ReactNode }) => <strong className="font-bold">{children}</strong>,
-    em: ({ children }: { children: React.ReactNode }) => <em className="italic">{children}</em>,
-    ul: ({ children }: { children: React.ReactNode }) => <ul className="list-disc pl-6 space-y-2 my-3">{children}</ul>,
-    ol: ({ children }: { children: React.ReactNode }) => <ol className="list-decimal pl-6 space-y-2 my-3">{children}</ol>,
-    li: ({ children }: { children: React.ReactNode }) => <li className="leading-relaxed">{children}</li>,
-    h1: ({ children }: { children: React.ReactNode }) => <h1 className="text-xl font-bold mt-4 mb-2">{children}</h1>,
-    h2: ({ children }: { children: React.ReactNode }) => <h2 className="text-lg font-bold mt-3 mb-2">{children}</h2>,
-    h3: ({ children }: { children: React.ReactNode }) => <h3 className="text-base font-bold mt-2 mb-1">{children}</h3>,
-    code: ({ children, className }: { children: React.ReactNode; className?: string }) => {
+    p: (props: React.HTMLAttributes<HTMLParagraphElement>) => <p {...props} className="mb-3 last:mb-0 leading-relaxed" />,
+    strong: (props: React.HTMLAttributes<HTMLElement>) => <strong {...props} className="font-bold" />,
+    em: (props: React.HTMLAttributes<HTMLElement>) => <em {...props} className="italic" />,
+    ul: (props: React.HTMLAttributes<HTMLUListElement>) => <ul {...props} className="list-disc pl-6 space-y-2 my-3" />,
+    ol: (props: React.HTMLAttributes<HTMLOListElement>) => <ol {...props} className="list-decimal pl-6 space-y-2 my-3" />,
+    li: (props: React.HTMLAttributes<HTMLLIElement>) => <li {...props} className="leading-relaxed" />,
+    h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => <h1 {...props} className="text-xl font-bold mt-4 mb-2" />,
+    h2: (props: React.HTMLAttributes<HTMLHeadingElement>) => <h2 {...props} className="text-lg font-bold mt-3 mb-2" />,
+    h3: (props: React.HTMLAttributes<HTMLHeadingElement>) => <h3 {...props} className="text-base font-bold mt-2 mb-1" />,
+    code: (props: React.HTMLAttributes<HTMLElement> & { className?: string }) => {
+        const { className, ...rest } = props;
         const isInline = !className;
         return isInline ? (
-            <code className="bg-base-300 px-1.5 py-0.5 rounded text-sm">{children}</code>
+            <code {...rest} className="bg-base-300 px-1.5 py-0.5 rounded text-sm" />
         ) : (
-            <code className={className}>{children}</code>
+            <code {...rest} className={className} />
         );
     },
-    pre: ({ children }: { children: React.ReactNode }) => <pre className="bg-base-300 p-3 rounded-lg overflow-x-auto my-3 text-sm">{children}</pre>,
-    blockquote: ({ children }: { children: React.ReactNode }) => <blockquote className="border-l-4 border-base-300 pl-4 italic my-3">{children}</blockquote>,
-    a: ({ children, href }: { children: React.ReactNode; href?: string }) => <a href={href} className="underline hover:opacity-80" target="_blank" rel="noopener noreferrer">{children}</a>,
+    pre: (props: React.HTMLAttributes<HTMLPreElement>) => <pre {...props} className="bg-base-300 p-3 rounded-lg overflow-x-auto my-3 text-sm" />,
+    blockquote: (props: React.HTMLAttributes<HTMLQuoteElement>) => <blockquote {...props} className="border-l-4 border-base-300 pl-4 italic my-3" />,
+    a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a {...props} className="underline hover:opacity-80" target="_blank" rel="noopener noreferrer" />,
     hr: () => <hr className="my-4 border-base-300" />,
 };
 
-export function MessageBubble({ message, isLatest = false }: MessageBubbleProps) {
+export function MessageBubble({ message }: MessageBubbleProps) {
     const isUser = message.role === 'user';
     const isSystem = message.role === 'system';
 
@@ -83,7 +83,12 @@ export function MessageBubble({ message, isLatest = false }: MessageBubbleProps)
                         : 'chat-bubble-secondary'
                 } prose prose-sm max-w-none`}
             >
-                {message.metadata?.tool_execution ? (
+                {!isUser && !message.content.trim() ? (
+                    // Show loading dots inside the bubble when content is empty
+                    <div className="flex items-center gap-2">
+                        <span className="loading loading-dots loading-sm"></span>
+                    </div>
+                ) : message.metadata?.tool_execution ? (
                     <div>
                         <ReactMarkdown components={markdownComponents}>
                             {message.content}
@@ -96,11 +101,6 @@ export function MessageBubble({ message, isLatest = false }: MessageBubbleProps)
                     </ReactMarkdown>
                 )}
             </div>
-            {isLatest && !isUser && message.metadata?.tokens_used && (
-                <div className="chat-footer opacity-50 text-xs mt-1">
-                    {message.metadata.tokens_used} tokens
-                </div>
-            )}
         </div>
     );
 }

@@ -12,7 +12,7 @@ export function FloatingActionButtons({
     };
 
     return (
-        <div className="fixed bottom-24 right-4 z-50 flex flex-col gap-3 lg:bottom-6 lg:right-6">
+        <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-3 lg:bottom-6 lg:right-6">
             <button
                 type="button"
                 // @ts-ignore - popoverTarget is valid but TypeScript doesn't recognize it yet

@@ -121,7 +121,7 @@ export default function MetricsOverview({ auth, metrics }: MetricsOverviewProps)
                                 <h1 className="mb-2 text-2xl font-bold text-base-content sm:text-3xl">
                                     Métricas
                                 </h1>
-                                <p className="text-sm text-base-content/60">
+                                <p className="text-xs sm:text-sm text-base-content/60">
                                     Monitoramento em tempo real dos indicadores e recursos do sistema.
                                 </p>
                             </div>

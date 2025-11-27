@@ -4,6 +4,7 @@ import { ReactNode } from 'react';
 interface ResponsiveModalProps {
     id: string;
     title: string;
+    subtitle?: string;
     children: ReactNode;
     footer?: ReactNode;
     onClose: () => void;
@@ -20,6 +21,7 @@ interface ResponsiveModalProps {
 export function ResponsiveModal({
     id,
     title,
+    subtitle,
     children,
     footer,
     onClose,
@@ -65,7 +67,10 @@ export function ResponsiveModal({
             <div className="bg-base-100 sm:rounded-2xl flex flex-col h-full sm:max-h-[calc(100vh-6rem)]">
                 {/* Header */}
                 <div className="flex-shrink-0 bg-base-100 border-b border-base-300 px-4 sm:px-6 py-4 flex items-center justify-between z-10">
-                    <h2 className="text-xl font-bold">{title}</h2>
+                    <div>
+                        <h2 className="text-xl font-bold">{title}</h2>
+                        {subtitle && <p className="text-xs text-base-content/60">{subtitle}</p>}
+                    </div>
                     <button
                         type="button"
                         onClick={onClose}

@@ -164,7 +164,8 @@ export function UserRolesModal({
     return (
         <ResponsiveModal
             id="user-roles-modal"
-            title={`Gerenciar Cargos - ${user.name}`}
+            title={`Gerenciar Cargos`}
+            subtitle={`Usuário: ${user?.name}`}
             onClose={handleClose}
             footer={footer}
             dynamicHeight

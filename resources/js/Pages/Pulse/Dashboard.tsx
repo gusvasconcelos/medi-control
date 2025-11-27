@@ -130,7 +130,7 @@ export default function PulseDashboard({ auth, metrics }: PulseDashboardProps) {
                                     <Zap className="w-7 h-7 text-primary" />
                                     Pulse
                                 </h1>
-                                <p className="text-sm text-base-content/60">
+                                <p className="text-xs sm:text-sm text-base-content/60">
                                     Monitoramento em tempo real do desempenho da aplicação e recursos do sistema.
                                 </p>
                             </div>

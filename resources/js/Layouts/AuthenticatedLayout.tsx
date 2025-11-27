@@ -1,9 +1,8 @@
-import { ReactNode } from 'react';
-import { usePage } from '@inertiajs/react';
+import { ReactNode, useState } from 'react';
+import { usePage, router } from '@inertiajs/react';
 import { Sidebar, NavItem } from '@/Components/Layout/Sidebar';
 import { Navbar } from '@/Components/Layout/Navbar';
 import { Topbar } from '@/Components/Layout/Topbar';
-import { Toolbar } from '@/Components/Layout/Toolbar';
 import { useAuth } from '@/hooks/useAuth';
 import { PageProps } from '@/types';
 
@@ -18,16 +17,31 @@ export function AuthenticatedLayout({
 }: AuthenticatedLayoutProps) {
     const { logout } = useAuth();
     const { auth } = usePage<PageProps>().props;
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    const handleMenuClick = () => {
+        if (isMobileMenuOpen) {
+            // Se o sidebar está aberto, vai para o perfil
+            router.visit('/profile');
+        } else {
+            // Se o sidebar está fechado, abre o sidebar
+            setIsMobileMenuOpen(true);
+        }
+    };
 
     return (
         <div className="flex min-h-screen">
             {navItems.length > 0 && (
-                <div className="hidden lg:block">
-                    <Sidebar navItems={navItems} />
-                </div>
+                <Sidebar
+                    navItems={navItems}
+                    isMobileOpen={isMobileMenuOpen}
+                    onMobileClose={() => setIsMobileMenuOpen(false)}
+                    onLogout={logout}
+                    user={auth?.user}
+                />
             )}
 
-            <div className="flex flex-col flex-1 min-h-screen">
+            <div className="flex flex-col flex-1 h-screen overflow-hidden">
                 {/* Topbar - visible on desktop only */}
                 <Topbar auth={auth} onLogout={logout} />
 
@@ -37,14 +51,13 @@ export function AuthenticatedLayout({
                         variant="authenticated"
                         auth={auth}
                         onLogout={logout}
+                        onMenuClick={handleMenuClick}
                     />
                 </div>
 
-                <main className="flex-1 pb-20 lg:pb-0 bg-base-200">
+                <main className="flex-1 bg-base-200 pt-16 lg:pt-0 overflow-y-auto">
                     {children}
                 </main>
-
-                {navItems.length > 0 && <Toolbar navItems={navItems} />}
             </div>
         </div>
     );

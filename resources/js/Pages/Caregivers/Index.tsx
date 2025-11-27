@@ -261,7 +261,7 @@ export default function CaregiversIndex({ auth }: PageProps) {
                 {/* Floating Action Button */}
                 <button
                     type="button"
-                    className="btn btn-xl btn-primary btn-circle fixed bottom-24 right-4 shadow-lg z-50 lg:bottom-8 lg:right-6"
+                    className="btn btn-xl btn-primary btn-circle fixed bottom-4 right-4 shadow-lg z-50 lg:bottom-8 lg:right-6"
                     onClick={() => setIsInviteModalOpen(true)}
                     title="Convidar Cuidador"
                 >

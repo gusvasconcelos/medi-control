@@ -13,7 +13,7 @@ export default function Welcome({ auth }: PageProps) {
         <>
             <Head title="Bem-vindo" />
 
-            <div className="min-h-screen bg-base-100">
+            <div className="min-h-screen bg-base-100 pt-16">
                 <Navbar variant="public" auth={auth} />
 
                 {/* Hero Section */}

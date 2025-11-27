@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { ResponsiveModal } from '@/Components/Modal/ResponsiveModal';
 import { roleService } from '@/services/roleService';
 import { permissionService } from '@/services/permissionService';
 import { useToast } from '@/hooks/useToast';
@@ -42,6 +42,12 @@ export function RoleFormModal({ isOpen, role, onClose, onSuccess }: RoleFormModa
                     description: '',
                     permissions: [],
                 });
+            }
+            const modal = document.getElementById(
+                'role-form-modal'
+            ) as HTMLElement & { showPopover?: () => void };
+            if (modal?.showPopover) {
+                modal.showPopover();
             }
         }
     }, [isOpen, role]);
@@ -104,156 +110,155 @@ export function RoleFormModal({ isOpen, role, onClose, onSuccess }: RoleFormModa
 
     if (!isOpen) return null;
 
+    const handleFormSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        handleSubmit(e);
+    };
+
+    const footer = (
+        <div className="flex justify-end gap-2">
+            <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={onClose}
+                disabled={isSubmitting}
+            >
+                Cancelar
+            </button>
+            <button
+                type="submit"
+                form="role-form"
+                className="btn btn-primary"
+                disabled={isSubmitting}
+            >
+                {isSubmitting ? (
+                    <>
+                        <span className="loading loading-spinner loading-sm"></span>
+                        Salvando...
+                    </>
+                ) : (
+                    'Salvar'
+                )}
+            </button>
+        </div>
+    );
+
     return (
-        <div className="modal modal-open">
-            <div className="modal-box max-w-3xl">
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-lg">
-                        {role ? 'Editar Role' : 'Nova Role'}
-                    </h3>
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-circle btn-ghost"
-                        onClick={onClose}
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
+        <ResponsiveModal
+            id="role-form-modal"
+            title={role ? 'Editar Role' : 'Nova Role'}
+            onClose={onClose}
+            footer={footer}
+            dynamicHeight
+            expandedContent
+        >
+            <form id="role-form" onSubmit={handleFormSubmit} className="space-y-4">
+                <div className="form-control">
+                    <label className="label">
+                        <span className="label-text">Nome (slug) <span className="text-error text-base">*</span></span>
+                    </label>
+                    <input
+                        type="text"
+                        className="input input-bordered"
+                        value={formData.name}
+                        onChange={(e) =>
+                            setFormData({ ...formData, name: e.target.value })
+                        }
+                        required
+                        placeholder="ex: admin, editor, viewer"
+                    />
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="form-control">
-                        <label className="label">
-                            <span className="label-text">Nome (slug) *</span>
-                        </label>
-                        <input
-                            type="text"
-                            className="input input-bordered"
-                            value={formData.name}
-                            onChange={(e) =>
-                                setFormData({ ...formData, name: e.target.value })
-                            }
-                            required
-                            placeholder="ex: admin, editor, viewer"
-                        />
-                    </div>
+                <div className="form-control">
+                    <label className="label">
+                        <span className="label-text">Nome de Exibição <span className="text-error text-base">*</span></span>
+                    </label>
+                    <input
+                        type="text"
+                        className="input input-bordered"
+                        value={formData.display_name}
+                        onChange={(e) =>
+                            setFormData({ ...formData, display_name: e.target.value })
+                        }
+                        required
+                        placeholder="ex: Administrador, Editor, Visualizador"
+                    />
+                </div>
 
-                    <div className="form-control">
-                        <label className="label">
-                            <span className="label-text">Nome de Exibição *</span>
-                        </label>
-                        <input
-                            type="text"
-                            className="input input-bordered"
-                            value={formData.display_name}
-                            onChange={(e) =>
-                                setFormData({ ...formData, display_name: e.target.value })
-                            }
-                            required
-                            placeholder="ex: Administrador, Editor, Visualizador"
-                        />
-                    </div>
+                <div className="form-control">
+                    <label className="label">
+                        <span className="label-text">Descrição</span>
+                    </label>
+                    <textarea
+                        className="textarea textarea-bordered"
+                        value={formData.description}
+                        onChange={(e) =>
+                            setFormData({ ...formData, description: e.target.value })
+                        }
+                        rows={3}
+                        placeholder="Descrição da role..."
+                    />
+                </div>
 
-                    <div className="form-control">
-                        <label className="label">
-                            <span className="label-text">Descrição</span>
-                        </label>
-                        <textarea
-                            className="textarea textarea-bordered"
-                            value={formData.description}
-                            onChange={(e) =>
-                                setFormData({ ...formData, description: e.target.value })
-                            }
-                            rows={3}
-                            placeholder="Descrição da role..."
-                        />
-                    </div>
-
-                    <div className="form-control">
-                        <label className="label">
-                            <span className="label-text">Permissões</span>
-                        </label>
-                        {isLoadingPermissions ? (
-                            <div className="flex justify-center py-4">
-                                <span className="loading loading-spinner"></span>
-                            </div>
-                        ) : (
-                            <div className="border border-base-300 rounded-lg p-4 max-h-96 overflow-y-auto space-y-4">
-                                {permissionGroups.map((group) => (
-                                    <div key={group.group} className="space-y-2">
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="checkbox"
-                                                className="checkbox checkbox-sm"
-                                                checked={group.permissions.every((p) =>
-                                                    formData.permissions.includes(p.id)
-                                                )}
-                                                onChange={() => handleGroupToggle(group.permissions)}
-                                            />
-                                            <span className="font-semibold text-sm">
-                                                {group.group}
-                                            </span>
-                                        </div>
-                                        <div className="ml-6 space-y-1">
-                                            {group.permissions.map((permission) => (
-                                                <label
-                                                    key={permission.id}
-                                                    className="flex items-center gap-2 cursor-pointer hover:bg-base-200 p-1 rounded"
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        className="checkbox checkbox-sm"
-                                                        checked={formData.permissions.includes(
-                                                            permission.id
-                                                        )}
-                                                        onChange={() =>
-                                                            handlePermissionToggle(permission.id)
-                                                        }
-                                                    />
-                                                    <div className="flex-1">
-                                                        <div className="text-sm">
-                                                            {permission.display_name}
-                                                        </div>
-                                                        <div className="text-xs text-base-content/60">
-                                                            {permission.name}
-                                                        </div>
-                                                    </div>
-                                                </label>
-                                            ))}
-                                        </div>
+                <div className="form-control">
+                    <label className="label">
+                        <span className="label-text">Permissões</span>
+                    </label>
+                    {isLoadingPermissions ? (
+                        <div className="flex justify-center py-4">
+                            <span className="loading loading-spinner"></span>
+                        </div>
+                    ) : (
+                        <div className="border border-base-300 rounded-lg p-4 max-h-96 overflow-y-auto space-y-4">
+                            {permissionGroups.map((group) => (
+                                <div key={group.group} className="space-y-2">
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            className="checkbox checkbox-sm"
+                                            checked={group.permissions.every((p) =>
+                                                formData.permissions.includes(p.id)
+                                            )}
+                                            onChange={() => handleGroupToggle(group.permissions)}
+                                        />
+                                        <span className="font-semibold text-sm">
+                                            {group.group}
+                                        </span>
                                     </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="modal-action">
-                        <button
-                            type="button"
-                            className="btn btn-ghost"
-                            onClick={onClose}
-                            disabled={isSubmitting}
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            className="btn btn-primary"
-                            disabled={isSubmitting}
-                        >
-                            {isSubmitting ? (
-                                <>
-                                    <span className="loading loading-spinner"></span>
-                                    Salvando...
-                                </>
-                            ) : (
-                                'Salvar'
-                            )}
-                        </button>
-                    </div>
-                </form>
-            </div>
-            <div className="modal-backdrop" onClick={onClose} />
-        </div>
+                                    <div className="ml-6 space-y-1">
+                                        {group.permissions.map((permission) => (
+                                            <label
+                                                key={permission.id}
+                                                className="flex items-center gap-2 cursor-pointer hover:bg-base-200 p-1 rounded"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    className="checkbox checkbox-sm"
+                                                    checked={formData.permissions.includes(
+                                                        permission.id
+                                                    )}
+                                                    onChange={() =>
+                                                        handlePermissionToggle(permission.id)
+                                                    }
+                                                />
+                                                <div className="flex-1">
+                                                    <div className="text-sm">
+                                                        {permission.display_name}
+                                                    </div>
+                                                    <div className="text-xs text-base-content/60">
+                                                        {permission.name}
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </form>
+        </ResponsiveModal>
     );
 }
 

@@ -22,14 +22,14 @@ export function SlowJobsCard({ jobs }: SlowJobsCardProps) {
     };
 
     return (
-        <div className="bg-base-100 border border-base-300 rounded-2xl p-6 hover:border-base-content/20 transition-all">
-            <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 bg-secondary/10 rounded-lg">
-                    <Briefcase className="w-6 h-6 text-secondary" />
+        <div className="bg-base-100 border border-base-300 rounded-2xl p-4 sm:p-6 hover:border-base-content/20 transition-all">
+            <div className="flex items-center gap-3 mb-4 sm:mb-6">
+                <div className="p-2 sm:p-3 bg-secondary/10 rounded-lg">
+                    <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-secondary" />
                 </div>
                 <div>
-                    <h2 className="text-xl font-bold text-base-content">Jobs Lentos</h2>
-                    <p className="text-sm text-base-content/60">
+                    <h2 className="text-lg sm:text-xl font-bold text-base-content">Jobs Lentos</h2>
+                    <p className="text-xs sm:text-sm text-base-content/60">
                         Jobs com maior tempo de execução
                     </p>
                 </div>
@@ -38,22 +38,22 @@ export function SlowJobsCard({ jobs }: SlowJobsCardProps) {
             {jobs.length > 0 ? (
                 <div className="space-y-3">
                     {jobs.map((job, index) => (
-                        <div 
-                            key={index} 
-                            className="bg-base-200 rounded-lg p-4 border border-base-300 hover:border-secondary/50 transition-colors"
+                        <div
+                            key={index}
+                            className="bg-base-200 rounded-lg p-3 sm:p-4 border border-base-300 hover:border-secondary/50 transition-colors"
                         >
-                            <div className="flex items-start justify-between gap-3 mb-2">
+                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3 mb-2">
                                 <div className="flex-1 min-w-0">
-                                    <div className="text-sm font-semibold text-base-content mb-1">
+                                    <div className="text-xs sm:text-sm font-semibold text-base-content mb-1 break-words">
                                         {extractJobName(job.job)}
                                     </div>
-                                    <code className="text-xs text-base-content/60 font-mono block truncate">
+                                    <code className="text-xs text-base-content/60 font-mono block break-all">
                                         {job.job}
                                     </code>
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
                                     <Clock className="w-4 h-4 text-secondary" />
-                                    <span className="text-sm font-bold text-secondary">
+                                    <span className="text-xs sm:text-sm font-bold text-secondary whitespace-nowrap">
                                         {formatDuration(job.duration)}
                                     </span>
                                 </div>
@@ -65,9 +65,9 @@ export function SlowJobsCard({ jobs }: SlowJobsCardProps) {
                     ))}
                 </div>
             ) : (
-                <div className="text-center py-12 bg-base-200 rounded-lg">
-                    <Briefcase className="w-12 h-12 mx-auto text-base-content/20 mb-3" />
-                    <p className="text-sm text-base-content/60">
+                <div className="text-center py-8 sm:py-12 bg-base-200 rounded-lg">
+                    <Briefcase className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-base-content/20 mb-3" />
+                    <p className="text-xs sm:text-sm text-base-content/60">
                         Nenhum job lento registrado
                     </p>
                 </div>

@@ -1,5 +1,5 @@
-    import { ReactNode, useState, useRef, useEffect } from 'react';
-import { ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
+import { ReactNode, useState, useRef, useEffect } from 'react';
+import { ChevronDown, ChevronRight, ChevronLeft, LogOut } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 
 export interface NavItem {
@@ -11,11 +11,17 @@ export interface NavItem {
     children?: NavItem[];
     roles?: string[];
     external?: boolean;
-    showInToolbar?: boolean;
 }
 
 interface SidebarProps {
     navItems: NavItem[];
+    isMobileOpen?: boolean;
+    onMobileClose?: () => void;
+    onLogout?: () => void;
+    user?: {
+        name: string;
+        email: string;
+    };
 }
 
 interface SidebarItemProps {
@@ -61,7 +67,10 @@ function SidebarItem({ item, level, isCollapsed }: SidebarItemProps) {
         return (
             <li>
                 <button
-                    onClick={() => setIsExpanded(!isExpanded)}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIsExpanded(!isExpanded);
+                    }}
                     className={`
                         flex items-center gap-3 px-4 py-3 rounded-lg
                         transition-all duration-200
@@ -371,7 +380,7 @@ function CollapsedNavItem({ item }: CollapsedNavItemProps) {
     );
 }
 
-export function Sidebar({ navItems }: SidebarProps) {
+export function Sidebar({ navItems, isMobileOpen = false, onMobileClose, onLogout, user }: SidebarProps) {
     // Recupera o estado do localStorage ou usa expandido como padrão
     const [isCollapsed, setIsCollapsed] = useState(() => {
         const savedState = localStorage.getItem('sidebar-collapsed');
@@ -383,6 +392,13 @@ export function Sidebar({ navItems }: SidebarProps) {
         const newState = !isCollapsed;
         setIsCollapsed(newState);
         localStorage.setItem('sidebar-collapsed', String(newState));
+    };
+
+    // Fecha o drawer mobile ao clicar em um link
+    const handleLinkClick = () => {
+        if (onMobileClose) {
+            onMobileClose();
+        }
     };
 
     // Processa nav items para a view colapsada
@@ -417,40 +433,51 @@ export function Sidebar({ navItems }: SidebarProps) {
 
     const { directItems, submenuItems } = processNavItemsForCollapsed(navItems);
 
-    return (
-        <aside
-            className={`bg-base-100 border-r border-base-200 sticky top-0 h-screen flex flex-col transition-all duration-300 ${
-                isCollapsed ? 'w-20' : 'w-72'
-            }`}
-            style={isCollapsed ? { overflowY: 'auto', overflowX: 'visible', zIndex: 40 } : {}}
-            aria-label="Main navigation"
-        >
-            {/* Logo and Toggle Button */}
-            <div className={`flex items-center p-6 ${isCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'}`}>
-                <Link
-                    href="/dashboard"
-                    className="hover:opacity-80 transition-opacity"
-                    aria-label="Ir para Dashboard"
-                >
-                    <img
-                        src={isCollapsed ? "/storage/icon.svg" : "/storage/logo.svg"}
-                        alt="Logo do MediControl"
-                        className="h-8 w-auto"
-                    />
-                </Link>
-                {!isCollapsed && (
-                    <button
-                        onClick={handleToggleCollapse}
-                        className="btn btn-ghost btn-sm btn-circle"
-                        aria-label="Colapsar sidebar"
+    // Sidebar content component (reusable for both desktop and mobile)
+    const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => (
+        <>
+            {/* Header */}
+            {isMobile && user ? (
+                <div>
+                    <div className="flex items-center p-4">
+                        <div className="flex flex-col text-left">
+                            <span className="font-semibold text-base-content text-sm">
+                                {user.name}
+                            </span>
+                            <span className="text-base-content/60 text-xs">
+                                {user.email}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                // Desktop: Logo and Toggle Button
+                <div className={`flex items-center p-6 ${isCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'}`}>
+                    <Link
+                        href="/dashboard"
+                        className="hover:opacity-80 transition-opacity"
+                        aria-label="Ir para Dashboard"
                     >
-                        <ChevronLeft className="w-4 h-4" />
-                    </button>
-                )}
-            </div>
+                        <img
+                            src={isCollapsed ? "/storage/icon.svg" : "/storage/logo.svg"}
+                            alt="Logo do MediControl"
+                            className="h-8 w-auto"
+                        />
+                    </Link>
+                    {!isCollapsed && (
+                        <button
+                            onClick={handleToggleCollapse}
+                            className="btn btn-ghost btn-sm btn-circle"
+                            aria-label="Colapsar sidebar"
+                        >
+                            <ChevronLeft className="w-4 h-4" />
+                        </button>
+                    )}
+                </div>
+            )}
 
-            {/* Toggle Button when collapsed */}
-            {isCollapsed && (
+            {/* Toggle Button when collapsed (desktop only) */}
+            {isCollapsed && !isMobile && (
                 <div className="px-4 pb-2 flex justify-center">
                     <button
                         onClick={handleToggleCollapse}
@@ -463,8 +490,8 @@ export function Sidebar({ navItems }: SidebarProps) {
             )}
 
             {/* Navigation Menu */}
-            <nav className={`flex-1 py-3 overflow-y-auto ${isCollapsed ? 'px-2' : 'px-4 overflow-x-hidden'}`}>
-                {isCollapsed ? (
+            <nav className={`flex-1 py-3 overflow-y-auto ${isCollapsed && !isMobile ? 'px-2' : 'px-4 overflow-x-hidden'}`}>
+                {isCollapsed && !isMobile ? (
                     <ul className="menu menu-compact space-y-1">
                         {directItems.map((item, index) => (
                             <CollapsedNavItem key={item.href || `${item.label}-${index}`} item={item} />
@@ -474,18 +501,68 @@ export function Sidebar({ navItems }: SidebarProps) {
                         ))}
                     </ul>
                 ) : (
-                    <ul className="menu menu-compact space-y-1">
+                    <ul className="menu menu-compact space-y-1" onClick={isMobile ? handleLinkClick : undefined}>
                         {navItems.map((item, index) => (
                             <SidebarItem
                                 key={item.href || `${item.label}-${index}`}
                                 item={item}
                                 level={0}
-                                isCollapsed={isCollapsed}
+                                isCollapsed={isCollapsed && !isMobile}
                             />
                         ))}
                     </ul>
                 )}
             </nav>
-        </aside>
+            {onLogout && isMobile && (
+                <div className="px-4 pb-4 mt-auto mb-4">
+                    <button
+                        onClick={onLogout}
+                        className="btn btn-error btn-sm w-full gap-2"
+                        aria-label="Sair"
+                    >
+                        <LogOut className="w-4 h-4" />
+                        Sair
+                    </button>
+                </div>
+            )}
+        </>
+    );
+
+    return (
+        <>
+            {/* Desktop Sidebar */}
+            <aside
+                className={`hidden lg:flex bg-base-100 border-r border-base-200 sticky top-0 h-screen flex-col transition-all duration-300 ${
+                    isCollapsed ? 'w-20' : 'w-72'
+                }`}
+                style={isCollapsed ? { overflowY: 'auto', overflowX: 'visible', zIndex: 40 } : {}}
+                aria-label="Main navigation"
+            >
+                <SidebarContent />
+            </aside>
+
+            {/* Mobile Drawer */}
+            <div className="lg:hidden">
+                {/* Overlay */}
+                <div
+                    className={`fixed inset-0 bg-base-content/50 z-[60] transition-opacity duration-300 ${
+                        isMobileOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                    }`}
+                    onClick={onMobileClose}
+                    aria-label="Fechar menu"
+                    style={{ top: '4rem' }}
+                />
+
+                {/* Drawer */}
+                <aside
+                    className={`fixed top-16 left-0 h-[calc(100vh-4rem)] w-72 bg-base-100 z-[70] flex flex-col shadow-xl transform transition-transform duration-300 ease-in-out ${
+                        isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+                    }`}
+                    aria-label="Main navigation"
+                >
+                    <SidebarContent isMobile />
+                </aside>
+            </div>
+        </>
     );
 }

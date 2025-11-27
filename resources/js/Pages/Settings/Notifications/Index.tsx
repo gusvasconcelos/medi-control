@@ -124,7 +124,7 @@ export default function NotificationPreferencesIndex({ auth }: PageProps) {
                                                 </div>
                                                 <div>
                                                     <p className="font-medium">Lembretes de Medicamentos</p>
-                                                    <p className="text-sm text-base-content/60">
+                                                    <p className="text-xs text-base-content/60">
                                                         Receba lembretes antes e no horário de tomar seus medicamentos
                                                     </p>
                                                 </div>
@@ -147,7 +147,7 @@ export default function NotificationPreferencesIndex({ auth }: PageProps) {
                                                 </div>
                                                 <div>
                                                     <p className="font-medium">Alertas de Interação</p>
-                                                    <p className="text-sm text-base-content/60">
+                                                    <p className="text-xs text-base-content/60">
                                                         Seja notificado sobre interações medicamentosas moderadas ou graves
                                                     </p>
                                                 </div>
@@ -170,7 +170,7 @@ export default function NotificationPreferencesIndex({ auth }: PageProps) {
                                                 </div>
                                                 <div>
                                                     <p className="font-medium">Alerta de Estoque Baixo</p>
-                                                    <p className="text-sm text-base-content/60">
+                                                    <p className="text-xs text-base-content/60">
                                                         Receba avisos quando o estoque de medicamentos estiver baixo
                                                     </p>
                                                 </div>

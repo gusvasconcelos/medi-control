@@ -31,7 +31,7 @@ export function SuggestedPrompts({
 
     return (
         <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
                 {prompts.map((prompt) => {
                     const Icon = getIcon(prompt.icon);
                     return (

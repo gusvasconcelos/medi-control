@@ -65,7 +65,7 @@ export default function HorizonDashboard({ auth, stats, workload, masters }: Hor
                                         <Gauge className="w-7 h-7 text-primary" />
                                         Horizon
                                     </h1>
-                                    <p className="text-sm text-base-content/60">
+                                    <p className="text-xs sm:text-sm text-base-content/60">
                                         Monitoramento de filas e jobs em tempo real.
                                     </p>
                                 </div>
