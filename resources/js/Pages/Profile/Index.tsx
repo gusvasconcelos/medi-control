@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/useToast';
 import { userService } from '@/services/userService';
 import { fileService } from '@/services/fileService';
 import type { PageProps } from '@/types';
+import { Avatar } from '@/Components/Common/Avatar';
 
 interface UpdateProfileData {
     name: string;
@@ -133,20 +134,13 @@ export default function ProfileIndex({ auth }: PageProps) {
                                 <div className="flex flex-col items-center gap-4 pb-6">
                                     <div className="relative">
                                         <div className="avatar">
-                                            <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                                                {photoPreview ? (
-                                                    <img
-                                                        src={photoPreview}
-                                                        alt={user?.name}
-                                                        className="object-cover"
-                                                    />
-                                                ) : (
-                                                    <div className="bg-primary text-primary-content flex items-center justify-center w-full h-full">
-                                                        <span className="text-4xl sm:text-5xl">
-                                                            {user?.name.charAt(0).toUpperCase()}
-                                                        </span>
-                                                    </div>
-                                                )}
+                                            <div className="ring ring-primary ring-offset-base-100 ring-offset-2">
+                                                <Avatar
+                                                    src={photoPreview}
+                                                    alt={user?.name || ''}
+                                                    name={user?.name || ''}
+                                                    size="xl"
+                                                />
                                             </div>
                                         </div>
                                         <button

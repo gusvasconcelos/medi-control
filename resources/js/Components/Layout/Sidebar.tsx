@@ -1,6 +1,7 @@
 import { ReactNode, useState, useRef, useEffect } from 'react';
 import { ChevronDown, ChevronRight, ChevronLeft, LogOut } from 'lucide-react';
 import { Link } from '@inertiajs/react';
+import { OptimizedImage } from '@/Components/Common/OptimizedImage';
 
 export interface NavItem {
     label: string;
@@ -492,10 +493,11 @@ export function Sidebar({ navItems, isMobileOpen = false, onMobileClose, onLogou
                         className="hover:opacity-80 transition-opacity"
                         aria-label="Ir para Dashboard"
                     >
-                        <img
+                        <OptimizedImage
                             src={isCollapsed ? "/storage/icon.svg" : "/storage/logo.svg"}
                             alt="Logo do MediControl"
                             className="h-8 w-auto"
+                            lazy={false}
                         />
                     </Link>
                     {!isCollapsed && (

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from '@inertiajs/react';
 import { Heart, Stethoscope, Check, ChevronRight } from 'lucide-react';
+import { OptimizedImage } from '@/Components/Common/OptimizedImage';
 
 interface RoleOption {
     value: 'patient' | 'caregiver';
@@ -42,10 +43,11 @@ export function RoleSelectionModal({ onSelect, isLoading }: RoleSelectionModalPr
         <div className="flex items-center justify-center min-h-screen p-4 bg-base-100">
             <div className="w-full max-w-2xl">
                 <Link href="/">
-                    <img
+                    <OptimizedImage
                         src="/storage/icon.svg"
                         alt="Logo do MediControl"
                         className="w-24 h-auto mb-8 mx-auto hover:opacity-80 transition-opacity"
+                        lazy={false}
                     />
                 </Link>
 

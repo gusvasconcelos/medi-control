@@ -9,6 +9,7 @@ import { useChat } from '@/hooks/useChat';
 import { getNavigationItems } from '@/config/navigation';
 import type { PageProps } from '@/types';
 import { ConfirmModal } from '@/Components/Common/ConfirmModal';
+import { OptimizedImage } from '@/Components/Common/OptimizedImage';
 
 export default function ChatIndex({ auth }: PageProps) {
     const user = auth?.user;
@@ -84,7 +85,12 @@ export default function ChatIndex({ auth }: PageProps) {
                             {/* Header with clear button */}
                             <div className="flex items-center justify-between p-4 bg-base-200 border-b border-base-300">
                                 <div className="flex items-center justify-center">
-                                    <img src="/storage/staff.webp" alt="Hermes" className="size-8 invert dark:invert-0" />
+                                    <OptimizedImage
+                                        src="/storage/staff.webp"
+                                        alt="Hermes"
+                                        className="size-8 invert dark:invert-0"
+                                        lazy={false}
+                                    />
                                     <h1 className="text-xl font-bold text-base-content">
                                         Hermes
                                     </h1>

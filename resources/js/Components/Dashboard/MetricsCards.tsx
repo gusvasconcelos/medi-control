@@ -1,5 +1,6 @@
 import React from 'react';
 import type { DailyMetrics } from '@/types';
+import { OptimizedImage } from '@/Components/Common/OptimizedImage';
 
 interface MetricsCardsProps {
     metrics: DailyMetrics;
@@ -43,7 +44,12 @@ export const MetricsCards: React.FC<MetricsCardsProps> = ({ metrics }) => {
                             </p>
                             </div>
                             {/* 3D placeholder */}
-                            <img src={item.icon} alt={item.label} className="w-16 h-16 sm:w-20 sm:h-20" />
+                            <OptimizedImage
+                                src={item.icon}
+                                alt={item.label}
+                                className="w-16 h-16 sm:w-20 sm:h-20"
+                                lazy={true}
+                            />
                         </div>
                     </div>
                 );

@@ -1,6 +1,8 @@
 import { PageProps } from '@/types';
 import { NotificationDropdown } from './NotificationDropdown';
 import { UserMenu } from './UserMenu';
+import { Avatar } from '@/Components/Common/Avatar';
+import { OptimizedImage } from '@/Components/Common/OptimizedImage';
 
 export interface NavbarProps {
     variant: 'public' | 'auth' | 'authenticated';
@@ -15,15 +17,6 @@ export function Navbar({ variant, auth, onLogout, onMenuClick }: NavbarProps) {
 
     const profilePhotoUrl = auth?.user?.profile_photo_url;
 
-    const getUserInitials = (name: string): string => {
-        return name
-            .split(' ')
-            .map((n) => n[0])
-            .join('')
-            .toUpperCase()
-            .slice(0, 2);
-    };
-
     return (
         <nav className="navbar bg-base-100 border-b border-base-300 px-4 lg:px-8 fixed top-0 left-0 right-0 z-[9999]">
             <div className="navbar-start">
@@ -33,27 +26,21 @@ export function Navbar({ variant, auth, onLogout, onMenuClick }: NavbarProps) {
                         className="btn btn-ghost btn-circle avatar lg:hidden"
                         aria-label="Abrir menu"
                     >
-                        {profilePhotoUrl ? (
-                            <img
-                                src={profilePhotoUrl}
-                                alt={auth.user.name}
-                                className="w-10 h-10 rounded-full object-cover"
-                            />
-                        ) : (
-                            <div className="w-10 rounded-full bg-primary text-primary-content flex items-center justify-center">
-                                <span className="text-sm font-medium">
-                                    {getUserInitials(auth.user.name)}
-                                </span>
-                            </div>
-                        )}
+                        <Avatar
+                            src={profilePhotoUrl}
+                            alt={auth.user.name}
+                            name={auth.user.name}
+                            size="md"
+                        />
                     </button>
                 )}
                 {variant !== 'authenticated' && (
                     <a href={logoHref}>
-                        <img
+                        <OptimizedImage
                             src="/storage/logo.svg"
                             alt="Logo do MediControl"
                             className="h-8 w-auto hover:opacity-80 transition-opacity"
+                            lazy={false}
                         />
                     </a>
                 )}
@@ -62,10 +49,11 @@ export function Navbar({ variant, auth, onLogout, onMenuClick }: NavbarProps) {
             {variant === 'authenticated' && (
                 <div className={`navbar-${logoPosition}`}>
                     <a href={logoHref}>
-                        <img
+                        <OptimizedImage
                             src="/storage/logo.svg"
                             alt="Logo do MediControl"
                             className="h-12 w-auto hover:opacity-80 transition-opacity"
+                            lazy={false}
                         />
                     </a>
                 </div>

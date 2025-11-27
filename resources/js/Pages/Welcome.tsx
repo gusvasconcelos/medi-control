@@ -1,6 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import { PageProps } from '@/types';
 import { Navbar } from '@/Components/Layout/Navbar';
+import { OptimizedImage } from '@/Components/Common/OptimizedImage';
 
 export default function Welcome({ auth }: PageProps) {
     // If authenticated, redirect to dashboard
@@ -58,10 +59,11 @@ export default function Welcome({ auth }: PageProps) {
                             {/* Feature 1 */}
                             <div className="card bg-base-200 shadow-xl">
                                 <figure className="px-10 pt-10">
-                                    <img
+                                    <OptimizedImage
                                         src="/storage/calendar.png"
                                         alt="Ícone de calendário"
                                         className="w-16 h-16"
+                                        lazy={true}
                                     />
                                 </figure>
                                 <div className="card-body items-center text-center">
@@ -78,10 +80,11 @@ export default function Welcome({ auth }: PageProps) {
                             {/* Feature 2 */}
                             <div className="card bg-base-200 shadow-xl">
                                 <figure className="px-10 pt-10">
-                                    <img
+                                    <OptimizedImage
                                         src="/storage/warning.png"
                                         alt="Ícone de alerta"
                                         className="w-16 h-16"
+                                        lazy={true}
                                     />
                                 </figure>
                                 <div className="card-body items-center text-center">
@@ -98,10 +101,11 @@ export default function Welcome({ auth }: PageProps) {
                             {/* Feature 3 */}
                             <div className="card bg-base-200 shadow-xl">
                                 <figure className="px-10 pt-10">
-                                    <img
+                                    <OptimizedImage
                                         src="/storage/caregiver.png"
                                         alt="Ícone de cuidador com o paciente"
                                         className="w-16 h-16"
+                                        lazy={true}
                                     />
                                 </figure>
                                 <div className="card-body items-center text-center">
@@ -118,10 +122,11 @@ export default function Welcome({ auth }: PageProps) {
                             {/* Feature 4 */}
                             <div className="card bg-base-200 shadow-xl">
                                 <figure className="px-10 pt-10">
-                                    <img
+                                    <OptimizedImage
                                         src="/storage/analytics.png"
                                         alt="Ícone de gráfico"
                                         className="w-16 h-16"
+                                        lazy={true}
                                     />
                                 </figure>
                                 <div className="card-body items-center text-center">
@@ -138,10 +143,11 @@ export default function Welcome({ auth }: PageProps) {
                             {/* Feature 5 */}
                             <div className="card bg-base-200 shadow-xl">
                                 <figure className="px-10 pt-10">
-                                    <img
+                                    <OptimizedImage
                                         src="/storage/lock.png"
                                         alt="Ícone de cadeado"
                                         className="w-16 h-16"
+                                        lazy={true}
                                     />
                                 </figure>
                                 <div className="card-body items-center text-center">
@@ -158,10 +164,11 @@ export default function Welcome({ auth }: PageProps) {
                             {/* Feature 6 */}
                             <div className="card bg-base-200 shadow-xl">
                                 <figure className="px-10 pt-10">
-                                    <img
+                                    <OptimizedImage
                                         src="/storage/robot.png"
                                         alt="Ícone de robô"
                                         className="w-16 h-16"
+                                        lazy={true}
                                     />
                                 </figure>
                                 <div className="card-body items-center text-center">

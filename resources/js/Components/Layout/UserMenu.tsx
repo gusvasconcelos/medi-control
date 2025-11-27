@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { UserCircle, LogOut } from 'lucide-react';
 import { User } from '@/types';
+import { Avatar } from '@/Components/Common/Avatar';
 
 interface UserMenuProps {
     user: User;
@@ -8,9 +9,6 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ user, onLogout }: UserMenuProps) {
-    const userInitial = user.name.charAt(0).toUpperCase();
-    const profilePhotoUrl = user.profile_photo_url;
-
     return (
         <div className="dropdown dropdown-end">
             <div
@@ -19,17 +17,12 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
                 className="btn btn-ghost btn-circle avatar placeholder"
                 aria-label="Menu do usuário"
             >
-                <div className="bg-primary text-primary-content w-12 rounded-full">
-                    {profilePhotoUrl ? (
-                        <img
-                            src={profilePhotoUrl}
-                            alt={user.name}
-                            className="w-12 h-12 rounded-full object-cover"
-                        />
-                    ) : (
-                        <span className="text-xl">{userInitial}</span>
-                    )}
-                </div>
+                <Avatar
+                    src={user.profile_photo_url}
+                    alt={user.name}
+                    name={user.name}
+                    size="lg"
+                />
             </div>
             <ul
                 tabIndex={0}
