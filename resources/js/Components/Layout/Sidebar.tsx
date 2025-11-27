@@ -394,6 +394,40 @@ export function Sidebar({ navItems, isMobileOpen = false, onMobileClose, onLogou
         localStorage.setItem('sidebar-collapsed', String(newState));
     };
 
+    // Bloqueia o scroll do body quando a sidebar estiver expandida
+    useEffect(() => {
+        if (!isCollapsed) {
+            // Salva o scroll atual antes de bloquear
+            const scrollY = window.scrollY;
+            document.body.style.position = 'fixed';
+            document.body.style.top = `-${scrollY}px`;
+            document.body.style.width = '100%';
+            document.body.style.overflow = 'hidden';
+        } else {
+            // Restaura o scroll quando a sidebar for colapsada
+            const scrollY = document.body.style.top;
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.width = '';
+            document.body.style.overflow = '';
+            if (scrollY) {
+                window.scrollTo(0, parseInt(scrollY || '0') * -1);
+            }
+        }
+
+        // Cleanup: restaura o scroll quando o componente for desmontado
+        return () => {
+            const scrollY = document.body.style.top;
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.width = '';
+            document.body.style.overflow = '';
+            if (scrollY) {
+                window.scrollTo(0, parseInt(scrollY || '0') * -1);
+            }
+        };
+    }, [isCollapsed]);
+
     // Fecha o drawer mobile ao clicar em um link
     const handleLinkClick = () => {
         if (onMobileClose) {
