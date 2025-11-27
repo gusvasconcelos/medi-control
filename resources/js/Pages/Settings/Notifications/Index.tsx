@@ -6,6 +6,7 @@ import { AuthenticatedLayout } from '@/Layouts/AuthenticatedLayout';
 import { getNavigationItems } from '@/config/navigation';
 import { notificationService } from '@/services/notificationService';
 import { useToast } from '@/hooks/useToast';
+import { PushNotificationToggle } from '@/Components/Notifications/PushNotificationToggle';
 import type { PageProps, NotificationPreference } from '@/types';
 
 export default function NotificationPreferencesIndex({ auth }: PageProps) {
@@ -105,6 +106,26 @@ export default function NotificationPreferencesIndex({ auth }: PageProps) {
                         </div>
 
                         <div className="space-y-6">
+                            {/* Push Notification Opt-in */}
+                            <div className="card bg-base-200">
+                                <div className="card-body">
+                                    <h2 className="card-title text-lg flex items-center gap-2">
+                                        <Bell className="w-5 h-5" />
+                                        Notificações Push
+                                    </h2>
+                                    <p className="text-sm text-base-content/60 mb-4">
+                                        Ative as notificações push para receber alertas em tempo real no seu dispositivo
+                                    </p>
+                                    <PushNotificationToggle />
+                                    <div className="alert alert-info mt-4">
+                                        <span className="text-sm">
+                                            As notificações push funcionam mesmo quando o aplicativo está fechado.
+                                            Você receberá lembretes de medicamentos, alertas de interação e avisos de estoque baixo.
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
                             {/* Notification Types */}
                             <div className="card bg-base-200">
                                 <div className="card-body">

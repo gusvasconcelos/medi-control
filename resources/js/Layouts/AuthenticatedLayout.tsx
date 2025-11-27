@@ -4,6 +4,7 @@ import { Sidebar, NavItem } from '@/Components/Layout/Sidebar';
 import { Navbar } from '@/Components/Layout/Navbar';
 import { Topbar } from '@/Components/Layout/Topbar';
 import { useAuth } from '@/hooks/useAuth';
+import { useOneSignal } from '@/hooks/useOneSignal';
 import { PageProps } from '@/types';
 
 interface AuthenticatedLayoutProps {
@@ -18,6 +19,17 @@ export function AuthenticatedLayout({
     const { logout } = useAuth();
     const { auth } = usePage<PageProps>().props;
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    // Initialize OneSignal automatically for authenticated users
+    useOneSignal({
+        enabled: true,
+        onSubscribed: (playerId) => {
+            console.log('OneSignal subscribed with player ID:', playerId);
+        },
+        onError: (error) => {
+            console.error('OneSignal initialization error:', error);
+        },
+    });
 
     const handleMenuClick = () => {
         if (isMobileMenuOpen) {

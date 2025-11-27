@@ -17,6 +17,7 @@ export interface User {
     name: string;
     email: string;
     phone?: string;
+    onesignal_player_id?: string | null;
     profile_photo_path?: string;
     profile_photo_url?: string;
     email_verified_at?: string;
@@ -362,10 +363,70 @@ export interface UnreadCountResponse {
     };
 }
 
+/**
+ * OneSignal
+ */
+export type DeviceType = 'desktop' | 'mobile' | 'tablet';
+
+export interface UserDevice {
+    id: number;
+    device_type?: DeviceType | null;
+    browser?: string | null;
+    os?: string | null;
+    device_name?: string | null;
+    last_seen_at?: string | null;
+    active: boolean;
+    created_at: string;
+}
+
+export interface OneSignalRegisterData {
+    player_id: string;
+    device_type?: DeviceType;
+    browser?: string;
+    os?: string;
+    device_name?: string;
+}
+
+export interface OneSignalRegisterResponse {
+    message: string;
+    device: {
+        id: number;
+        player_id: string;
+        device_type?: DeviceType | null;
+        browser?: string | null;
+        os?: string | null;
+        device_name?: string | null;
+    };
+}
+
+export interface OneSignalDevicesResponse {
+    data: UserDevice[];
+}
+
 declare global {
     interface Window {
         axios: typeof import('axios').default;
         Pusher: typeof import('pusher-js').default;
         Echo: import('laravel-echo').default;
+        OneSignalDeferred?: Array<() => void>;
+        OneSignal?: {
+            init(options: {
+                appId: string;
+                allowLocalhostAsSecureOrigin?: boolean;
+                [key: string]: unknown;
+            }): Promise<void>;
+            User: {
+                PushSubscription: {
+                    id?: string;
+                    token?: string;
+                    optedIn?: boolean;
+                };
+            };
+            Notifications: {
+                requestPermission(): Promise<void>;
+                permission: boolean;
+            };
+            on(event: string, callback: (event: unknown) => void): void;
+        };
     }
 }

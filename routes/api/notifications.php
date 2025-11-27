@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\NotificationPreferenceController;
+use App\Http\Controllers\Api\OneSignalController;
 use Illuminate\Support\Facades\Route;
 
 Route::group([
@@ -18,4 +19,9 @@ Route::group([
     Route::patch('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     Route::patch('notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
     Route::delete('notifications/clear-all', [NotificationController::class, 'clearAll']);
+
+    // OneSignal push notifications
+    Route::post('onesignal/register', [OneSignalController::class, 'registerPlayerId']);
+    Route::post('onesignal/unregister', [OneSignalController::class, 'unregisterPlayerId']);
+    Route::get('onesignal/devices', [OneSignalController::class, 'getDevices']);
 });

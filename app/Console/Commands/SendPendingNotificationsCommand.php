@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Enums\NotificationStatus;
 use App\Models\Notification;
+use App\Services\Notification\OneSignalService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -12,6 +13,12 @@ class SendPendingNotificationsCommand extends Command
     protected $signature = 'notifications:send';
 
     protected $description = 'Send pending notifications that are due';
+
+    public function __construct(
+        private readonly OneSignalService $oneSignalService
+    ) {
+        parent::__construct();
+    }
 
     public function handle(): int
     {
@@ -70,19 +77,50 @@ class SendPendingNotificationsCommand extends Command
     private function sendNotification(Notification $notification): bool
     {
         try {
-            $notification->update([
-                'status' => NotificationStatus::SENT,
-                'sent_at' => now(),
-            ]);
+            $user = $notification->user;
 
-            Log::info('Notification sent', [
+            if (! $user) {
+                throw new \Exception('User not found for notification');
+            }
+
+            $additionalData = [
                 'notification_id' => $notification->id,
-                'user_id' => $notification->user_id,
                 'type' => $notification->type,
-                'title' => $notification->title,
+                'user_medication_id' => $notification->user_medication_id,
+            ];
+
+            if ($notification->metadata) {
+                $additionalData = array_merge($additionalData, $notification->metadata);
+            }
+
+            $sent = $this->oneSignalService->sendNotificationToUser(
+                user: $user,
+                title: $notification->title,
+                message: $notification->body,
+                additionalData: $additionalData
+            );
+
+            if ($sent) {
+                $notification->update([
+                    'status' => NotificationStatus::SENT,
+                    'sent_at' => now(),
+                ]);
+
+                Log::info('Notification sent', [
+                    'notification_id' => $notification->id,
+                    'user_id' => $notification->user_id,
+                    'type' => $notification->type,
+                    'title' => $notification->title,
+                ]);
+
+                return true;
+            }
+
+            $notification->update([
+                'status' => NotificationStatus::FAILED,
             ]);
 
-            return true;
+            return false;
         } catch (\Throwable $e) {
             $notification->update([
                 'status' => NotificationStatus::FAILED,

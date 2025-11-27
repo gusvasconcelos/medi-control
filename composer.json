@@ -22,6 +22,7 @@
         "laravel/tinker": "^2.10.1",
         "league/flysystem-aws-s3-v3": "^3.0",
         "marvinlabs/laravel-discord-logger": "^1.4",
+        "onesignal/onesignal-php-api": "^2.2",
         "openai-php/client": "^0.18.0",
         "phpoffice/phpspreadsheet": "^5.1",
         "predis/predis": "^3.2",

@@ -38,6 +38,7 @@ class User extends Authenticatable
         'email',
         'password',
         'phone',
+        'onesignal_player_id',
         'profile_photo_path',
     ];
 
@@ -125,6 +126,16 @@ class User extends Authenticatable
     public function notificationPreferences(): HasOne
     {
         return $this->hasOne(NotificationPreference::class);
+    }
+
+    public function devices(): HasMany
+    {
+        return $this->hasMany(UserDevice::class);
+    }
+
+    public function activeDevices(): HasMany
+    {
+        return $this->hasMany(UserDevice::class)->where('active', true);
     }
 
     public function patientsUnderCare(): BelongsToMany
