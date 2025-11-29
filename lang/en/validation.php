@@ -268,7 +268,5 @@ return [
         'medication_strength' => 'strength',
         'medication_form' => 'form',
         'medication_description' => 'description',
-        'medication_warnings' => 'warnings',
-        'medication_interactions' => 'interactions',
     ],
 ];

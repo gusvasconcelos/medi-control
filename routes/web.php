@@ -8,6 +8,7 @@ use App\Http\Controllers\Web\Auth\RegisterController;
 use App\Http\Controllers\Web\Metrics\OverviewController;
 use App\Http\Controllers\Web\Auth\ResetPasswordController;
 use App\Http\Controllers\Web\Auth\ForgotPasswordController;
+use App\Http\Controllers\Web\Medication\MedicationController;
 use App\Http\Controllers\Web\Horizon\JobsController as HorizonJobsController;
 use App\Http\Controllers\Web\Horizon\BatchesController as HorizonBatchesController;
 use App\Http\Controllers\Web\Horizon\MetricsController as HorizonMetricsController;
@@ -34,12 +35,23 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Broadcast::routes();
 
+    Route::prefix('medications')->name('medications.')->group(function () {
+        Route::get('/', [MedicationController::class, 'index'])->name('index');
+        Route::get('/{medication}', [MedicationController::class, 'show'])->name('show');
+        Route::post('/', [MedicationController::class, 'store'])->name('store');
+        Route::put('/{medication}', [MedicationController::class, 'update'])->name('update');
+        Route::delete('/{medication}', [MedicationController::class, 'destroy'])->name('destroy');
+        Route::post(
+            '/{medication}/check-interactions',
+            [MedicationController::class, 'checkInteractions']
+        )->name('check-interactions');
+    });
+
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
     Route::get('/select-role', fn () => Inertia::render('Auth/SelectRole'))->name('select-role');
     Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
     Route::get('/profile', fn () => Inertia::render('Profile/Index'))->name('profile.index');
     Route::get('/notifications', fn () => Inertia::render('Settings/Notifications/Index'))->name('notifications.index');
-    Route::get('/medications', fn () => Inertia::render('Medications/Index'))->name('medications.index');
     Route::get('/chat', fn () => Inertia::render('Chat/Index'))->name('chat.index');
     Route::get('/metrics/overview', [OverviewController::class, 'create'])->name('metrics.overview');
 

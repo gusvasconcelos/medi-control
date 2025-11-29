@@ -9,6 +9,8 @@ class CheckInteractionsRequest extends FormRequest
 {
     public function rules(): array
     {
+        $medication = $this->route('medication');
+
         return [
             'medications' => ['required', 'array', 'min:1', 'max:10'],
             'medications.*' => [
@@ -16,7 +18,7 @@ class CheckInteractionsRequest extends FormRequest
                 'integer',
                 'exists:medications,id',
                 'distinct',
-                Rule::notIn([$this->route('id')]),
+                Rule::notIn([$medication->id]),
             ],
         ];
     }

@@ -35,7 +35,7 @@ export default function Login({ auth }: PageProps) {
         } catch (error: unknown) {
             if (axios.isAxiosError(error) && error.response) {
                 if (error.response.status === 422) {
-                    setErrors(error.response.data.details || {});
+                    setErrors(error.response.data.errors || {});
                     showError(error.response.data.message);
                 } else if (error.response.status === 401) {
                     showError('Email ou senha inválidos.');

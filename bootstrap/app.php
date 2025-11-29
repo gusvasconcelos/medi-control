@@ -7,7 +7,6 @@ use App\Exceptions\HttpException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Application;
 use Illuminate\Database\QueryException;
-use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Auth\AuthenticationException;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Validation\ValidationException;
@@ -40,7 +39,6 @@ return Application::configure(basePath: dirname(__DIR__))
             EnsureFrontendRequestsAreStateful::class,
         ]);
 
-        // Register Spatie Permission middleware aliases
         $middleware->alias([
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
@@ -52,11 +50,6 @@ return Application::configure(basePath: dirname(__DIR__))
             Request::HEADER_X_FORWARDED_PORT |
             Request::HEADER_X_FORWARDED_PROTO |
             Request::HEADER_X_FORWARDED_AWS_ELB);
-    })
-    ->withSchedule(function (Schedule $schedule) {
-        $schedule->command('notifications:send')->everyMinute();
-        $schedule->command('notifications:schedule')->dailyAt('00:00');
-        $schedule->command('medications:mark-missed')->dailyAt('02:00');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->dontReport([
@@ -73,7 +66,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 statusCode: 422,
                 errorCode: 'VALIDATION',
                 reqId: $reqId,
-                details: $e->errors()
+                errors: $e->errors()
             );
 
             return $errorResponse->toJsonResponse();
@@ -86,6 +79,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 statusCode: 422,
                 errorCode: 'INVALID_ARGUMENT',
                 reqId: $reqId,
+                errors: null,
             );
 
             return $errorResponse->toJsonResponse();
@@ -99,6 +93,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     statusCode: 401,
                     errorCode: 'UNAUTHENTICATED',
                     reqId: $reqId,
+                    errors: null,
                 );
 
                 return $errorResponse->toJsonResponse();
@@ -130,7 +125,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 statusCode: 404,
                 errorCode: 'RESOURCE_NOT_FOUND',
                 reqId: $reqId,
-                details: ['IDs: ' => $ids]
+                errors: ['IDs: ' => $ids]
             );
 
             return $errorResponse->toJsonResponse();
@@ -147,6 +142,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 statusCode: 406,
                 errorCode: 'QUERY_NOT_ACCEPTABLE',
                 reqId: $reqId,
+                errors: null,
             );
 
             $message = (new MarkdownConverter())
@@ -203,7 +199,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 statusCode: $e->getStatusCode(),
                 errorCode: $e->getErrorCode(),
                 reqId: $reqId,
-                details: $e->getDetails()
+                errors: $e->getErrors()
             );
 
             return $errorResponse->toJsonResponse();
@@ -220,6 +216,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 statusCode: 500,
                 errorCode: 'INTERNAL_SERVER_ERROR',
                 reqId: $reqId,
+                errors: null,
             );
 
             $message = (new MarkdownConverter())

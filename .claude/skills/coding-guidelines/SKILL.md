@@ -118,14 +118,14 @@ Configuration files:
 
 Custom exception hierarchy in [app/Exceptions/](app/Exceptions/):
 
--   `HttpException`: Base class with statusCode, errorCode, and optional details
+-   `HttpException`: Base class with statusCode, errorCode, and optional errors
 -   `UnauthorizedException`: For 401 responses
 -   `UnprocessableEntityException`: For 422 validation/business logic errors
 -   `InternalServerErrorException`: For 500 errors
 
 All exceptions are rendered using [ErrorResponse](app/Helpers/ErrorResponse.php) which provides:
 
--   Consistent JSON structure with `req_id`, `message`, `status_code`, `code`, and optional `details`
+-   Consistent JSON structure with `req_id`, `message`, `status_code`, `code`, and optional `errors`
 -   Automatic SQL query display in debug mode
 -   Stack traces filtered to app code only in debug mode
 

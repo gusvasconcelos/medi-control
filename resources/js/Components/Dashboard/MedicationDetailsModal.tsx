@@ -215,18 +215,6 @@ export function MedicationDetailsModal({
                     </section>
                 )}
 
-                {/* Warnings */}
-                {med?.warnings && (
-                    <section>
-                        <SectionHeader icon={AlertTriangle} title="Avisos" />
-                        <div className="bg-warning/10 border border-warning/30 rounded-lg p-4">
-                            <p className="text-warning-content whitespace-pre-wrap">
-                                {med.warnings}
-                            </p>
-                        </div>
-                    </section>
-                )}
-
                 {/* Interactions */}
                 {med?.interactions && med.interactions.length > 0 && (
                     <section>

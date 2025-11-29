@@ -19,7 +19,7 @@ class ErrorResponse implements Arrayable
         protected int $statusCode,
         protected string $errorCode,
         protected string $reqId,
-        protected string|array|null $details = null
+        protected string|array|null $errors = null
     ) {
         //
     }
@@ -38,8 +38,8 @@ class ErrorResponse implements Arrayable
             'code' => $this->errorCode,
         ];
 
-        if ($this->details) {
-            $response['details'] = $this->details;
+        if ($this->errors) {
+            $response['errors'] = $this->errors;
         }
 
         if ($sql = $this->getSql()) {

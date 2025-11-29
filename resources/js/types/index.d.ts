@@ -117,7 +117,6 @@ export interface Medication {
     strength?: string | null;
     form?: string | null;
     description?: string | null;
-    warnings?: string | null;
     interactions?: MedicationInteraction[] | null;
 }
 

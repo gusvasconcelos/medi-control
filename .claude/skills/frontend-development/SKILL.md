@@ -224,7 +224,7 @@ const handleSubmit = async (e: FormEvent) => {
     if (axios.isAxiosError(error) && error.response) {
       if (error.response.status === 422) {
         // Validation errors
-        setErrors(error.response.data.details || {});
+        setErrors(error.response.data.errors || {});
       } else if (error.response.status === 401) {
         setErrors({ email: 'Credenciais inválidas' });
       } else {

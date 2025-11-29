@@ -25,7 +25,7 @@ export default function ForgotPassword({ }: PageProps) {
             setFormData({ email: '' });
         } catch (error: any) {
             if (error.response?.status === 422) {
-                setErrors(error.response.data.details || {});
+                setErrors(error.response.data.errors || {});
                 showError(error.response.data.message);
             } else {
                 showError('Ocorreu um erro ao enviar o link de recuperação. Tente novamente.');
