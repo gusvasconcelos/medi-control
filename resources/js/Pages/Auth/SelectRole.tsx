@@ -4,6 +4,7 @@ import axios from 'axios';
 import { RoleSelectionModal } from '@/Components/Auth/RoleSelectionModal';
 import { useToast } from '@/hooks/useToast';
 import type { PageProps } from '@/types';
+import { login, dashboard } from '@/routes';
 
 export default function SelectRole({ auth }: PageProps) {
     const { showError, showSuccess } = useToast();
@@ -11,14 +12,14 @@ export default function SelectRole({ auth }: PageProps) {
 
     // If not authenticated, redirect to login
     if (!auth?.user) {
-        router.visit('/login');
+        router.visit(login.url());
         return null;
     }
 
     // If user already has a role (patient or caregiver), redirect to dashboard
     const userRoles = auth.user.roles?.map(r => r.name) || [];
     if (userRoles.includes('patient') || userRoles.includes('caregiver')) {
-        router.visit('/dashboard');
+        router.visit(dashboard.url());
         return null;
     }
 
@@ -28,7 +29,7 @@ export default function SelectRole({ auth }: PageProps) {
         try {
             await axios.post('/api/v1/users/me/select-role', { role });
             showSuccess('Perfil configurado com sucesso!');
-            router.visit('/dashboard');
+            router.visit(dashboard.url());
         } catch (error: unknown) {
             if (axios.isAxiosError(error) && error.response) {
                 showError(error.response.data.message || 'Erro ao configurar perfil.');

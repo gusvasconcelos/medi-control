@@ -1,10 +1,10 @@
-import { FormEvent, useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
-import axios from 'axios';
+import { FormEvent } from 'react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { AuthCard } from '@/Components/Auth/AuthCard';
 import { InputField } from '@/Components/Auth/InputField';
-import { useToast } from '@/hooks/useToast';
 import type { PageProps, ResetPasswordData } from '@/types';
+import { login } from '@/routes';
+import password from '@/routes/password';
 
 interface ResetPasswordProps extends PageProps {
     token: string;
@@ -12,37 +12,16 @@ interface ResetPasswordProps extends PageProps {
 }
 
 export default function ResetPassword({ token, email }: ResetPasswordProps) {
-    const { showSuccess, showError } = useToast();
-    const [formData, setFormData] = useState<ResetPasswordData>({
+    const { data, setData, post, processing, errors } = useForm<ResetPasswordData>({
         email: email || '',
         password: '',
         password_confirmation: '',
         token: token,
     });
-    const [errors, setErrors] = useState<Partial<ResetPasswordData>>({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setErrors({});
-        setIsSubmitting(true);
-
-        try {
-            await axios.post<{ message: string }>('/api/v1/auth/reset-password', formData);
-            showSuccess('Senha redefinida com sucesso! Faça login com sua nova senha.');
-            setTimeout(() => {
-                router.visit('/login');
-            }, 1500);
-        } catch (error: any) {
-            if (error.response?.status === 422) {
-                setErrors(error.response.data.details || {});
-                showError(error.response.data.message || 'Verifique os campos e tente novamente.');
-            } else {
-                showError('Ocorreu um erro ao redefinir sua senha. O link pode ter expirado.');
-            }
-        } finally {
-            setIsSubmitting(false);
-        }
+        post(password.update.url());
     };
 
     return (
@@ -61,8 +40,8 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                         name="email"
                         autoComplete="email"
                         required
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        value={data.email}
+                        onChange={(e) => setData('email', e.target.value)}
                         error={errors.email}
                         placeholder="seu@email.com"
                     />
@@ -73,8 +52,8 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                         name="password"
                         autoComplete="new-password"
                         required
-                        value={formData.password}
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        value={data.password}
+                        onChange={(e) => setData('password', e.target.value)}
                         error={errors.password}
                         placeholder="••••••••"
                     />
@@ -85,8 +64,8 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                         name="password_confirmation"
                         autoComplete="new-password"
                         required
-                        value={formData.password_confirmation}
-                        onChange={(e) => setFormData({ ...formData, password_confirmation: e.target.value })}
+                        value={data.password_confirmation}
+                        onChange={(e) => setData('password_confirmation', e.target.value)}
                         error={errors.password_confirmation}
                         placeholder="••••••••"
                     />
@@ -94,9 +73,9 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                     <button
                         type="submit"
                         className="btn btn-primary w-full"
-                        disabled={isSubmitting}
+                        disabled={processing}
                     >
-                        {isSubmitting ? (
+                        {processing ? (
                             <>
                                 <span className="loading loading-spinner"></span>
                                 Redefinindo...
@@ -110,7 +89,7 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                 <div className="divider">ou</div>
 
                 <div className="text-center">
-                    <Link href="/login" className="link link-primary text-sm">
+                    <Link href={login.url()} className="link link-primary text-sm">
                         Voltar para o login
                     </Link>
                 </div>

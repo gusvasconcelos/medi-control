@@ -6,32 +6,34 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use App\Exceptions\UnauthorizedException;
 use App\Exceptions\UnprocessableEntityException;
+use Illuminate\Support\Collection;
 
 class AuthService
 {
     /**
      * Register a new user in the system.
      *
-     * @param array{name: string, email: string, password: string} $userData
+     * @param Collection $userData
+     * @return User
      */
-    public function registerUser(array $userData): User
+    public static function registerUser(Collection $userData): User
     {
         return User::create([
-            'name' => $userData['name'],
-            'email' => $userData['email'],
-            'password' => bcrypt($userData['password']),
+            'name' => $userData->get('name'),
+            'email' => $userData->get('email'),
+            'password' => bcrypt($userData->get('password')),
         ]);
     }
 
     /**
      * Attempt to authenticate a user via session (for web/SPA).
      *
-     * @param array{email: string, password: string} $credentials
+     * @param Collection $credentials
      * @throws UnprocessableEntityException
      */
-    public function attemptLogin(array $credentials): User
+    public static function attemptLogin(Collection $credentials): User
     {
-        if (! Auth::attempt($credentials)) {
+        if (! Auth::attempt($credentials->toArray())) {
             throw new UnprocessableEntityException(__('auth.invalid_credentials'), 'INVALID_CREDENTIALS');
         }
 
@@ -42,35 +44,11 @@ class AuthService
     }
 
     /**
-     * Attempt to authenticate and create a Sanctum token (for mobile API).
-     *
-     * @param array{email: string, password: string} $credentials
-     * @return array{user: User, token: string}
-     * @throws UnprocessableEntityException
-     */
-    public function attemptLoginWithToken(array $credentials): array
-    {
-        if (! Auth::attempt($credentials)) {
-            throw new UnprocessableEntityException(__('auth.invalid_credentials'), 'INVALID_CREDENTIALS');
-        }
-
-        /** @var User $user */
-        $user = Auth::user();
-
-        $token = $user->createToken('mobile')->plainTextToken;
-
-        return [
-            'user' => $user,
-            'token' => $token,
-        ];
-    }
-
-    /**
      * Get the authenticated user.
      *
      * @throws UnauthorizedException
      */
-    public function getAuthenticatedUser(): User
+    public static function getAuthenticatedUser(): User
     {
         /** @var User|null $user */
         $user = Auth::user();
@@ -85,7 +63,7 @@ class AuthService
     /**
      * Logout the authenticated user (invalidate session).
      */
-    public function logout(): void
+    public static function logout(): void
     {
         Auth::guard('web')->logout();
     }

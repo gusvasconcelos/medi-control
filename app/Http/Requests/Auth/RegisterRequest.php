@@ -15,6 +15,13 @@ class RegisterRequest extends FormRequest
         ];
     }
 
+    public function messages(): array
+    {
+        return [
+            'email.unique' => "O email informado já está sendo utilizado.",
+        ];
+    }
+
     public function attributes()
     {
         return [

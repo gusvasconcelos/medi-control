@@ -53,4 +53,46 @@ class HandleInertiaRequests extends Middleware
             ],
         ];
     }
+
+    /**
+     * Filter routes based on user role and authentication status.
+     *
+     * This prevents exposing admin/sensitive routes to regular users.
+     */
+    private function getFilteredRoutes(Request $request): array
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return $this->filterRoutesByGroup(['auth']);
+        }
+
+        $isSuperAdmin = $user->hasRole('super-admin');
+
+        if ($isSuperAdmin) {
+            return $this->filterRoutesByGroup(['auth', 'common', 'api', 'admin']);
+        }
+
+        return $this->filterRoutesByGroup(['auth', 'common', 'api']);
+    }
+
+    /**
+     * Filter routes by group patterns defined in config/ziggy.php
+     *
+     * @param array<string> $groups
+     * @return array<string>
+     */
+    private function filterRoutesByGroup(array $groups): array
+    {
+        $patterns = [];
+        $groupConfig = config('ziggy.groups', []);
+
+        foreach ($groups as $group) {
+            if (isset($groupConfig[$group])) {
+                $patterns = array_merge($patterns, $groupConfig[$group]);
+            }
+        }
+
+        return $patterns;
+    }
 }

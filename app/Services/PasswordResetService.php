@@ -6,7 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 
-class PasswordResetService
+final class PasswordResetService
 {
     /**
      * Send password reset link to the user's email.
@@ -14,7 +14,7 @@ class PasswordResetService
      * @param string $email
      * @return string
      */
-    public function sendResetLink(string $email): string
+    public static function sendResetLink(string $email): string
     {
         Password::sendResetLink(['email' => $email]);
 
@@ -28,7 +28,7 @@ class PasswordResetService
      * @return string
      * @throws ValidationException
      */
-    public function resetPassword(array $data): string
+    public static function resetPassword(array $data): string
     {
         $status = Password::reset(
             $data,

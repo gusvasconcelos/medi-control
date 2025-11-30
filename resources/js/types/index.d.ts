@@ -32,6 +32,7 @@ export interface User {
 export interface LoginCredentials {
     email: string;
     password: string;
+    remember?: boolean;
 }
 
 export interface RegisterData {
@@ -429,4 +430,10 @@ declare global {
             on(event: string, callback: (event: unknown) => void): void;
         };
     }
+
+    function route<T = string>(
+        name: string,
+        params?: Record<string, unknown> | unknown[],
+        absolute?: boolean
+    ): T;
 }

@@ -1,55 +1,31 @@
 import { FormEvent, useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
-import axios from 'axios';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Eye, EyeOff } from 'lucide-react';
 import { AuthCard } from '@/Components/Auth/AuthCard';
 import { InputField } from '@/Components/Auth/InputField';
-import { useToast } from '@/hooks/useToast';
 import type { PageProps, RegisterData } from '@/types';
+import { login, register, dashboard } from '@/routes';
 
 export default function Register({ auth }: PageProps) {
-    const { showError, showSuccess } = useToast();
-
     // If already authenticated, redirect to dashboard
     if (auth?.user) {
-        router.visit('/dashboard');
+        router.visit(dashboard.url());
         return null;
     }
 
-    const [formData, setFormData] = useState<RegisterData>({
+    const { data, setData, post, processing, errors } = useForm<RegisterData>({
         name: '',
         email: '',
         password: '',
         password_confirmation: '',
     });
-    const [errors, setErrors] = useState<Partial<RegisterData>>({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const [showPassword, setShowPassword] = useState(false);
     const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
 
-    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setErrors({});
-        setIsSubmitting(true);
-
-        try {
-            await axios.post('/register', formData);
-            showSuccess('Conta criada com sucesso!');
-            router.visit('/select-role');
-        } catch (error: unknown) {
-            if (axios.isAxiosError(error) && error.response) {
-                if (error.response.status === 422) {
-                    setErrors(error.response.data.details || {});
-                    showError(error.response.data.message);
-                } else {
-                    showError('Ocorreu um erro ao criar sua conta. Tente novamente.');
-                }
-            } else {
-                showError('Ocorreu um erro ao criar sua conta. Tente novamente.');
-            }
-        } finally {
-            setIsSubmitting(false);
-        }
+        post(register.url());
     };
 
     return (
@@ -67,8 +43,8 @@ export default function Register({ auth }: PageProps) {
                         name="name"
                         autoComplete="name"
                         required
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        value={data.name}
+                        onChange={(e) => setData('name', e.target.value)}
                         error={errors.name}
                         placeholder="Seu nome completo"
                     />
@@ -79,8 +55,8 @@ export default function Register({ auth }: PageProps) {
                         name="email"
                         autoComplete="email"
                         required
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        value={data.email}
+                        onChange={(e) => setData('email', e.target.value)}
                         error={errors.email}
                         placeholder="exemplo@email.com"
                     />
@@ -95,8 +71,8 @@ export default function Register({ auth }: PageProps) {
                                 name="password"
                                 autoComplete="new-password"
                                 required
-                                value={formData.password}
-                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                value={data.password}
+                                onChange={(e) => setData('password', e.target.value)}
                                 placeholder="Digite sua senha"
                                 className={`input input-bordered w-full pr-10 ${errors.password ? 'input-error' : ''}`}
                             />
@@ -130,8 +106,8 @@ export default function Register({ auth }: PageProps) {
                                 name="password_confirmation"
                                 autoComplete="new-password"
                                 required
-                                value={formData.password_confirmation}
-                                onChange={(e) => setFormData({ ...formData, password_confirmation: e.target.value })}
+                                value={data.password_confirmation}
+                                onChange={(e) => setData('password_confirmation', e.target.value)}
                                 placeholder="Confirme sua senha"
                                 className={`input input-bordered w-full pr-10 ${errors.password_confirmation ? 'input-error' : ''}`}
                             />
@@ -158,9 +134,9 @@ export default function Register({ auth }: PageProps) {
                     <button
                         type="submit"
                         className="btn btn-primary w-full"
-                        disabled={isSubmitting}
+                        disabled={processing}
                     >
-                        {isSubmitting ? (
+                        {processing ? (
                             <>
                                 <span className="loading loading-spinner"></span>
                                 Criando conta...
@@ -173,7 +149,7 @@ export default function Register({ auth }: PageProps) {
 
                 <div className="text-center mt-6">
                     <span className="text-sm text-base-content/70">Já tem uma conta? </span>
-                    <Link href="/login" className="link link-primary text-sm font-medium">
+                    <Link href={login.url()} className="link link-primary text-sm font-medium">
                         Fazer login
                     </Link>
                 </div>

@@ -11,11 +11,6 @@ use App\Http\Requests\Auth\RegisterRequest;
 
 final class RegisterController extends Controller
 {
-    public function __construct(
-        private readonly AuthService $authService
-    ) {
-    }
-
     public function create(): Response
     {
         return Inertia::render('Auth/Register');
@@ -25,15 +20,14 @@ final class RegisterController extends Controller
     {
         $validated = $request->validated();
 
-        $this->authService->registerUser($validated);
+        $userData = collect($validated);
 
-        $this->authService->attemptLogin([
-            'email' => $validated['email'],
-            'password' => $validated['password'],
-        ]);
+        AuthService::registerUser($userData);
+
+        AuthService::attemptLogin($userData);
 
         $request->session()->regenerate();
 
-        return redirect()->route('select-role');
+        return redirect()->intended(route('select-role'));
     }
 }

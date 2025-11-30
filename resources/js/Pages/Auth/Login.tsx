@@ -1,53 +1,30 @@
 import { FormEvent, useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
-import axios from 'axios';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Eye, EyeOff } from 'lucide-react';
 import { AuthCard } from '@/Components/Auth/AuthCard';
 import { InputField } from '@/Components/Auth/InputField';
-import { useToast } from '@/hooks/useToast';
 import type { PageProps, LoginCredentials } from '@/types';
+import { login, register, dashboard } from '@/routes';
+import password from '@/routes/password';
 
 export default function Login({ auth }: PageProps) {
-    const { showError } = useToast();
-
     // If already authenticated, redirect to dashboard
     if (auth?.user) {
-        router.visit('/dashboard');
+        router.visit(dashboard.url());
         return null;
     }
 
-    const [formData, setFormData] = useState<LoginCredentials>({
+    const { data, setData, post, processing, errors } = useForm<LoginCredentials>({
         email: '',
         password: '',
+        remember: false,
     });
-    const [errors, setErrors] = useState<Partial<LoginCredentials>>({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const [showPassword, setShowPassword] = useState(false);
 
-    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setErrors({});
-        setIsSubmitting(true);
-
-        try {
-            await axios.post('/login', formData);
-            router.visit('/dashboard');
-        } catch (error: unknown) {
-            if (axios.isAxiosError(error) && error.response) {
-                if (error.response.status === 422) {
-                    setErrors(error.response.data.details || {});
-                    showError(error.response.data.message);
-                } else if (error.response.status === 401) {
-                    showError('Email ou senha inválidos.');
-                } else {
-                    showError('Ocorreu um erro ao fazer login. Tente novamente.');
-                }
-            } else {
-                showError('Ocorreu um erro ao fazer login. Tente novamente.');
-            }
-        } finally {
-            setIsSubmitting(false);
-        }
+        post(login.url());
     };
 
     return (
@@ -65,8 +42,8 @@ export default function Login({ auth }: PageProps) {
                             name="email"
                             autoComplete="email"
                             required
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            value={data.email}
+                            onChange={(e) => setData('email', e.target.value)}
                             error={errors.email}
                             placeholder="exemplo@email.com"
                         />
@@ -81,8 +58,8 @@ export default function Login({ auth }: PageProps) {
                                     name="password"
                                     autoComplete="current-password"
                                     required
-                                    value={formData.password}
-                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    value={data.password}
+                                    onChange={(e) => setData('password', e.target.value)}
                                     placeholder="Digite sua senha"
                                     className={`input input-bordered w-full pr-10 ${errors.password ? 'input-error' : ''}`}
                                 />
@@ -108,11 +85,16 @@ export default function Login({ auth }: PageProps) {
 
                         <div className="flex items-center justify-between">
                             <label className="label cursor-pointer gap-2 p-0">
-                                <input type="checkbox" className="checkbox checkbox-sm" />
+                                <input
+                                    type="checkbox"
+                                    className="checkbox checkbox-sm"
+                                    checked={data.remember}
+                                    onChange={(e) => setData('remember', e.target.checked)}
+                                />
                                 <span className="label-text">Lembrar-me</span>
                             </label>
                             <Link
-                                href="/forgot-password"
+                                href={password.request.url()}
                                 className="link link-primary text-sm"
                             >
                                 Esqueceu sua senha?
@@ -122,9 +104,9 @@ export default function Login({ auth }: PageProps) {
                         <button
                             type="submit"
                             className="btn btn-primary w-full"
-                            disabled={isSubmitting}
+                            disabled={processing}
                         >
-                            {isSubmitting ? (
+                            {processing ? (
                                 <>
                                     <span className="loading loading-spinner"></span>
                                     Entrando...
@@ -137,7 +119,7 @@ export default function Login({ auth }: PageProps) {
 
                 <div className="text-center mt-6">
                     <span className="text-sm text-base-content/70">Não tem uma conta? </span>
-                    <Link href="/register" className="link link-primary text-sm font-medium">
+                    <Link href={register.url()} className="link link-primary text-sm font-medium">
                         Criar uma conta
                     </Link>
                 </div>

@@ -12,11 +12,6 @@ use Inertia\Response;
 
 final class LoginController extends Controller
 {
-    public function __construct(
-        private readonly AuthService $authService
-    ) {
-    }
-
     public function create(): Response
     {
         return Inertia::render('Auth/Login');
@@ -26,7 +21,7 @@ final class LoginController extends Controller
     {
         $validated = $request->validated();
 
-        $this->authService->attemptLogin($validated);
+        AuthService::attemptLogin(collect($validated));
 
         $request->session()->regenerate();
 
@@ -35,7 +30,7 @@ final class LoginController extends Controller
 
     public function destroy(Request $request): RedirectResponse
     {
-        $this->authService->logout();
+        AuthService::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

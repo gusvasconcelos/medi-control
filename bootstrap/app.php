@@ -208,16 +208,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], $statusCode);
             }
 
-            $errorPage = match ($statusCode) {
-                403 => 'Errors/Forbidden',
-                404 => 'Errors/NotFound',
-                503 => 'Errors/ServiceUnavailable',
-                default => 'Errors/ServerError',
-            };
-
-            return Inertia::render($errorPage, [
-                'status' => $statusCode,
-            ])->toResponse($req)->setStatusCode($statusCode);
+            return redirect()->back()->with('error', $e->getMessage());
         });
 
         $exceptions->render(function (Throwable $e, Request $req) {
