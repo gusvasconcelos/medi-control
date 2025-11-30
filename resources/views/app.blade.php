@@ -25,9 +25,9 @@
     <link rel="preload" href="/favicon.svg" as="image" type="image/svg+xml" />
 
     <!-- Preload critical Dashboard images -->
-    <link rel="preload" href="/storage/medication.png" as="image" type="image/png" />
-    <link rel="preload" href="/storage/checkmark.png" as="image" type="image/png" />
-    <link rel="preload" href="/storage/analytics.png" as="image" type="image/png" />
+    <link rel="preload" href="/storage/medication.webp" as="image" type="image/png" />
+    <link rel="preload" href="/storage/checkmark.webp" as="image" type="image/png" />
+    <link rel="preload" href="/storage/analytics.webp" as="image" type="image/png" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -40,7 +40,9 @@
             OneSignal.init({
                 appId: "{{ env('ONESIGNAL_APP_ID') }}",
                 allowLocalhostAsSecureOrigin: {{ env('APP_ENV') === 'local' ? 'true' : 'false' }},
-                serviceWorkerParam: { scope: '/' },
+                serviceWorkerParam: {
+                    scope: '/'
+                },
                 serviceWorkerPath: 'OneSignalSDKWorker.js'
             });
         });
