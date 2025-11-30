@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\Web\Auth\ForgotPasswordController::request
-* @see app/Http/Controllers/Web/Auth/ForgotPasswordController.php:19
+* @see app/Http/Controllers/Web/Auth/ForgotPasswordController.php:14
 * @route '/forgot-password'
 */
 export const request = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ request.definition = {
 
 /**
 * @see \App\Http\Controllers\Web\Auth\ForgotPasswordController::request
-* @see app/Http/Controllers/Web/Auth/ForgotPasswordController.php:19
+* @see app/Http/Controllers/Web/Auth/ForgotPasswordController.php:14
 * @route '/forgot-password'
 */
 request.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ request.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Web\Auth\ForgotPasswordController::request
-* @see app/Http/Controllers/Web/Auth/ForgotPasswordController.php:19
+* @see app/Http/Controllers/Web/Auth/ForgotPasswordController.php:14
 * @route '/forgot-password'
 */
 request.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ request.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Web\Auth\ForgotPasswordController::request
-* @see app/Http/Controllers/Web/Auth/ForgotPasswordController.php:19
+* @see app/Http/Controllers/Web/Auth/ForgotPasswordController.php:14
 * @route '/forgot-password'
 */
 request.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ request.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Web\Auth\ForgotPasswordController::email
-* @see app/Http/Controllers/Web/Auth/ForgotPasswordController.php:24
+* @see app/Http/Controllers/Web/Auth/ForgotPasswordController.php:19
 * @route '/forgot-password'
 */
 export const email = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +60,7 @@ email.definition = {
 
 /**
 * @see \App\Http\Controllers\Web\Auth\ForgotPasswordController::email
-* @see app/Http/Controllers/Web/Auth/ForgotPasswordController.php:24
+* @see app/Http/Controllers/Web/Auth/ForgotPasswordController.php:19
 * @route '/forgot-password'
 */
 email.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ email.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Web\Auth\ForgotPasswordController::email
-* @see app/Http/Controllers/Web/Auth/ForgotPasswordController.php:24
+* @see app/Http/Controllers/Web/Auth/ForgotPasswordController.php:19
 * @route '/forgot-password'
 */
 email.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

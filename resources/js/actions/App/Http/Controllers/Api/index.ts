@@ -1,7 +1,3 @@
-import AuthController from './AuthController'
-import ForgotPasswordController from './ForgotPasswordController'
-import ResetPasswordController from './ResetPasswordController'
-import MedicationController from './MedicationController'
 import UserMedicationController from './UserMedicationController'
 import FileController from './FileController'
 import MedicationLogController from './MedicationLogController'
@@ -15,10 +11,6 @@ import RoleController from './RoleController'
 import PermissionController from './PermissionController'
 
 const Api = {
-    AuthController: Object.assign(AuthController, AuthController),
-    ForgotPasswordController: Object.assign(ForgotPasswordController, ForgotPasswordController),
-    ResetPasswordController: Object.assign(ResetPasswordController, ResetPasswordController),
-    MedicationController: Object.assign(MedicationController, MedicationController),
     UserMedicationController: Object.assign(UserMedicationController, UserMedicationController),
     FileController: Object.assign(FileController, FileController),
     MedicationLogController: Object.assign(MedicationLogController, MedicationLogController),

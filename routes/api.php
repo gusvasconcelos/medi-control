@@ -8,8 +8,6 @@ use App\Http\Controllers\Api\PermissionController;
 Route::group([
     'prefix' => 'v1'
 ], function () {
-    require __DIR__ . '/api/auth.php';
-    require __DIR__ . '/api/medications.php';
     require __DIR__ . '/api/user-medications.php';
     require __DIR__ . '/api/caregiver-patient.php';
     require __DIR__ . '/api/notifications.php';

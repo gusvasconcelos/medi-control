@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 
 import { AuthenticatedLayout } from '@/Layouts/AuthenticatedLayout';
@@ -8,21 +8,42 @@ import { MedicationFormModal } from '@/Components/Medications/MedicationFormModa
 import { DeleteMedicationModal } from '@/Components/Medications/DeleteMedicationModal';
 import { MedicationDetailsModal } from '@/Components/Medications/MedicationDetailsModal';
 import { getNavigationItems } from '@/config/navigation';
-import { medicationService } from '@/services/medicationService';
 import { useToast } from '@/hooks/useToast';
 import type { PageProps, Medication } from '@/types';
+import { index, store, update, destroy } from '@/routes/medications';
 
-export default function MedicationsIndex({ auth }: PageProps) {
+interface MedicationsPageProps extends PageProps {
+    medications: {
+        data: Medication[];
+        current_page: number;
+        last_page: number;
+        total: number;
+        per_page: number;
+    };
+    filters: {
+        q?: string;
+        page?: number;
+        per_page?: number;
+    };
+}
+
+export default function MedicationsIndex({ auth, medications, filters }: MedicationsPageProps) {
     const user = auth?.user;
     const userRoles = user?.roles || [];
-    const { showSuccess, showError } = useToast();
+    const { showError } = useToast();
 
-    const [medications, setMedications] = useState<Medication[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [lastPage, setLastPage] = useState(1);
-    const [total, setTotal] = useState(0);
-    const [searchQuery, setSearchQuery] = useState('');
+    // Extract text from filter.q if it's a JSON string
+    const getInitialSearchQuery = () => {
+        if (!filters.q) return '';
+        try {
+            const parsed = JSON.parse(filters.q);
+            return parsed.text || '';
+        } catch {
+            return filters.q;
+        }
+    };
+
+    const [searchQuery, setSearchQuery] = useState(getInitialSearchQuery());
     const [searchTimeout, setSearchTimeout] = useState<ReturnType<typeof setTimeout> | null>(
         null
     );
@@ -53,39 +74,27 @@ export default function MedicationsIndex({ auth }: PageProps) {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const fetchMedications = async (page = 1, search = '') => {
-        setIsLoading(true);
-        try {
-            const response = await medicationService.getMedications({
-                page,
-                per_page: 15,
-                search: search || undefined,
-            });
-
-            setMedications(response.data);
-            setCurrentPage(response.current_page);
-            setLastPage(response.last_page);
-            setTotal(response.total);
-        } catch (error) {
-            showError('Erro ao carregar medicamentos');
-            console.error('Error fetching medications:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchMedications(currentPage, searchQuery);
-    }, [currentPage]);
-
     useEffect(() => {
         if (searchTimeout) {
             clearTimeout(searchTimeout);
         }
 
         const timeout = setTimeout(() => {
-            setCurrentPage(1);
-            fetchMedications(1, searchQuery);
+            const params: Record<string, string | number> = { per_page: 15 };
+
+            if (searchQuery && searchQuery.trim() !== '') {
+                params.q = JSON.stringify({ text: searchQuery });
+            }
+
+            router.get(
+                index.url(),
+                params,
+                {
+                    preserveState: true,
+                    preserveScroll: true,
+                    only: ['medications', 'filters'],
+                }
+            );
         }, 500);
 
         setSearchTimeout(timeout);
@@ -115,33 +124,47 @@ export default function MedicationsIndex({ auth }: PageProps) {
         }
     };
 
-    const handleSubmitForm = async (data: Omit<Medication, 'id'>) => {
+    const handleSubmitForm = async (data: Omit<Medication, 'id'>): Promise<void> => {
         setIsSubmitting(true);
-        try {
-            if (formModal.medication) {
-                await medicationService.updateMedication(
-                    formModal.medication.id,
-                    data
-                );
-                showSuccess('Medicamento atualizado com sucesso');
-            } else {
-                await medicationService.createMedication(data);
-                showSuccess('Medicamento criado com sucesso');
-            }
 
-            const modal = document.getElementById(
-                'medication-form-modal'
-            ) as HTMLElement & { hidePopover?: () => void };
-            modal?.hidePopover?.();
-            setTimeout(() => {
-                setFormModal({ isOpen: false, medication: null });
-                fetchMedications(currentPage, searchQuery);
-            }, 300);
-        } catch (error) {
-            showError('Erro ao salvar medicamento');
-            console.error('Error saving medication:', error);
-        } finally {
-            setIsSubmitting(false);
+        if (formModal.medication) {
+            router.put(update.url(formModal.medication.id), data as any, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    const modal = document.getElementById(
+                        'medication-form-modal'
+                    ) as HTMLElement & { hidePopover?: () => void };
+                    modal?.hidePopover?.();
+                    setTimeout(() => {
+                        setFormModal({ isOpen: false, medication: null });
+                    }, 300);
+                },
+                onError: () => {
+                    showError('Erro ao atualizar medicamento');
+                },
+                onFinish: () => {
+                    setIsSubmitting(false);
+                },
+            });
+        } else {
+            router.post(store.url(), data as any, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    const modal = document.getElementById(
+                        'medication-form-modal'
+                    ) as HTMLElement & { hidePopover?: () => void };
+                    modal?.hidePopover?.();
+                    setTimeout(() => {
+                        setFormModal({ isOpen: false, medication: null });
+                    }, 300);
+                },
+                onError: () => {
+                    showError('Erro ao criar medicamento');
+                },
+                onFinish: () => {
+                    setIsSubmitting(false);
+                },
+            });
         }
     };
 
@@ -157,28 +180,27 @@ export default function MedicationsIndex({ auth }: PageProps) {
         }
     };
 
-    const handleConfirmDelete = async () => {
+    const handleConfirmDelete = async (): Promise<void> => {
         if (!deleteModal.medication) return;
 
         setIsSubmitting(true);
-        try {
-            await medicationService.deleteMedication(
-                deleteModal.medication.id
-            );
-            showSuccess('Medicamento deletado com sucesso');
 
-            const modal = document.getElementById('delete-medication-modal') as HTMLDialogElement;
-            modal?.close?.();
-            setTimeout(() => {
-                handleCloseDeleteModal();
-                fetchMedications(currentPage, searchQuery);
-            }, 300);
-        } catch (error) {
-            showError('Erro ao deletar medicamento');
-            console.error('Error deleting medication:', error);
-        } finally {
-            setIsSubmitting(false);
-        }
+        router.delete(destroy.url(deleteModal.medication.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                const modal = document.getElementById('delete-medication-modal') as HTMLDialogElement;
+                modal?.close?.();
+                setTimeout(() => {
+                    handleCloseDeleteModal();
+                }, 300);
+            },
+            onError: () => {
+                showError('Erro ao deletar medicamento');
+            },
+            onFinish: () => {
+                setIsSubmitting(false);
+            },
+        });
     };
 
     const handleOpenDetailsModal = (medication: Medication) => {
@@ -196,18 +218,37 @@ export default function MedicationsIndex({ auth }: PageProps) {
     };
 
     const handlePageChange = (page: number) => {
-        if (page >= 1 && page <= lastPage) {
-            setCurrentPage(page);
+        if (page >= 1 && page <= medications.last_page) {
+            const params: Record<string, string | number> = {
+                page,
+                per_page: 15
+            };
+
+            if (searchQuery && searchQuery.trim() !== '') {
+                params.q = JSON.stringify({ text: searchQuery });
+            }
+
+            router.get(
+                index.url(),
+                params,
+                {
+                    preserveState: true,
+                    preserveScroll: false,
+                    only: ['medications', 'filters'],
+                }
+            );
         }
     };
 
     const renderPagination = () => {
-        if (lastPage <= 1) return null;
+        const { current_page, last_page, total } = medications;
+
+        if (last_page <= 1) return null;
 
         const pages = [];
         const maxPagesToShow = 5;
-        let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-        let endPage = Math.min(lastPage, startPage + maxPagesToShow - 1);
+        let startPage = Math.max(1, current_page - Math.floor(maxPagesToShow / 2));
+        let endPage = Math.min(last_page, startPage + maxPagesToShow - 1);
 
         if (endPage - startPage < maxPagesToShow - 1) {
             startPage = Math.max(1, endPage - maxPagesToShow + 1);
@@ -218,7 +259,7 @@ export default function MedicationsIndex({ auth }: PageProps) {
                 <button
                     key={i}
                     type="button"
-                    className={`btn btn-sm ${i === currentPage ? 'btn-primary' : 'btn-ghost'}`}
+                    className={`btn btn-sm ${i === current_page ? 'btn-primary' : 'btn-ghost'}`}
                     onClick={() => handlePageChange(i)}
                 >
                     {i}
@@ -233,11 +274,11 @@ export default function MedicationsIndex({ auth }: PageProps) {
                     <div className="text-sm text-base-content/60">
                         Mostrando{' '}
                         <span className="font-medium">
-                            {(currentPage - 1) * 15 + 1}
+                            {(current_page - 1) * 15 + 1}
                         </span>{' '}
                         a{' '}
                         <span className="font-medium">
-                            {Math.min(currentPage * 15, total)}
+                            {Math.min(current_page * 15, total)}
                         </span>{' '}
                         de <span className="font-medium">{total}</span>{' '}
                         medicamentos
@@ -246,8 +287,8 @@ export default function MedicationsIndex({ auth }: PageProps) {
                         <button
                             type="button"
                             className="join-item btn btn-sm"
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
+                            onClick={() => handlePageChange(current_page - 1)}
+                            disabled={current_page === 1}
                         >
                             «
                         </button>
@@ -255,8 +296,8 @@ export default function MedicationsIndex({ auth }: PageProps) {
                         <button
                             type="button"
                             className="join-item btn btn-sm"
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === lastPage}
+                            onClick={() => handlePageChange(current_page + 1)}
+                            disabled={current_page === last_page}
                         >
                             »
                         </button>
@@ -266,14 +307,14 @@ export default function MedicationsIndex({ auth }: PageProps) {
                 {/* Mobile Pagination */}
                 <div className="sm:hidden flex flex-col gap-3">
                     <div className="text-xs text-center text-base-content/60">
-                        Página {currentPage} de {lastPage} ({total} medicamentos)
+                        Página {current_page} de {last_page} ({total} medicamentos)
                     </div>
                     <div className="flex justify-center gap-2">
                         <button
                             type="button"
                             className="btn btn-sm"
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
+                            onClick={() => handlePageChange(current_page - 1)}
+                            disabled={current_page === 1}
                         >
                             ← Anterior
                         </button>
@@ -282,13 +323,13 @@ export default function MedicationsIndex({ auth }: PageProps) {
                             className="btn btn-sm btn-primary"
                             disabled
                         >
-                            {currentPage}
+                            {current_page}
                         </button>
                         <button
                             type="button"
                             className="btn btn-sm"
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === lastPage}
+                            onClick={() => handlePageChange(current_page + 1)}
+                            disabled={current_page === last_page}
                         >
                             Próxima →
                         </button>
@@ -347,8 +388,8 @@ export default function MedicationsIndex({ auth }: PageProps) {
 
                         <div className="rounded-lg bg-base-200 p-4">
                             <MedicationsTable
-                                medications={medications}
-                                isLoading={isLoading}
+                                medications={medications.data}
+                                isLoading={false}
                                 onView={handleOpenDetailsModal}
                                 onEdit={handleOpenEditModal}
                                 onDelete={handleOpenDeleteModal}

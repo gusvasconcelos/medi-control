@@ -40,7 +40,7 @@ pulse.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:18
+* @see routes/web.php:19
 * @route '/'
 */
 export const welcome = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -54,7 +54,7 @@ welcome.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:18
+* @see routes/web.php:19
 * @route '/'
 */
 welcome.url = (options?: RouteQueryOptions) => {
@@ -62,7 +62,7 @@ welcome.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:18
+* @see routes/web.php:19
 * @route '/'
 */
 welcome.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -71,7 +71,7 @@ welcome.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:18
+* @see routes/web.php:19
 * @route '/'
 */
 welcome.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -81,7 +81,7 @@ welcome.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Web\Auth\LoginController::login
-* @see app/Http/Controllers/Web/Auth/LoginController.php:20
+* @see app/Http/Controllers/Web/Auth/LoginController.php:15
 * @route '/login'
 */
 export const login = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -96,7 +96,7 @@ login.definition = {
 
 /**
 * @see \App\Http\Controllers\Web\Auth\LoginController::login
-* @see app/Http/Controllers/Web/Auth/LoginController.php:20
+* @see app/Http/Controllers/Web/Auth/LoginController.php:15
 * @route '/login'
 */
 login.url = (options?: RouteQueryOptions) => {
@@ -105,7 +105,7 @@ login.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Web\Auth\LoginController::login
-* @see app/Http/Controllers/Web/Auth/LoginController.php:20
+* @see app/Http/Controllers/Web/Auth/LoginController.php:15
 * @route '/login'
 */
 login.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -115,7 +115,7 @@ login.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Web\Auth\LoginController::login
-* @see app/Http/Controllers/Web/Auth/LoginController.php:20
+* @see app/Http/Controllers/Web/Auth/LoginController.php:15
 * @route '/login'
 */
 login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -125,7 +125,7 @@ login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Web\Auth\RegisterController::register
-* @see app/Http/Controllers/Web/Auth/RegisterController.php:19
+* @see app/Http/Controllers/Web/Auth/RegisterController.php:14
 * @route '/register'
 */
 export const register = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -140,7 +140,7 @@ register.definition = {
 
 /**
 * @see \App\Http\Controllers\Web\Auth\RegisterController::register
-* @see app/Http/Controllers/Web/Auth/RegisterController.php:19
+* @see app/Http/Controllers/Web/Auth/RegisterController.php:14
 * @route '/register'
 */
 register.url = (options?: RouteQueryOptions) => {
@@ -149,7 +149,7 @@ register.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Web\Auth\RegisterController::register
-* @see app/Http/Controllers/Web/Auth/RegisterController.php:19
+* @see app/Http/Controllers/Web/Auth/RegisterController.php:14
 * @route '/register'
 */
 register.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -159,7 +159,7 @@ register.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Web\Auth\RegisterController::register
-* @see app/Http/Controllers/Web/Auth/RegisterController.php:19
+* @see app/Http/Controllers/Web/Auth/RegisterController.php:14
 * @route '/register'
 */
 register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -169,7 +169,7 @@ register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Web\Auth\LoginController::logout
-* @see app/Http/Controllers/Web/Auth/LoginController.php:36
+* @see app/Http/Controllers/Web/Auth/LoginController.php:31
 * @route '/logout'
 */
 export const logout = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -184,7 +184,7 @@ logout.definition = {
 
 /**
 * @see \App\Http\Controllers\Web\Auth\LoginController::logout
-* @see app/Http/Controllers/Web/Auth/LoginController.php:36
+* @see app/Http/Controllers/Web/Auth/LoginController.php:31
 * @route '/logout'
 */
 logout.url = (options?: RouteQueryOptions) => {
@@ -193,7 +193,7 @@ logout.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Web\Auth\LoginController::logout
-* @see app/Http/Controllers/Web/Auth/LoginController.php:36
+* @see app/Http/Controllers/Web/Auth/LoginController.php:31
 * @route '/logout'
 */
 logout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -202,7 +202,7 @@ logout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
-* @see routes/web.php:38
+* @see routes/web.php:39
 * @route '/select-role'
 */
 export const selectRole = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -216,7 +216,7 @@ selectRole.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:38
+* @see routes/web.php:39
 * @route '/select-role'
 */
 selectRole.url = (options?: RouteQueryOptions) => {
@@ -224,7 +224,7 @@ selectRole.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:38
+* @see routes/web.php:39
 * @route '/select-role'
 */
 selectRole.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -233,7 +233,7 @@ selectRole.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:38
+* @see routes/web.php:39
 * @route '/select-role'
 */
 selectRole.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -242,7 +242,7 @@ selectRole.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:39
+* @see routes/web.php:40
 * @route '/dashboard'
 */
 export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -256,7 +256,7 @@ dashboard.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:39
+* @see routes/web.php:40
 * @route '/dashboard'
 */
 dashboard.url = (options?: RouteQueryOptions) => {
@@ -264,7 +264,7 @@ dashboard.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:39
+* @see routes/web.php:40
 * @route '/dashboard'
 */
 dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -273,7 +273,7 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:39
+* @see routes/web.php:40
 * @route '/dashboard'
 */
 dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
