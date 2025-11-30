@@ -1,7 +1,109 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
+* @see \App\Http\Controllers\Web\Medication\MedicationInteractionController::checkInteractions
+* @see app/Http/Controllers/Web/Medication/MedicationInteractionController.php:15
+* @route '/medications/{medication}/check-interactions'
+*/
+export const checkInteractions = (args: { medication: number | { id: number } } | [medication: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: checkInteractions.url(args, options),
+    method: 'post',
+})
+
+checkInteractions.definition = {
+    methods: ["post"],
+    url: '/medications/{medication}/check-interactions',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Web\Medication\MedicationInteractionController::checkInteractions
+* @see app/Http/Controllers/Web/Medication/MedicationInteractionController.php:15
+* @route '/medications/{medication}/check-interactions'
+*/
+checkInteractions.url = (args: { medication: number | { id: number } } | [medication: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { medication: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { medication: args.id }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            medication: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        medication: typeof args.medication === 'object'
+        ? args.medication.id
+        : args.medication,
+    }
+
+    return checkInteractions.definition.url
+            .replace('{medication}', parsedArgs.medication.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Web\Medication\MedicationInteractionController::checkInteractions
+* @see app/Http/Controllers/Web/Medication/MedicationInteractionController.php:15
+* @route '/medications/{medication}/check-interactions'
+*/
+checkInteractions.post = (args: { medication: number | { id: number } } | [medication: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: checkInteractions.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Web\Medication\MedicationController::search
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:27
+* @route '/medications/search'
+*/
+export const search = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: search.url(options),
+    method: 'get',
+})
+
+search.definition = {
+    methods: ["get","head"],
+    url: '/medications/search',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Web\Medication\MedicationController::search
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:27
+* @route '/medications/search'
+*/
+search.url = (options?: RouteQueryOptions) => {
+    return search.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Web\Medication\MedicationController::search
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:27
+* @route '/medications/search'
+*/
+search.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: search.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Web\Medication\MedicationController::search
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:27
+* @route '/medications/search'
+*/
+search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: search.url(options),
+    method: 'head',
+})
+
+/**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::index
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:21
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:17
 * @route '/medications'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +118,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::index
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:21
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:17
 * @route '/medications'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +127,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::index
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:21
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:17
 * @route '/medications'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +137,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::index
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:21
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:17
 * @route '/medications'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +147,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::create
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:33
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:36
 * @route '/medications/create'
 */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +162,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::create
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:33
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:36
 * @route '/medications/create'
 */
 create.url = (options?: RouteQueryOptions) => {
@@ -69,7 +171,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::create
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:33
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:36
 * @route '/medications/create'
 */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -79,7 +181,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::create
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:33
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:36
 * @route '/medications/create'
 */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -89,7 +191,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::store
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:38
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:41
 * @route '/medications'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -104,7 +206,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::store
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:38
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:41
 * @route '/medications'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -113,7 +215,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::store
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:38
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:41
 * @route '/medications'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -123,10 +225,10 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::show
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:48
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:51
 * @route '/medications/{medication}'
 */
-export const show = (args: { medication: string | number } | [medication: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const show = (args: { medication: number | { id: number } } | [medication: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -138,12 +240,16 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::show
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:48
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:51
 * @route '/medications/{medication}'
 */
-show.url = (args: { medication: string | number } | [medication: string | number ] | string | number, options?: RouteQueryOptions) => {
+show.url = (args: { medication: number | { id: number } } | [medication: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { medication: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { medication: args.id }
     }
 
     if (Array.isArray(args)) {
@@ -155,7 +261,9 @@ show.url = (args: { medication: string | number } | [medication: string | number
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        medication: args.medication,
+        medication: typeof args.medication === 'object'
+        ? args.medication.id
+        : args.medication,
     }
 
     return show.definition.url
@@ -165,30 +273,30 @@ show.url = (args: { medication: string | number } | [medication: string | number
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::show
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:48
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:51
 * @route '/medications/{medication}'
 */
-show.get = (args: { medication: string | number } | [medication: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+show.get = (args: { medication: number | { id: number } } | [medication: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::show
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:48
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:51
 * @route '/medications/{medication}'
 */
-show.head = (args: { medication: string | number } | [medication: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+show.head = (args: { medication: number | { id: number } } | [medication: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
 })
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::edit
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:57
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:58
 * @route '/medications/{medication}/edit'
 */
-export const edit = (args: { medication: string | number } | [medication: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const edit = (args: { medication: number | { id: number } } | [medication: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
@@ -200,12 +308,16 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::edit
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:57
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:58
 * @route '/medications/{medication}/edit'
 */
-edit.url = (args: { medication: string | number } | [medication: string | number ] | string | number, options?: RouteQueryOptions) => {
+edit.url = (args: { medication: number | { id: number } } | [medication: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { medication: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { medication: args.id }
     }
 
     if (Array.isArray(args)) {
@@ -217,7 +329,9 @@ edit.url = (args: { medication: string | number } | [medication: string | number
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        medication: args.medication,
+        medication: typeof args.medication === 'object'
+        ? args.medication.id
+        : args.medication,
     }
 
     return edit.definition.url
@@ -227,30 +341,30 @@ edit.url = (args: { medication: string | number } | [medication: string | number
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::edit
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:57
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:58
 * @route '/medications/{medication}/edit'
 */
-edit.get = (args: { medication: string | number } | [medication: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+edit.get = (args: { medication: number | { id: number } } | [medication: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::edit
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:57
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:58
 * @route '/medications/{medication}/edit'
 */
-edit.head = (args: { medication: string | number } | [medication: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+edit.head = (args: { medication: number | { id: number } } | [medication: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: edit.url(args, options),
     method: 'head',
 })
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::update
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:66
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:65
 * @route '/medications/{medication}'
 */
-export const update = (args: { medication: string | number } | [medication: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const update = (args: { medication: number | { id: number } } | [medication: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -262,12 +376,16 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::update
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:66
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:65
 * @route '/medications/{medication}'
 */
-update.url = (args: { medication: string | number } | [medication: string | number ] | string | number, options?: RouteQueryOptions) => {
+update.url = (args: { medication: number | { id: number } } | [medication: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { medication: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { medication: args.id }
     }
 
     if (Array.isArray(args)) {
@@ -279,7 +397,9 @@ update.url = (args: { medication: string | number } | [medication: string | numb
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        medication: args.medication,
+        medication: typeof args.medication === 'object'
+        ? args.medication.id
+        : args.medication,
     }
 
     return update.definition.url
@@ -289,30 +409,30 @@ update.url = (args: { medication: string | number } | [medication: string | numb
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::update
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:66
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:65
 * @route '/medications/{medication}'
 */
-update.put = (args: { medication: string | number } | [medication: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+update.put = (args: { medication: number | { id: number } } | [medication: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::update
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:66
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:65
 * @route '/medications/{medication}'
 */
-update.patch = (args: { medication: string | number } | [medication: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+update.patch = (args: { medication: number | { id: number } } | [medication: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
 })
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::destroy
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:76
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:75
 * @route '/medications/{medication}'
 */
-export const destroy = (args: { medication: string | number } | [medication: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { medication: number | { id: number } } | [medication: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -324,12 +444,16 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::destroy
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:76
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:75
 * @route '/medications/{medication}'
 */
-destroy.url = (args: { medication: string | number } | [medication: string | number ] | string | number, options?: RouteQueryOptions) => {
+destroy.url = (args: { medication: number | { id: number } } | [medication: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { medication: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { medication: args.id }
     }
 
     if (Array.isArray(args)) {
@@ -341,7 +465,9 @@ destroy.url = (args: { medication: string | number } | [medication: string | num
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        medication: args.medication,
+        medication: typeof args.medication === 'object'
+        ? args.medication.id
+        : args.medication,
     }
 
     return destroy.definition.url
@@ -351,15 +477,17 @@ destroy.url = (args: { medication: string | number } | [medication: string | num
 
 /**
 * @see \App\Http\Controllers\Web\Medication\MedicationController::destroy
-* @see app/Http/Controllers/Web/Medication/MedicationController.php:76
+* @see app/Http/Controllers/Web/Medication/MedicationController.php:75
 * @route '/medications/{medication}'
 */
-destroy.delete = (args: { medication: string | number } | [medication: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { medication: number | { id: number } } | [medication: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
 
 const medications = {
+    checkInteractions: Object.assign(checkInteractions, checkInteractions),
+    search: Object.assign(search, search),
     index: Object.assign(index, index),
     create: Object.assign(create, create),
     store: Object.assign(store, store),

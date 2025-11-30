@@ -4,29 +4,32 @@ namespace App\Http\Controllers\Web\Medication;
 
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\Medication;
 use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
+use App\Packages\Filter\FilterQ;
 use App\Http\Controllers\Controller;
-use App\Services\Medication\MedicationService;
+use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\Medication\StoreMedicationRequest;
 use App\Http\Requests\Medication\UpdateMedicationRequest;
 
 class MedicationController extends Controller
 {
-    public function __construct(
-        protected MedicationService $medicationService
-    ) {
-    }
-
     public function index(Request $request): Response
     {
         $data = $request->all();
 
-        $medications = $this->medicationService->index(collect($data));
-
         return Inertia::render('Medications/Index', [
-            'medications' => $medications,
+            'medications' => FilterQ::applyWithPagination(Medication::query(), collect($data)),
             'filters' => $request->only(['q', 'page', 'per_page']),
+        ]);
+    }
+
+    public function search(Request $request): Response
+    {
+        $data = $request->all();
+
+        return inertia()->render('Medications/Index', [
+            'searchResults' => FilterQ::applyWithPagination(Medication::query(), collect($data)),
         ]);
     }
 
@@ -39,43 +42,39 @@ class MedicationController extends Controller
     {
         $validated = $request->validated();
 
-        $this->medicationService->store(collect($validated));
+        Medication::create($validated);
 
         return redirect()->route('medications.index')
             ->with('success', __('medications.medication.created'));
     }
 
-    public function show(string|int $id): Response
+    public function show(Medication $medication): Response
     {
-        $medication = $this->medicationService->show($id);
-
         return Inertia::render('Medications/Show', [
             'medication' => $medication,
         ]);
     }
 
-    public function edit(int $id): Response
+    public function edit(Medication $medication): Response
     {
-        $medication = $this->medicationService->show($id);
-
         return Inertia::render('Medications/Edit', [
             'medication' => $medication,
         ]);
     }
 
-    public function update(UpdateMedicationRequest $request, int $id): RedirectResponse
+    public function update(UpdateMedicationRequest $request, Medication $medication): RedirectResponse
     {
         $validated = $request->validated();
 
-        $this->medicationService->update(collect($validated), $id);
+        $medication->update($validated);
 
         return redirect()->route('medications.index')
             ->with('success', __('medications.medication.updated'));
     }
 
-    public function destroy(int $id): RedirectResponse
+    public function destroy(Medication $medication): RedirectResponse
     {
-        $this->medicationService->destroy($id);
+        $medication->delete();
 
         return redirect()->route('medications.index')
             ->with('success', __('medications.medication.deleted'));

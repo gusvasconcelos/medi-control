@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
-* @see routes/web.php:50
+* @see routes/web.php:56
 * @route '/reports'
 */
 export const adherence = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ adherence.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:50
+* @see routes/web.php:56
 * @route '/reports'
 */
 adherence.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ adherence.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:50
+* @see routes/web.php:56
 * @route '/reports'
 */
 adherence.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ adherence.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:50
+* @see routes/web.php:56
 * @route '/reports'
 */
 adherence.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

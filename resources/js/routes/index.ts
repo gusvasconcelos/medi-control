@@ -40,7 +40,7 @@ pulse.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:19
+* @see routes/web.php:20
 * @route '/'
 */
 export const welcome = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -54,7 +54,7 @@ welcome.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:19
+* @see routes/web.php:20
 * @route '/'
 */
 welcome.url = (options?: RouteQueryOptions) => {
@@ -62,7 +62,7 @@ welcome.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:19
+* @see routes/web.php:20
 * @route '/'
 */
 welcome.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -71,7 +71,7 @@ welcome.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:19
+* @see routes/web.php:20
 * @route '/'
 */
 welcome.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -202,7 +202,7 @@ logout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
-* @see routes/web.php:39
+* @see routes/web.php:40
 * @route '/select-role'
 */
 export const selectRole = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -216,7 +216,7 @@ selectRole.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:39
+* @see routes/web.php:40
 * @route '/select-role'
 */
 selectRole.url = (options?: RouteQueryOptions) => {
@@ -224,7 +224,7 @@ selectRole.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:39
+* @see routes/web.php:40
 * @route '/select-role'
 */
 selectRole.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -233,7 +233,7 @@ selectRole.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:39
+* @see routes/web.php:40
 * @route '/select-role'
 */
 selectRole.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -242,7 +242,7 @@ selectRole.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:40
+* @see routes/web.php:41
 * @route '/dashboard'
 */
 export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -256,7 +256,7 @@ dashboard.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:40
+* @see routes/web.php:41
 * @route '/dashboard'
 */
 dashboard.url = (options?: RouteQueryOptions) => {
@@ -264,7 +264,7 @@ dashboard.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:40
+* @see routes/web.php:41
 * @route '/dashboard'
 */
 dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -273,7 +273,7 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:40
+* @see routes/web.php:41
 * @route '/dashboard'
 */
 dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

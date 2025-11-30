@@ -9,6 +9,7 @@ use App\Http\Controllers\Web\Metrics\OverviewController;
 use App\Http\Controllers\Web\Auth\ResetPasswordController;
 use App\Http\Controllers\Web\Auth\ForgotPasswordController;
 use App\Http\Controllers\Web\Medication\MedicationController;
+use App\Http\Controllers\Web\Medication\MedicationInteractionController;
 use App\Http\Controllers\Web\Horizon\JobsController as HorizonJobsController;
 use App\Http\Controllers\Web\Horizon\BatchesController as HorizonBatchesController;
 use App\Http\Controllers\Web\Horizon\MetricsController as HorizonMetricsController;
@@ -40,6 +41,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
     Route::get('/profile', fn () => Inertia::render('Profile/Index'))->name('profile.index');
     Route::get('/notifications', fn () => Inertia::render('Settings/Notifications/Index'))->name('notifications.index');
+
+    Route::post('medications/{medication}/check-interactions', [MedicationInteractionController::class, 'check'])
+    ->name('medications.check-interactions');
+
+    Route::get('/medications/search', [MedicationController::class, 'search'])->name('medications.search');
     Route::resource('medications', MedicationController::class);
     Route::get('/chat', fn () => Inertia::render('Chat/Index'))->name('chat.index');
     Route::get('/metrics/overview', [OverviewController::class, 'create'])->name('metrics.overview');

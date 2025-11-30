@@ -7,6 +7,7 @@ import { MedicationsTable } from '@/Components/Medications/MedicationsTable';
 import { MedicationFormModal } from '@/Components/Medications/MedicationFormModal';
 import { DeleteMedicationModal } from '@/Components/Medications/DeleteMedicationModal';
 import { MedicationDetailsModal } from '@/Components/Medications/MedicationDetailsModal';
+import { CheckInteractionsModal } from '@/Components/Medications/CheckInteractionsModal';
 import { getNavigationItems } from '@/config/navigation';
 import { useToast } from '@/hooks/useToast';
 import type { PageProps, Medication } from '@/types';
@@ -65,6 +66,14 @@ export default function MedicationsIndex({ auth, medications, filters }: Medicat
     });
 
     const [detailsModal, setDetailsModal] = useState<{
+        isOpen: boolean;
+        medication: Medication | null;
+    }>({
+        isOpen: false,
+        medication: null,
+    });
+
+    const [checkInteractionsModal, setCheckInteractionsModal] = useState<{
         isOpen: boolean;
         medication: Medication | null;
     }>({
@@ -215,6 +224,14 @@ export default function MedicationsIndex({ auth, medications, filters }: Medicat
         setTimeout(() => {
             setDetailsModal({ isOpen: false, medication: null });
         }, 300);
+    };
+
+    const handleOpenCheckInteractionsModal = (medication: Medication) => {
+        setCheckInteractionsModal({ isOpen: true, medication });
+    };
+
+    const handleCloseCheckInteractionsModal = () => {
+        setCheckInteractionsModal({ isOpen: false, medication: null });
     };
 
     const handlePageChange = (page: number) => {
@@ -393,6 +410,7 @@ export default function MedicationsIndex({ auth, medications, filters }: Medicat
                                 onView={handleOpenDetailsModal}
                                 onEdit={handleOpenEditModal}
                                 onDelete={handleOpenDeleteModal}
+                                onCheckInteractions={handleOpenCheckInteractionsModal}
                             />
 
                             {renderPagination()}
@@ -420,6 +438,12 @@ export default function MedicationsIndex({ auth, medications, filters }: Medicat
                     medication={detailsModal.medication}
                     isOpen={detailsModal.isOpen}
                     onClose={handleCloseDetailsModal}
+                />
+
+                <CheckInteractionsModal
+                    medication={checkInteractionsModal.medication}
+                    isOpen={checkInteractionsModal.isOpen}
+                    onClose={handleCloseCheckInteractionsModal}
                 />
             </AuthenticatedLayout>
         </>

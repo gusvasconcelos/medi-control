@@ -16,7 +16,7 @@ class CheckInteractionsRequest extends FormRequest
                 'integer',
                 'exists:medications,id',
                 'distinct',
-                Rule::notIn([$this->route('id')]),
+                Rule::notIn([$this->route('medication')]),
             ],
         ];
     }

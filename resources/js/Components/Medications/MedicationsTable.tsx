@@ -1,4 +1,4 @@
-import { Eye, Pencil, Trash2, MoreVertical } from 'lucide-react';
+import { Eye, Pencil, Trash2, MoreVertical, Activity } from 'lucide-react';
 import type { Medication } from '@/types';
 
 interface MedicationsTableProps {
@@ -7,6 +7,7 @@ interface MedicationsTableProps {
     onView: (medication: Medication) => void;
     onEdit: (medication: Medication) => void;
     onDelete: (medication: Medication) => void;
+    onCheckInteractions: (medication: Medication) => void;
 }
 
 const formLabels: Record<string, string> = {
@@ -33,6 +34,7 @@ export function MedicationsTable({
     onView,
     onEdit,
     onDelete,
+    onCheckInteractions,
 }: MedicationsTableProps) {
     if (isLoading) {
         return (
@@ -55,8 +57,8 @@ export function MedicationsTable({
     return (
         <>
             {/* Desktop View - Table */}
-            <div className="hidden lg:block overflow-x-auto">
-                <table className="table">
+            <div className="hidden lg:block overflow-x-auto overflow-visible">
+                <table className="table relative">
                     <thead>
                         <tr>
                             <th>Nome</th>
@@ -70,7 +72,7 @@ export function MedicationsTable({
                     </thead>
                     <tbody>
                         {medications.map((medication) => (
-                            <tr key={medication.id} className="hover">
+                            <tr key={medication.id} className="hover relative">
                                 <td className="font-medium">{medication.name}</td>
                                 <td>
                                     {medication.active_principle || (
@@ -108,32 +110,61 @@ export function MedicationsTable({
                                     )}
                                 </td>
                                 <td>
-                                    <div className="flex justify-end gap-2">
+                                <div className="dropdown dropdown-end">
+                                <button
+                                    type="button"
+                                    tabIndex={0}
+                                    className="btn btn-ghost btn-sm btn-circle"
+                                    aria-label="Ações"
+                                >
+                                    <MoreVertical className="h-5 w-5" />
+                                </button>
+                                <ul
+                                    tabIndex={0}
+                                    className="dropdown-content menu bg-base-200 rounded-box z-50 w-52 p-2 shadow-lg"
+                                >
+                                    <li>
                                         <button
                                             type="button"
-                                            className="btn btn-ghost btn-sm"
                                             onClick={() => onView(medication)}
-                                            aria-label="Ver detalhes"
+                                            className="flex items-center gap-3"
                                         >
                                             <Eye className="h-4 w-4" />
+                                            Ver detalhes
                                         </button>
+                                    </li>
+                                    <li>
                                         <button
                                             type="button"
-                                            className="btn btn-ghost btn-sm"
+                                            onClick={() => onCheckInteractions(medication)}
+                                            className="flex items-center gap-3"
+                                        >
+                                            <Activity className="h-4 w-4" />
+                                            Checar Interações
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button
+                                            type="button"
                                             onClick={() => onEdit(medication)}
-                                            aria-label="Editar"
+                                            className="flex items-center gap-3"
                                         >
                                             <Pencil className="h-4 w-4" />
+                                            Editar
                                         </button>
+                                    </li>
+                                    <li>
                                         <button
                                             type="button"
-                                            className="btn btn-ghost btn-sm text-error"
                                             onClick={() => onDelete(medication)}
-                                            aria-label="Deletar"
+                                            className="flex items-center gap-3 text-error"
                                         >
                                             <Trash2 className="h-4 w-4" />
+                                            Excluir
                                         </button>
-                                    </div>
+                                    </li>
+                                </ul>
+                            </div>
                                 </td>
                             </tr>
                         ))}
@@ -193,7 +224,7 @@ export function MedicationsTable({
                                 </button>
                                 <ul
                                     tabIndex={0}
-                                    className="dropdown-content menu bg-base-200 rounded-box z-[1] w-52 p-2 shadow-lg"
+                                    className="dropdown-content menu bg-base-200 rounded-box z-50 w-52 p-2 shadow-lg"
                                 >
                                     <li>
                                         <button
@@ -203,6 +234,16 @@ export function MedicationsTable({
                                         >
                                             <Eye className="h-4 w-4" />
                                             Ver detalhes
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button
+                                            type="button"
+                                            onClick={() => onCheckInteractions(medication)}
+                                            className="flex items-center gap-3"
+                                        >
+                                            <Activity className="h-4 w-4" />
+                                            Checar Interações
                                         </button>
                                     </li>
                                     <li>
@@ -222,7 +263,7 @@ export function MedicationsTable({
                                             className="flex items-center gap-3 text-error"
                                         >
                                             <Trash2 className="h-4 w-4" />
-                                            Deletar
+                                            Excluir
                                         </button>
                                     </li>
                                 </ul>

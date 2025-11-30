@@ -12,6 +12,13 @@ return [
     |
     */
 
+    'medication' => [
+        'created' => 'Medication successfully registered.',
+        'updated' => 'Medication successfully updated.',
+        'deleted' => 'Medication successfully removed.',
+        'not_found' => 'Medication not found.',
+    ],
+
     'user_medication' => [
         'created' => 'Medication successfully registered.',
         'updated' => 'Medication successfully updated.',

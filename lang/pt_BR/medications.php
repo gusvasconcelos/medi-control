@@ -12,6 +12,13 @@ return [
     |
     */
 
+    'medication' => [
+        'created' => 'Medicamento cadastrado com sucesso.',
+        'updated' => 'Medicamento atualizado com sucesso.',
+        'deleted' => 'Medicamento removido com sucesso.',
+        'not_found' => 'Medicamento não encontrado.',
+    ],
+
     'user_medication' => [
         'created' => 'Medicamento cadastrado com sucesso.',
         'updated' => 'Medicamento atualizado com sucesso.',
