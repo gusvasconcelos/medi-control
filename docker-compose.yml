@@ -1,0 +1,218 @@
+networks:
+  medicontrol_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+  redis_data:
+    driver: local
+  storage_data:
+    driver: local
+  logs_data:
+    driver: local
+  caddy_data:
+    driver: local
+  caddy_config:
+    driver: local
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: medicontrol_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-medicontrol}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=pt_BR.UTF-8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    networks:
+      - medicontrol_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Redis Cache & Session Store
+  redis:
+    image: redis:7-alpine
+    container_name: medicontrol_redis
+    restart: unless-stopped
+    command: >
+      sh -c "if [ -n \"${REDIS_PASSWORD}\" ] && [ \"${REDIS_PASSWORD}\" != \"null\" ]; then
+        redis-server --appendonly yes --requirepass ${REDIS_PASSWORD};
+      else
+        redis-server --appendonly yes;
+      fi"
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    networks:
+      - medicontrol_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  # RabbitMQ Message Queue
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: medicontrol_rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_LOGIN:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "15672:15672"
+    networks:
+      - medicontrol_network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # FrankenPHP Application (Laravel + Horizon)
+  frankenphp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: medicontrol_app
+    restart: unless-stopped
+    environment:
+      APP_NAME: ${APP_NAME:-MediControl}
+      APP_ENV: ${APP_ENV:-local}
+      APP_KEY: ${APP_KEY}
+      APP_DEBUG: ${APP_DEBUG:-true}
+      APP_URL: ${APP_URL:-http://localhost:8000}
+
+      # Database
+      DB_CONNECTION: ${DB_CONNECTION:-pgsql}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-medicontrol}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+
+      # Redis
+      REDIS_CLIENT: ${REDIS_CLIENT:-predis}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-null}
+
+      # RabbitMQ
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_VHOST: ${RABBITMQ_VHOST:-/}
+      RABBITMQ_LOGIN: ${RABBITMQ_LOGIN:-guest}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      QUEUE_CONNECTION: rabbitmq
+
+      # Cache & Session
+      CACHE_STORE: redis
+      SESSION_DRIVER: redis
+
+      # Octane
+      OCTANE_SERVER: frankenphp
+      PHP_CLI_SERVER_WORKERS: ${PHP_CLI_SERVER_WORKERS:-4}
+
+      # Pulse
+      PULSE_ENABLED: ${PULSE_ENABLED:-true}
+
+      # OneSignal
+      ONESIGNAL_APP_ID: ${ONESIGNAL_APP_ID}
+      ONESIGNAL_REST_API_KEY: ${ONESIGNAL_REST_API_KEY}
+    volumes:
+      - storage_data:/var/www/html/storage
+      - logs_data:/var/www/html/storage/logs
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    networks:
+      - medicontrol_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/up"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+  # Laravel Reverb (WebSocket Server)
+  reverb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: medicontrol_reverb
+    restart: unless-stopped
+    command: php artisan reverb:start
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      APP_KEY: ${APP_KEY}
+
+      # Reverb
+      REVERB_APP_ID: ${REVERB_APP_ID:-medi-control}
+      REVERB_APP_KEY: ${REVERB_APP_KEY}
+      REVERB_APP_SECRET: ${REVERB_APP_SECRET}
+      REVERB_HOST: ${REVERB_HOST:-0.0.0.0}
+      REVERB_PORT: ${REVERB_PORT:-8080}
+      REVERB_SCHEME: ${REVERB_SCHEME:-http}
+      REVERB_SERVER_HOST: 0.0.0.0
+      REVERB_SERVER_PORT: 8080
+
+      # Database & Redis
+      DB_HOST: postgres
+      REDIS_HOST: redis
+    ports:
+      - "${REVERB_PORT:-8080}:8080"
+    networks:
+      - medicontrol_network
+    depends_on:
+      - postgres
+      - redis
+
+  # Caddy Reverse Proxy
+  caddy:
+    image: caddy:2-alpine
+    container_name: medicontrol_caddy
+    restart: unless-stopped
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    networks:
+      - medicontrol_network
+    depends_on:
+      - frankenphp
+      - reverb
+    environment:
+      APP_URL: ${APP_URL:-http://localhost:8000}

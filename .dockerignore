@@ -1,0 +1,56 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Dependencies
+node_modules
+vendor
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Build artifacts
+public/build
+public/hot
+
+# Storage
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+!storage/logs/.gitkeep
+!storage/framework/cache/.gitkeep
+!storage/framework/sessions/.gitkeep
+!storage/framework/views/.gitkeep
+
+# Testing
+tests
+.phpunit.cache
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+Dockerfile
+
+# CI/CD
+.github
+
+# Documentation
+*.md
+!README.md
+docs
+
+# Other
+.editorconfig
+.php-cs-fixer.php
+phpstan.neon

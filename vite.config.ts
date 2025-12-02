@@ -17,4 +17,22 @@ export default defineConfig({
             '@': '/resources/js',
         },
     },
+    server: {
+        // Listen on all interfaces for Docker
+        host: '0.0.0.0',
+        port: 5173,
+        strictPort: true,
+
+        // HMR configuration for Docker
+        hmr: {
+            host: process.env.VITE_HMR_HOST || 'localhost',
+            port: 5173,
+        },
+
+        // File watching configuration for Docker bind mounts
+        watch: {
+            usePolling: true,
+            interval: 1000,
+        },
+    },
 });

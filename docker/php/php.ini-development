@@ -1,0 +1,42 @@
+[PHP]
+; Development PHP configuration for MediControl
+
+; Error handling (show all errors in development)
+display_errors = On
+display_startup_errors = On
+log_errors = On
+error_reporting = E_ALL
+error_log = /var/www/html/storage/logs/php-error.log
+
+; Memory & Performance (higher limits for development)
+memory_limit = 512M
+max_execution_time = 300
+max_input_time = 300
+
+; File Uploads
+upload_max_filesize = 20M
+post_max_size = 20M
+max_file_uploads = 20
+
+; Session
+session.save_handler = redis
+session.save_path = "tcp://redis:6379"
+session.cookie_httponly = 1
+session.cookie_samesite = "Lax"
+session.gc_maxlifetime = 1440
+
+; OPcache (disabled for development to see code changes immediately)
+opcache.enable = 0
+opcache.enable_cli = 0
+
+; Realpath Cache (shorter TTL for development)
+realpath_cache_size = 4096K
+realpath_cache_ttl = 120
+
+; Other
+expose_php = On
+date.timezone = America/Sao_Paulo
+default_charset = "UTF-8"
+
+; Allow more verbose output
+html_errors = On

@@ -60,7 +60,7 @@ export default function Welcome({ auth }: PageProps) {
                             <div className="card bg-base-200 shadow-xl">
                                 <figure className="px-10 pt-10">
                                     <OptimizedImage
-                                        src="/storage/calendar.png"
+                                        src="/storage/calendar.webp"
                                         alt="Ícone de calendário"
                                         className="w-16 h-16"
                                         lazy={true}
@@ -81,7 +81,7 @@ export default function Welcome({ auth }: PageProps) {
                             <div className="card bg-base-200 shadow-xl">
                                 <figure className="px-10 pt-10">
                                     <OptimizedImage
-                                        src="/storage/warning.png"
+                                        src="/storage/warning.webp"
                                         alt="Ícone de alerta"
                                         className="w-16 h-16"
                                         lazy={true}
@@ -102,7 +102,7 @@ export default function Welcome({ auth }: PageProps) {
                             <div className="card bg-base-200 shadow-xl">
                                 <figure className="px-10 pt-10">
                                     <OptimizedImage
-                                        src="/storage/caregiver.png"
+                                        src="/storage/caregiver.webp"
                                         alt="Ícone de cuidador com o paciente"
                                         className="w-16 h-16"
                                         lazy={true}
@@ -123,7 +123,7 @@ export default function Welcome({ auth }: PageProps) {
                             <div className="card bg-base-200 shadow-xl">
                                 <figure className="px-10 pt-10">
                                     <OptimizedImage
-                                        src="/storage/analytics.png"
+                                        src="/storage/analytics.webp"
                                         alt="Ícone de gráfico"
                                         className="w-16 h-16"
                                         lazy={true}
@@ -144,7 +144,7 @@ export default function Welcome({ auth }: PageProps) {
                             <div className="card bg-base-200 shadow-xl">
                                 <figure className="px-10 pt-10">
                                     <OptimizedImage
-                                        src="/storage/lock.png"
+                                        src="/storage/lock.webp"
                                         alt="Ícone de cadeado"
                                         className="w-16 h-16"
                                         lazy={true}
@@ -165,7 +165,7 @@ export default function Welcome({ auth }: PageProps) {
                             <div className="card bg-base-200 shadow-xl">
                                 <figure className="px-10 pt-10">
                                     <OptimizedImage
-                                        src="/storage/robot.png"
+                                        src="/storage/robot.webp"
                                         alt="Ícone de robô"
                                         className="w-16 h-16"
                                         lazy={true}

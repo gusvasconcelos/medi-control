@@ -11,8 +11,11 @@ class UptimeService
 
     public static function initialize(): void
     {
-        if (!Cache::has(self::UPTIME_FILE)) {
-            Cache::forever(self::UPTIME_FILE, now()->toIso8601String());
+        try {
+            if (!Cache::has(self::UPTIME_FILE)) {
+                Cache::forever(self::UPTIME_FILE, now()->toIso8601String());
+            }
+        } catch (\Throwable $e) {
         }
     }
 

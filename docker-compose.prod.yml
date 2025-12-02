@@ -1,0 +1,126 @@
+# Production overrides for docker-compose.yml
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+services:
+  # FrankenPHP Production Configuration
+  frankenphp:
+    build:
+      target: production
+      args:
+        - INSTALL_XDEBUG=false
+
+    environment:
+      # Production environment
+      APP_ENV: production
+      APP_DEBUG: "false"
+      LOG_LEVEL: warning
+
+      # Octane production settings
+      OCTANE_HTTPS: "true"
+
+    # No bind mounts in production (code is baked into image)
+    volumes:
+      - storage_data:/var/www/html/storage
+      - logs_data:/var/www/html/storage/logs
+
+    # Always restart in production
+    restart: always
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 512M
+
+  # Reverb Production Configuration
+  reverb:
+    build:
+      target: production
+
+    command: php artisan reverb:start
+
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+
+    # No bind mounts in production
+    volumes: []
+
+    restart: always
+
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # PostgreSQL Production Configuration
+  postgres:
+    restart: always
+
+    # Backup volume mount
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./backups/postgres:/backups
+
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '1'
+          memory: 512M
+
+  # Redis Production Configuration
+  redis:
+    restart: always
+
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # RabbitMQ Production Configuration
+  rabbitmq:
+    restart: always
+
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Caddy Production Configuration
+  caddy:
+    restart: always
+
+    environment:
+      # Production URL from .env
+      APP_URL: ${APP_URL}
+
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+# No Vite service in production (assets are pre-built)
