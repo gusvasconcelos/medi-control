@@ -1,3 +1,4 @@
+import { router } from '@inertiajs/react';
 import { Check, X, Eye } from 'lucide-react';
 import type { CaregiverPatient } from '@/types/caregiver';
 
@@ -34,6 +35,13 @@ export function PatientsTable({
     onReject,
     onView,
 }: PatientsTableProps) {
+    const handleViewPatient = (relationship: CaregiverPatient) => {
+        if (onView) {
+            onView(relationship);
+        } else if (relationship.patient?.id) {
+            router.visit(`/my-patients/${relationship.patient.id}`);
+        }
+    };
     if (isLoading) {
         return (
             <div className="flex items-center justify-center py-12">
@@ -128,11 +136,11 @@ export function PatientsTable({
                                                 )}
                                             </>
                                         )}
-                                        {relationship.status === 'active' && onView && (
+                                        {relationship.status === 'active' && (
                                             <button
                                                 type="button"
                                                 className="btn btn-sm btn-ghost"
-                                                onClick={() => onView(relationship)}
+                                                onClick={() => handleViewPatient(relationship)}
                                                 title="Ver Detalhes"
                                             >
                                                 <Eye className="w-4 h-4" />
@@ -201,11 +209,11 @@ export function PatientsTable({
                                         )}
                                     </>
                                 )}
-                                {relationship.status === 'active' && onView && (
+                                {relationship.status === 'active' && (
                                     <button
                                         type="button"
                                         className="btn btn-sm btn-ghost"
-                                        onClick={() => onView(relationship)}
+                                        onClick={() => handleViewPatient(relationship)}
                                         title="Ver Detalhes"
                                     >
                                         <Eye className="w-4 h-4" />

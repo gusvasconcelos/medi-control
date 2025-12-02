@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\Web\Auth\LoginController;
 use App\Http\Controllers\Web\Auth\RegisterController;
 use App\Http\Controllers\Web\Metrics\OverviewController;
+use App\Http\Controllers\Web\Caregiver\PatientController;
 use App\Http\Controllers\Web\Auth\ResetPasswordController;
 use App\Http\Controllers\Web\Auth\ForgotPasswordController;
 use App\Http\Controllers\Web\Medication\MedicationController;
@@ -57,6 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/my-caregivers', fn () => Inertia::render('Caregivers/Index'))->name('caregivers.index');
     Route::get('/my-patients', fn () => Inertia::render('Patients/Index'))->name('patients.index');
+    Route::get('/my-patients/{patientId}', [PatientController::class, 'show'])->name('patients.show');
 
     Route::get('/reports', fn () => Inertia::render('Reports/Adherence'))->name('reports.adherence');
 

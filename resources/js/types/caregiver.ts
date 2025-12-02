@@ -42,3 +42,26 @@ export interface PendingInvitationsResponse {
 export interface CaregiverPermissionsResponse {
     data: Permission[];
 }
+
+export interface CaregiverActionPermissions {
+    medications: {
+        canView: boolean;
+        canCreate: boolean;
+        canEdit: boolean;
+        canDelete: boolean;
+    };
+    adherence: {
+        canView: boolean;
+        canMark: boolean;
+    };
+    profile: {
+        canView: boolean;
+    };
+}
+
+export interface PatientDetailData {
+    patient: User;
+    relationship: CaregiverPatient;
+    permissions: Permission[];
+    availableActions: CaregiverActionPermissions;
+}
