@@ -24,28 +24,9 @@
     <link rel="preload" href="/storage/icon.svg" as="image" type="image/svg+xml" />
     <link rel="preload" href="/favicon.svg" as="image" type="image/svg+xml" />
 
-    <!-- Preload critical Dashboard images -->
-    <link rel="preload" href="/storage/medication.png" as="image" type="image/png" />
-    <link rel="preload" href="/storage/checkmark.png" as="image" type="image/png" />
-    <link rel="preload" href="/storage/analytics.png" as="image" type="image/png" />
-
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600&display=swap" rel="stylesheet" />
-
-    <!-- OneSignal SDK -->
-    <script>
-        window.OneSignalDeferred = window.OneSignalDeferred || [];
-        OneSignalDeferred.push(function(OneSignal) {
-            OneSignal.init({
-                appId: "{{ env('ONESIGNAL_APP_ID') }}",
-                allowLocalhostAsSecureOrigin: {{ env('APP_ENV') === 'local' ? 'true' : 'false' }},
-                serviceWorkerParam: { scope: '/' },
-                serviceWorkerPath: 'OneSignalSDKWorker.js'
-            });
-        });
-    </script>
-    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
     <!-- Scripts -->
     @viteReactRefresh
