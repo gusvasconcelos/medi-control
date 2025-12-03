@@ -32,7 +32,7 @@ final class CheckUserMedicationInteractionsJob implements ShouldQueue
         public readonly int $userMedicationId
     ) {
         $this->afterCommit();
-        $this->onConnection('rabbitmq');
+        $this->onConnection('redis');
         $this->onQueue('medication-interactions');
     }
 
