@@ -98,7 +98,7 @@ return [
 
     'waits' => [
         'redis:default' => 60,
-        'rabbitmq:medication-interactions' => 120,
+        'redis:medication-interactions' => 120,
     ],
 
     /*
@@ -199,8 +199,8 @@ return [
 
     'defaults' => [
         'supervisor-1' => [
-            'connection' => 'rabbitmq',
-            'queue' => ['medication-interactions'],
+            'connection' => 'redis',
+            'queue' => ['default', 'medication-interactions'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 3,

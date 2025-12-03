@@ -12,7 +12,7 @@ MediControl is a medication treatment control system for polymedicated patients,
 
 -   **Framework**: Laravel 12 with PHP 8.2
 -   **Database**: PostgreSQL 15
--   **Queue**: RabbitMQ via Laravel Horizon
+-   **Queue**: Redis via Laravel Horizon
 -   **Auth**: Laravel Sanctum (session-based for SPA, tokens for mobile)
 -   **Routing**: Laravel Wayfinder for type-safe routes
 -   **AI**: OpenAI PHP Client for medication interactions and chat
