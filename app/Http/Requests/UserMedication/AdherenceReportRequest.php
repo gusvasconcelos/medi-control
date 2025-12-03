@@ -13,6 +13,7 @@ class AdherenceReportRequest extends FormRequest
         return [
             'start_date' => ['required', 'date_format:Y-m-d'],
             'end_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:start_date'],
+            'user_id' => ['sometimes', 'integer', 'exists:users,id'],
         ];
     }
 
@@ -21,6 +22,7 @@ class AdherenceReportRequest extends FormRequest
         return [
             'start_date' => __('validation.attributes.start_date'),
             'end_date' => __('validation.attributes.end_date'),
+            'user_id' => __('validation.attributes.user_id'),
         ];
     }
 

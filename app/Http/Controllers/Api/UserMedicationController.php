@@ -11,18 +11,29 @@ use App\Http\Requests\UserMedication\IndicatorsMedicationRequest;
 use App\Http\Requests\UserMedication\UpdateUserMedicationRequest;
 use App\Http\Requests\UserMedication\AdherenceReportRequest;
 use App\Services\UserMedicationService;
+use App\Services\CaregiverActionService;
 
 class UserMedicationController extends Controller
 {
     public function __construct(
-        protected UserMedicationService $userMedicationService
+        protected UserMedicationService $userMedicationService,
+        protected CaregiverActionService $caregiverActionService
     ) {
         $this->userMedicationService = $userMedicationService;
+        $this->caregiverActionService = $caregiverActionService;
     }
 
     public function getUserMedications(GetUserMedicationsRequest $request): JsonResponse
     {
         $validated = $request->validated();
+
+        if (isset($validated['user_id'])) {
+            $this->caregiverActionService->verifyPermission(
+                $request->user()->id,
+                $validated['user_id'],
+                'patient.medications.view'
+            );
+        }
 
         $userMedications = $this->userMedicationService->getUserMedications(collect($validated));
 
@@ -42,6 +53,14 @@ class UserMedicationController extends Controller
     {
         $validated = $request->validated();
 
+        if (isset($validated['user_id'])) {
+            $this->caregiverActionService->verifyPermission(
+                $request->user()->id,
+                $validated['user_id'],
+                'patient.medications.create'
+            );
+        }
+
         $userMedication = $this->userMedicationService->store(collect($validated));
 
         return response()->json([
@@ -50,9 +69,21 @@ class UserMedicationController extends Controller
         ]);
     }
 
-    public function show(int $id): JsonResponse
+    public function show(GetUserMedicationsRequest $request, int $id): JsonResponse
     {
-        $userMedication = $this->userMedicationService->show($id);
+        $validated = $request->validated();
+
+        $userId = $validated['user_id'] ?? null;
+
+        if ($userId) {
+            $this->caregiverActionService->verifyPermission(
+                $request->user()->id,
+                $userId,
+                'patient.medications.view'
+            );
+        }
+
+        $userMedication = $this->userMedicationService->show($id, $userId);
 
         return response()->json(['data' => $userMedication]);
     }
@@ -60,6 +91,14 @@ class UserMedicationController extends Controller
     public function update(UpdateUserMedicationRequest $request, int $id): JsonResponse
     {
         $validated = $request->validated();
+
+        if (isset($validated['user_id'])) {
+            $this->caregiverActionService->verifyPermission(
+                $request->user()->id,
+                $validated['user_id'],
+                'patient.medications.edit'
+            );
+        }
 
         $userMedication = $this->userMedicationService->update(collect($validated), $id);
 
@@ -69,9 +108,21 @@ class UserMedicationController extends Controller
         ]);
     }
 
-    public function destroy(int $id): JsonResponse
+    public function destroy(GetUserMedicationsRequest $request, int $id): JsonResponse
     {
-        $this->userMedicationService->destroy($id);
+        $validated = $request->validated();
+
+        $userId = $validated['user_id'] ?? null;
+
+        if ($userId) {
+            $this->caregiverActionService->verifyPermission(
+                $request->user()->id,
+                $userId,
+                'patient.medications.delete'
+            );
+        }
+
+        $this->userMedicationService->destroy($id, $userId);
 
         return response()->json([
             'message' => __('medications.user_medication.deleted'),
@@ -82,6 +133,14 @@ class UserMedicationController extends Controller
     {
         $validated = $request->validated();
 
+        if (isset($validated['user_id'])) {
+            $this->caregiverActionService->verifyPermission(
+                $request->user()->id,
+                $validated['user_id'],
+                'patient.adherence.view'
+            );
+        }
+
         $report = $this->userMedicationService->getAdherenceReport(collect($validated));
 
         return response()->json(['data' => $report]);
@@ -90,6 +149,14 @@ class UserMedicationController extends Controller
     public function adherenceReportPdf(AdherenceReportRequest $request): Response
     {
         $validated = $request->validated();
+
+        if (isset($validated['user_id'])) {
+            $this->caregiverActionService->verifyPermission(
+                $request->user()->id,
+                $validated['user_id'],
+                'patient.adherence.view'
+            );
+        }
 
         $pdf = $this->userMedicationService->generateAdherenceReportPdf(collect($validated));
 

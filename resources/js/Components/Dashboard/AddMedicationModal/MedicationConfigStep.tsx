@@ -9,7 +9,6 @@ interface MedicationConfigStepProps {
     timeSlots: string[];
     startDate: string;
     endDate: string;
-    notes: string;
     errors: {
         dosage?: string;
         viaAdministration?: string;
@@ -36,7 +35,6 @@ export function MedicationConfigStep({
     timeSlots,
     startDate,
     endDate,
-    notes,
     errors,
     onChange,
 }: MedicationConfigStepProps) {
@@ -118,24 +116,6 @@ export function MedicationConfigStep({
                     error={errors.endDate}
                     helperText="Deixe vazio para tratamento contínuo"
                 />
-            </div>
-
-            <div className="form-control w-full">
-                <label className="label">
-                    <span className="label-text font-medium">Observações (opcional)</span>
-                </label>
-                <textarea
-                    placeholder="Informações adicionais sobre o medicamento..."
-                    value={notes}
-                    onChange={(e) => onChange('notes', e.target.value)}
-                    className="textarea textarea-bordered w-full h-24 resize-none"
-                    maxLength={1000}
-                />
-                <label className="label">
-                    <span className="label-text-alt text-base-content/60">
-                        {notes.length}/1000 caracteres
-                    </span>
-                </label>
             </div>
         </div>
     );

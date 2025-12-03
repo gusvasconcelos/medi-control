@@ -9,16 +9,16 @@ class LogMedicationTakenRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'user_id' => ['nullable', 'integer', 'exists:users,id'],
             'taken_at' => ['nullable', 'date_format:Y-m-d H:i:s'],
-            'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }
 
-    public function messages(): array
+    public function attributes(): array
     {
         return [
-            'taken_at.date_format' => __('validation.date_format', ['attribute' => 'taken_at', 'format' => 'Y-m-d H:i:s']),
-            'notes.max' => __('validation.max.string', ['attribute' => 'notes', 'max' => 1000]),
+            'user_id' => __('validation.attributes.user_id'),
+            'taken_at' => __('validation.attributes.taken_at'),
         ];
     }
 }

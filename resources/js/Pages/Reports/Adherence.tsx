@@ -96,11 +96,11 @@ function MetricCard({ title, value, subtitle, icon, colorClass }: MetricCardProp
     );
 }
 
-interface MedicationCardProps {
+export interface MedicationCardProps {
     medication: MedicationAdherenceReport;
 }
 
-function MedicationCard({ medication }: MedicationCardProps) {
+export function MedicationCard({ medication }: MedicationCardProps) {
     const adherencePercentage = medication.total_scheduled > 0
         ? Math.round((medication.total_taken / medication.total_scheduled) * 100)
         : 0;

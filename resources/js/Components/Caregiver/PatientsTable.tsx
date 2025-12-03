@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { Check, X, Eye } from 'lucide-react';
+import { Check, X, ArrowRight } from 'lucide-react';
 import type { CaregiverPatient } from '@/types/caregiver';
 
 interface PatientsTableProps {
@@ -139,11 +139,11 @@ export function PatientsTable({
                                         {relationship.status === 'active' && (
                                             <button
                                                 type="button"
-                                                className="btn btn-sm btn-ghost"
+                                                className="btn btn-sm btn-primary"
                                                 onClick={() => handleViewPatient(relationship)}
-                                                title="Ver Detalhes"
+                                                title="Acessar Paciente"
                                             >
-                                                <Eye className="w-4 h-4" />
+                                                <ArrowRight className="w-4 h-4" />
                                             </button>
                                         )}
                                     </div>
@@ -212,11 +212,11 @@ export function PatientsTable({
                                 {relationship.status === 'active' && (
                                     <button
                                         type="button"
-                                        className="btn btn-sm btn-ghost"
+                                        className="btn btn-sm btn-primary"
                                         onClick={() => handleViewPatient(relationship)}
-                                        title="Ver Detalhes"
+                                        title="Acessar Paciente"
                                     >
-                                        <Eye className="w-4 h-4" />
+                                        <ArrowRight className="w-4 h-4" />
                                     </button>
                                 )}
                             </div>

@@ -439,10 +439,6 @@ class HealthAssistantService
                                 'description' => 'Limite de estoque baixo para alertas (geralmente 5-10)',
                                 'minimum' => 0,
                             ],
-                            'notes' => [
-                                'type' => 'string',
-                                'description' => 'Observações adicionais sobre o medicamento (opcional)',
-                            ],
                             'search_step' => [
                                 'type' => 'boolean',
                                 'description' => 'true se esta chamada é apenas para buscar medicamentos por nome',

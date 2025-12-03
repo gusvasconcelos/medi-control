@@ -2,14 +2,15 @@
 
 namespace App\Services;
 
-use App\Jobs\CheckUserMedicationInteractionsJob;
-use App\Models\InteractionAlert;
+use App\Models\User;
 use App\Models\Medication;
 use App\Models\UserMedication;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\InteractionAlert;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
+use App\Jobs\CheckUserMedicationInteractionsJob;
 
 class UserMedicationService
 {
@@ -25,12 +26,22 @@ class UserMedicationService
 
         $endDate = $data->get('end_date', today()->format('Y-m-d'));
 
-        return $this->userMedication
+        $userId = $data->get('user_id', auth('web')->id());
+
+        $logsDate = $data->get('logs_date');
+
+        return UserMedication::query()
+            ->disableUserScope()
+            ->where('user_id', $userId)
             ->with([
                 'medication',
-                'logs' => function ($query) use ($startDate, $endDate) {
-                    $query->whereDate('scheduled_at', '>=', $startDate)
-                        ->whereDate('scheduled_at', '<=', $endDate);
+                'logs' => function ($query) use ($startDate, $endDate, $logsDate) {
+                    if ($logsDate) {
+                        $query->whereDate('scheduled_at', $logsDate);
+                    } else {
+                        $query->whereDate('scheduled_at', '>=', $startDate)
+                            ->whereDate('scheduled_at', '<=', $endDate);
+                    }
                 }
             ])
             ->where('active', true)
@@ -112,19 +123,10 @@ class UserMedicationService
     {
         $medication = Medication::findOrFail($data->get('medication_id'));
 
-        $userMedication = $this->userMedication->create([
-            'medication_id' => $medication->id,
-            'dosage' => $data->get('dosage'),
-            'time_slots' => $data->get('time_slots'),
-            'via_administration' => $data->get('via_administration'),
-            'start_date' => $data->get('start_date'),
-            'end_date' => $data->get('end_date'),
-            'initial_stock' => $data->get('initial_stock'),
-            'current_stock' => $data->get('initial_stock'),
-            'low_stock_threshold' => $data->get('low_stock_threshold'),
-            'notes' => $data->get('notes'),
-            'active' => true,
-        ]);
+        $data->put('medication_id', $medication->id);
+        $data->put('current_stock', $data->get('initial_stock'));
+
+        $userMedication = UserMedication::create($data->all());
 
         CheckUserMedicationInteractionsJob::dispatch($userMedication->id);
 
@@ -135,21 +137,31 @@ class UserMedicationService
         return $userMedication;
     }
 
-    public function show(int $id): UserMedication
+    public function show(int $id, ?int $userId = null): UserMedication
     {
-        return $this->userMedication
+        $query = $userId
+            ? $this->userMedication->disableUserScope()->where('user_id', $userId)
+            : $this->userMedication;
+
+        return $query
             ->with(['medication', 'logs'])
             ->findOrFail($id);
     }
 
     public function update(Collection $data, int $id): UserMedication
     {
-        $userMedication = $this->userMedication
+        $userId = $data->get('user_id');
+
+        $query = $userId
+            ? $this->userMedication->disableUserScope()->where('user_id', $userId)
+            : $this->userMedication;
+
+        $userMedication = $query
             ->with(['medication', 'logs'])
             ->findOrFail($id);
 
         $oldTimeSlots = $userMedication->time_slots ?? [];
-        $userMedication->update($data->all());
+        $userMedication->update($data->except('user_id')->all());
 
         $newTimeSlots = $data->get('time_slots', $oldTimeSlots);
         if ($oldTimeSlots !== $newTimeSlots) {
@@ -161,42 +173,29 @@ class UserMedicationService
         return $userMedication;
     }
 
-    public function destroy(int $id): void
+    public function destroy(int $id, ?int $userId = null): void
     {
-        $userMedication = $this->userMedication
+        $query = $userId
+            ? $this->userMedication->disableUserScope()->where('user_id', $userId)
+            : $this->userMedication;
+
+        $userMedication = $query
             ->with(['medication', 'logs'])
             ->findOrFail($id);
 
         $userMedication->update(['active' => false]);
     }
 
-    /**
-     * @return array{
-     *     adherence_rate: float,
-     *     total_taken: int,
-     *     total_lost: int,
-     *     total_pending: int,
-     *     punctuality_rate: float,
-     *     medications: array<int, array{
-     *         id: int,
-     *         name: string,
-     *         dosage: string,
-     *         time_slots: array<string>,
-     *         total_scheduled: int,
-     *         total_taken: int,
-     *         total_lost: int,
-     *         total_pending: int,
-     *         punctuality_rate: float,
-     *         interactions: array<int, array{id: int, name: string, severity: string}>
-     *     }>
-     * }
-     */
     public function getAdherenceReport(Collection $data): array
     {
         $startDate = Carbon::parse($data->get('start_date'))->startOfDay();
+
         $endDate = Carbon::parse($data->get('end_date'))->startOfDay();
 
-        $userMedications = $this->userMedication
+        $userId = $data->get('user_id', auth('web')->id());
+
+        $userMedications = UserMedication::query()
+            ->disableUserScope()
             ->with(['medication', 'logs' => function ($query) use ($startDate, $endDate) {
                 $query->whereDate('scheduled_at', '>=', $startDate)
                     ->whereDate('scheduled_at', '<=', $endDate);
@@ -207,6 +206,7 @@ class UserMedicationService
                 $query->whereNull('end_date')
                     ->orWhere('end_date', '>=', $startDate);
             })
+            ->where('user_id', $userId)
             ->get();
 
         $interactionAlerts = $this->getInteractionAlerts($userMedications);
@@ -401,14 +401,14 @@ class UserMedicationService
         $startDate = Carbon::parse($data->get('start_date'))->format('d/m/Y');
         $endDate = Carbon::parse($data->get('end_date'))->format('d/m/Y');
         $generatedAt = Carbon::now()->format('d/m/Y H:i');
-        $userName = auth('web')->user()?->name;
+        $userId = $data->get('user_id', auth('web')->id());
 
         return Pdf::loadView('pdf.adherence-report', [
             'report' => $report,
             'startDate' => $startDate,
             'endDate' => $endDate,
             'generatedAt' => $generatedAt,
-            'userName' => $userName,
+            'userName' => User::find($userId)?->name,
         ])->setPaper('a4', 'portrait');
     }
 }

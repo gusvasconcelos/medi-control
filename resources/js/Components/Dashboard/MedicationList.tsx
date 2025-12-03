@@ -8,6 +8,8 @@ interface MedicationListProps {
     isLoading: boolean;
     onMarkAsTaken: (medication: UserMedication, scheduledTime: string) => void;
     onViewDetails: (id: number) => void;
+    canMarkAsTaken?: boolean;
+    canViewDetails?: boolean;
 }
 
 export const MedicationList: React.FC<MedicationListProps> = ({
@@ -15,6 +17,8 @@ export const MedicationList: React.FC<MedicationListProps> = ({
     isLoading,
     onMarkAsTaken,
     onViewDetails,
+    canMarkAsTaken = true,
+    canViewDetails = true,
 }) => {
     if (isLoading) {
         return (
@@ -67,6 +71,8 @@ export const MedicationList: React.FC<MedicationListProps> = ({
                     medication={medication}
                     onMarkAsTaken={onMarkAsTaken}
                     onViewDetails={onViewDetails}
+                    canMarkAsTaken={canMarkAsTaken}
+                    canViewDetails={canViewDetails}
                 />
             ))}
         </div>

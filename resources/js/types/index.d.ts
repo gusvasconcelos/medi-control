@@ -176,7 +176,6 @@ export interface UserMedication {
     initial_stock: number;
     current_stock: number;
     low_stock_threshold: number;
-    notes?: string | null;
     active: boolean;
     created_at: string;
     updated_at: string;
@@ -194,7 +193,6 @@ export interface CreateUserMedicationData {
     initial_stock: number;
     current_stock: number;
     low_stock_threshold: number;
-    notes?: string;
 }
 
 /**

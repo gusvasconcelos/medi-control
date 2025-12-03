@@ -30,7 +30,6 @@ class UserMedicationFactory extends Factory
             'initial_stock' => fake()->numberBetween(10, 100),
             'current_stock' => fake()->numberBetween(0, 100),
             'low_stock_threshold' => fake()->numberBetween(3, 10),
-            'notes' => fake()->optional()->sentence(),
             'active' => true,
         ];
     }

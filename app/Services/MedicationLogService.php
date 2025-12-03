@@ -7,20 +7,29 @@ use App\Models\MedicationLog;
 use App\Models\Notification;
 use App\Models\NotificationPreference;
 use App\Models\UserMedication;
+use App\Services\CaregiverActionService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 class MedicationLogService
 {
     public function __construct(
-        protected MedicationLog $medicationLog
+        protected MedicationLog $medicationLog,
+        protected CaregiverActionService $caregiverActionService
     ) {
         $this->medicationLog = $medicationLog;
+        $this->caregiverActionService = $caregiverActionService;
     }
 
     public function logTaken(Collection $data, int $userMedicationId): void
     {
-        $userMedication = UserMedication::findOrFail($userMedicationId);
+        $userId = $data->get('user_id', auth('web')->id());
+
+        $userMedication = UserMedication::query()
+            ->disableUserScope()
+            ->where('id', $userMedicationId)
+            ->where('user_id', $userId)
+            ->firstOrFail();
 
         $takenAt = $data->get('taken_at')
             ? Carbon::parse($data->get('taken_at'))
@@ -40,7 +49,6 @@ class MedicationLogService
             'scheduled_at' => $scheduledAt,
             'taken_at' => $takenAt,
             'status' => 'taken',
-            'notes' => $data->get('notes'),
         ]);
 
         $userMedication->decrement('current_stock');

@@ -110,6 +110,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'description' => 'Usuário paciente que gerencia seus próprios medicamentos e cuidadores'
             ]
         );
+
         $patient->givePermissionTo([
             // Manage own medications
             'medications.view_own',

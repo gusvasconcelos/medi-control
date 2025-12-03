@@ -27,7 +27,6 @@ interface DetailsModalState {
 export default function Dashboard({ auth }: PageProps) {
     const user = auth?.user;
     const userRoles = user?.roles || [];
-    const { showInfo } = useToast();
     const [selectedDate, setSelectedDate] = useState<Date>(today());
     const [confirmModal, setConfirmModal] = useState<ConfirmModalState>({
         medication: null,
@@ -92,7 +91,6 @@ export default function Dashboard({ auth }: PageProps) {
 
             await markAsTaken(confirmModal.medication.id, {
                 takenAt: formattedTakenAt,
-                notes: data.notes,
             });
             const modal = document.getElementById('confirm-medication-modal') as HTMLElement & { hidePopover?: () => void };
             if (modal?.hidePopover) {

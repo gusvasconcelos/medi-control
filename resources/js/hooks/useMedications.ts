@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/useToast';
 import type { UserMedication, DailyMetrics } from '@/types';
 
 export interface LogMedicationData {
+    userId?: number;
     takenAt?: string;
     notes?: string;
 }
@@ -97,8 +98,8 @@ export const useMedications = (selectedDate: string): UseMedicationsReturn => {
         async (medicationId: number, data?: LogMedicationData) => {
             try {
                 await medicationService.logMedicationTaken(medicationId, {
+                    user_id: data?.userId ?? undefined,
                     taken_at: data?.takenAt,
-                    notes: data?.notes,
                 });
                 showSuccess('Medicamento marcado como tomado!');
                 await fetchData();

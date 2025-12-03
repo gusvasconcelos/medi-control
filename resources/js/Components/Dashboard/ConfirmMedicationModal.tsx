@@ -5,7 +5,6 @@ import type { UserMedication } from '@/types';
 
 export interface ConfirmMedicationData {
     takenAt: string;
-    notes: string;
 }
 
 interface ConfirmMedicationModalProps {
@@ -24,11 +23,10 @@ export function ConfirmMedicationModal({
     onClose,
 }: ConfirmMedicationModalProps) {
     const [takenAt, setTakenAt] = useState(scheduledTime || '');
-    const [notes, setNotes] = useState('');
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        onConfirm({ takenAt, notes });
+        onConfirm({ takenAt });
     };
 
     const closeModal = () => {
@@ -119,21 +117,6 @@ export function ConfirmMedicationModal({
                         className="input input-bordered w-full"
                         required
                         aria-required="true"
-                    />
-                </div>
-
-                <div className="form-control w-full">
-                    <label htmlFor="notes" className="label">
-                        <span className="label-text font-medium">Observações</span>
-                    </label>
-                    <textarea
-                        id="notes"
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        className="textarea textarea-bordered w-full"
-                        rows={3}
-                        placeholder="Adicione observações sobre a tomada do medicamento (opcional)"
-                        aria-label="Observações sobre a tomada do medicamento"
                     />
                 </div>
             </form>
