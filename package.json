@@ -30,6 +30,7 @@
         "react": "^19.2.0",
         "react-datepicker": "^8.9.0",
         "react-dom": "^19.2.0",
+        "react-hook-form": "^7.67.0",
         "react-markdown": "^10.1.0",
         "react-onesignal": "^3.4.0",
         "tailwindcss": "^4.0.0",

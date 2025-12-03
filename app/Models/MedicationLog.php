@@ -17,7 +17,6 @@ class MedicationLog extends Model
         'scheduled_at',
         'taken_at',
         'status',
-        'notes',
     ];
 
     protected $casts = [

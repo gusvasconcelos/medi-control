@@ -203,30 +203,6 @@ export function MedicationDetailsModal({
                     </div>
                 </section>
 
-                {/* Notes */}
-                {medication.notes && (
-                    <section>
-                        <SectionHeader icon={Info} title="Observações" />
-                        <div className="bg-base-200/50 rounded-lg p-4">
-                            <p className="text-base-content/80 whitespace-pre-wrap">
-                                {medication.notes}
-                            </p>
-                        </div>
-                    </section>
-                )}
-
-                {/* Warnings */}
-                {med?.warnings && (
-                    <section>
-                        <SectionHeader icon={AlertTriangle} title="Avisos" />
-                        <div className="bg-warning/10 border border-warning/30 rounded-lg p-4">
-                            <p className="text-warning-content whitespace-pre-wrap">
-                                {med.warnings}
-                            </p>
-                        </div>
-                    </section>
-                )}
-
                 {/* Interactions */}
                 {med?.interactions && med.interactions.length > 0 && (
                     <section>

@@ -7,6 +7,8 @@ interface MedicationCardProps {
     medication: UserMedication;
     onMarkAsTaken: (medication: UserMedication, scheduledTime: string) => void;
     onViewDetails: (id: number) => void;
+    canMarkAsTaken?: boolean;
+    canViewDetails?: boolean;
 }
 
 type MedicationStatus = 'taken' | 'pending' | 'missed' | 'partial';
@@ -26,6 +28,8 @@ export function MedicationCard({
     medication,
     onMarkAsTaken,
     onViewDetails,
+    canMarkAsTaken = true,
+    canViewDetails = true,
 }: MedicationCardProps) {
     const getColorForMedication = (id: number): string => {
         return MEDICATION_COLORS[id % MEDICATION_COLORS.length];
@@ -48,14 +52,14 @@ export function MedicationCard({
             return 'pending';
         }
 
-        const takenCount = todayLogs.filter(
-            (log) => log.status === 'taken'
-        ).length;
         const totalTimeSlots = medication.time_slots.length;
+
+        const takenLogs = todayLogs.filter((log) => log.status === 'taken');
+        const takenCount = takenLogs.length;
 
         const hasMissed = todayLogs.some((log) => log.status === 'missed');
 
-        if (takenCount === totalTimeSlots) {
+        if (takenCount >= totalTimeSlots) {
             return 'taken';
         }
 
@@ -98,6 +102,9 @@ export function MedicationCard({
     };
 
     const handleMarkAsTaken = () => {
+        if (!canMarkAsTaken) {
+            return;
+        }
         const scheduledTime = getNextPendingTime();
         onMarkAsTaken(medication, scheduledTime);
     };
@@ -153,7 +160,7 @@ export function MedicationCard({
                                     >
                                         <CheckCircle2 className="size-6" />
                                     </div>
-                                ) : (
+                                ) : (canMarkAsTaken || canViewDetails) ? (
                                     <div className="dropdown dropdown-end">
                                         <button
                                             type="button"
@@ -167,31 +174,35 @@ export function MedicationCard({
                                             tabIndex={0}
                                             className="menu dropdown-content z-10 w-52 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg"
                                         >
-                                            <li>
-                                                <button
-                                                    type="button"
-                                                    onClick={handleMarkAsTaken}
-                                                    className="flex items-center gap-2"
-                                                >
-                                                    <CheckCircle2 className="size-6 text-success" />
-                                                    <span>Marcar como tomado</span>
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        onViewDetails(medication.id)
-                                                    }
-                                                    className="flex items-center gap-2"
-                                                >
-                                                    <Info className="size-6 text-info" />
-                                                    <span>Ver detalhes</span>
-                                                </button>
-                                            </li>
+                                            {canMarkAsTaken && (
+                                                <li>
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleMarkAsTaken}
+                                                        className="flex items-center gap-2"
+                                                    >
+                                                        <CheckCircle2 className="size-6 text-success" />
+                                                        <span>Marcar como tomado</span>
+                                                    </button>
+                                                </li>
+                                            )}
+                                            {canViewDetails && (
+                                                <li>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            onViewDetails(medication.id)
+                                                        }
+                                                        className="flex items-center gap-2"
+                                                    >
+                                                        <Info className="size-6 text-info" />
+                                                        <span>Ver detalhes</span>
+                                                    </button>
+                                                </li>
+                                            )}
                                         </ul>
                                     </div>
-                                )}
+                                ) : null}
                             </div>
 
                             <div className="hidden items-center gap-4 sm:flex">
@@ -208,25 +219,29 @@ export function MedicationCard({
                                     </div>
                                 ) : (
                                     <>
-                                        <button
-                                            type="button"
-                                            onClick={handleMarkAsTaken}
-                                            className="btn btn-circle btn-ghost btn-sm text-success hover:bg-success/10"
-                                            aria-label="Marcar como tomado"
-                                        >
-                                            <CheckCircle2 className="size-4 sm:size-6" />
-                                        </button>
+                                        {canMarkAsTaken && (
+                                            <button
+                                                type="button"
+                                                onClick={handleMarkAsTaken}
+                                                className="btn btn-circle btn-ghost btn-sm text-success hover:bg-success/10"
+                                                aria-label="Marcar como tomado"
+                                            >
+                                                <CheckCircle2 className="size-4 sm:size-6" />
+                                            </button>
+                                        )}
 
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                onViewDetails(medication.id)
-                                            }
-                                            className="btn btn-circle btn-ghost btn-sm text-info hover:bg-info/10"
-                                            aria-label="Ver detalhes do medicamento"
-                                        >
-                                            <Info className="size-4 sm:size-6" />
-                                        </button>
+                                        {canViewDetails && (
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    onViewDetails(medication.id)
+                                                }
+                                                className="btn btn-circle btn-ghost btn-sm text-info hover:bg-info/10"
+                                                aria-label="Ver detalhes do medicamento"
+                                            >
+                                                <Info className="size-4 sm:size-6" />
+                                            </button>
+                                        )}
                                     </>
                                 )}
                             </div>

@@ -24,7 +24,6 @@ class StoreMedicationRequest extends FormRequest
             'strength' => ['nullable', 'string', 'max:255'],
             'form' => ['required', 'string', Rule::in(['tablet', 'capsule', 'liquid', 'injection', 'cream', 'drops', 'spray', 'inhaler', 'patch', 'other'])],
             'description' => ['nullable', 'string', 'max:4000'],
-            'warnings' => ['nullable', 'string', 'max:1000'],
         ];
     }
 
@@ -40,7 +39,6 @@ class StoreMedicationRequest extends FormRequest
             'strength' => __('validation.attributes.strength'),
             'form' => __('validation.attributes.form'),
             'description' => __('validation.attributes.description'),
-            'warnings' => __('validation.attributes.warnings'),
         ];
     }
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 
 import { AuthenticatedLayout } from '@/Layouts/AuthenticatedLayout';
@@ -8,20 +8,24 @@ import { MedicationFormModal } from '@/Components/Medications/MedicationFormModa
 import { DeleteMedicationModal } from '@/Components/Medications/DeleteMedicationModal';
 import { MedicationDetailsModal } from '@/Components/Medications/MedicationDetailsModal';
 import { getNavigationItems } from '@/config/navigation';
-import { medicationService } from '@/services/medicationService';
 import { useToast } from '@/hooks/useToast';
 import type { PageProps, Medication } from '@/types';
 
-export default function MedicationsIndex({ auth }: PageProps) {
+interface MedicationsPageProps extends PageProps {
+    medications: {
+        data: Medication[];
+        current_page: number;
+        last_page: number;
+        total: number;
+        per_page: number;
+    };
+}
+
+export default function MedicationsIndex({ auth, medications: medicationsProp }: MedicationsPageProps) {
     const user = auth?.user;
     const userRoles = user?.roles || [];
-    const { showSuccess, showError } = useToast();
+    const { showError } = useToast();
 
-    const [medications, setMedications] = useState<Medication[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [lastPage, setLastPage] = useState(1);
-    const [total, setTotal] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchTimeout, setSearchTimeout] = useState<ReturnType<typeof setTimeout> | null>(
         null
@@ -30,9 +34,11 @@ export default function MedicationsIndex({ auth }: PageProps) {
     const [formModal, setFormModal] = useState<{
         isOpen: boolean;
         medication: Medication | null;
+        isSubmitting: boolean;
     }>({
         isOpen: false,
         medication: null,
+        isSubmitting: false,
     });
 
     const [deleteModal, setDeleteModal] = useState<{
@@ -51,32 +57,7 @@ export default function MedicationsIndex({ auth }: PageProps) {
         medication: null,
     });
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const fetchMedications = async (page = 1, search = '') => {
-        setIsLoading(true);
-        try {
-            const response = await medicationService.getMedications({
-                page,
-                per_page: 15,
-                search: search || undefined,
-            });
-
-            setMedications(response.data);
-            setCurrentPage(response.current_page);
-            setLastPage(response.last_page);
-            setTotal(response.total);
-        } catch (error) {
-            showError('Erro ao carregar medicamentos');
-            console.error('Error fetching medications:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchMedications(currentPage, searchQuery);
-    }, [currentPage]);
+    const deleteForm = useForm({});
 
     useEffect(() => {
         if (searchTimeout) {
@@ -84,8 +65,18 @@ export default function MedicationsIndex({ auth }: PageProps) {
         }
 
         const timeout = setTimeout(() => {
-            setCurrentPage(1);
-            fetchMedications(1, searchQuery);
+            router.get(
+                '/medications',
+                {
+                    q: searchQuery ? JSON.stringify({ text: searchQuery }) : undefined,
+                    per_page: 15,
+                    page: 1,
+                },
+                {
+                    preserveState: true,
+                    preserveScroll: true,
+                }
+            );
         }, 500);
 
         setSearchTimeout(timeout);
@@ -96,52 +87,63 @@ export default function MedicationsIndex({ auth }: PageProps) {
     }, [searchQuery]);
 
     const handleOpenAddModal = () => {
-        setFormModal({ isOpen: true, medication: null });
+        setFormModal({ isOpen: true, medication: null, isSubmitting: false });
     };
 
     const handleOpenEditModal = (medication: Medication) => {
-        setFormModal({ isOpen: true, medication });
+        setFormModal({ isOpen: true, medication, isSubmitting: false });
     };
 
     const handleCloseFormModal = () => {
-        if (!isSubmitting) {
-            const modal = document.getElementById(
-                'medication-form-modal'
-            ) as HTMLElement & { hidePopover?: () => void };
-            modal?.hidePopover?.();
-            setTimeout(() => {
-                setFormModal({ isOpen: false, medication: null });
-            }, 300);
-        }
+        const modal = document.getElementById(
+            'medication-form-modal'
+        ) as HTMLElement & { hidePopover?: () => void };
+        modal?.hidePopover?.();
+        setTimeout(() => {
+            setFormModal({ isOpen: false, medication: null, isSubmitting: false });
+        }, 300);
     };
 
     const handleSubmitForm = async (data: Omit<Medication, 'id'>) => {
-        setIsSubmitting(true);
-        try {
-            if (formModal.medication) {
-                await medicationService.updateMedication(
-                    formModal.medication.id,
-                    data
-                );
-                showSuccess('Medicamento atualizado com sucesso');
-            } else {
-                await medicationService.createMedication(data);
-                showSuccess('Medicamento criado com sucesso');
-            }
+        setFormModal((prev) => ({ ...prev, isSubmitting: true }));
 
-            const modal = document.getElementById(
-                'medication-form-modal'
-            ) as HTMLElement & { hidePopover?: () => void };
-            modal?.hidePopover?.();
-            setTimeout(() => {
-                setFormModal({ isOpen: false, medication: null });
-                fetchMedications(currentPage, searchQuery);
-            }, 300);
-        } catch (error) {
-            showError('Erro ao salvar medicamento');
-            console.error('Error saving medication:', error);
-        } finally {
-            setIsSubmitting(false);
+        const formData = {
+            ...data,
+            interactions: data.interactions ? JSON.stringify(data.interactions) : null,
+        };
+
+        if (formModal.medication) {
+            router.put(`/medications/${formModal.medication.id}`, formData as any, {
+                onSuccess: () => {
+                    const modal = document.getElementById(
+                        'medication-form-modal'
+                    ) as HTMLElement & { hidePopover?: () => void };
+                    modal?.hidePopover?.();
+                    setTimeout(() => {
+                        setFormModal({ isOpen: false, medication: null, isSubmitting: false });
+                    }, 300);
+                },
+                onError: () => {
+                    showError('Erro ao salvar medicamento');
+                    setFormModal((prev) => ({ ...prev, isSubmitting: false }));
+                },
+            });
+        } else {
+            router.post('/medications', formData as any, {
+                onSuccess: () => {
+                    const modal = document.getElementById(
+                        'medication-form-modal'
+                    ) as HTMLElement & { hidePopover?: () => void };
+                    modal?.hidePopover?.();
+                    setTimeout(() => {
+                        setFormModal({ isOpen: false, medication: null, isSubmitting: false });
+                    }, 300);
+                },
+                onError: () => {
+                    showError('Erro ao salvar medicamento');
+                    setFormModal((prev) => ({ ...prev, isSubmitting: false }));
+                },
+            });
         }
     };
 
@@ -150,7 +152,7 @@ export default function MedicationsIndex({ auth }: PageProps) {
     };
 
     const handleCloseDeleteModal = () => {
-        if (!isSubmitting) {
+        if (!deleteForm.processing) {
             setDeleteModal({ isOpen: false, medication: null });
             const modal = document.getElementById('delete-medication-modal') as HTMLDialogElement;
             modal?.close?.();
@@ -160,25 +162,18 @@ export default function MedicationsIndex({ auth }: PageProps) {
     const handleConfirmDelete = async () => {
         if (!deleteModal.medication) return;
 
-        setIsSubmitting(true);
-        try {
-            await medicationService.deleteMedication(
-                deleteModal.medication.id
-            );
-            showSuccess('Medicamento deletado com sucesso');
-
-            const modal = document.getElementById('delete-medication-modal') as HTMLDialogElement;
-            modal?.close?.();
-            setTimeout(() => {
-                handleCloseDeleteModal();
-                fetchMedications(currentPage, searchQuery);
-            }, 300);
-        } catch (error) {
-            showError('Erro ao deletar medicamento');
-            console.error('Error deleting medication:', error);
-        } finally {
-            setIsSubmitting(false);
-        }
+        deleteForm.delete(`/medications/${deleteModal.medication.id}`, {
+            onSuccess: () => {
+                const modal = document.getElementById('delete-medication-modal') as HTMLDialogElement;
+                modal?.close?.();
+                setTimeout(() => {
+                    handleCloseDeleteModal();
+                }, 300);
+            },
+            onError: () => {
+                showError('Erro ao deletar medicamento');
+            },
+        });
     };
 
     const handleOpenDetailsModal = (medication: Medication) => {
@@ -196,18 +191,31 @@ export default function MedicationsIndex({ auth }: PageProps) {
     };
 
     const handlePageChange = (page: number) => {
-        if (page >= 1 && page <= lastPage) {
-            setCurrentPage(page);
+        if (page >= 1 && page <= medicationsProp.last_page) {
+            router.get(
+                '/medications',
+                {
+                    q: searchQuery ? JSON.stringify({ text: searchQuery }) : undefined,
+                    per_page: 15,
+                    page,
+                },
+                {
+                    preserveState: true,
+                    preserveScroll: true,
+                }
+            );
         }
     };
 
     const renderPagination = () => {
-        if (lastPage <= 1) return null;
+        const { current_page, last_page, total, per_page } = medicationsProp;
+
+        if (last_page <= 1) return null;
 
         const pages = [];
         const maxPagesToShow = 5;
-        let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-        let endPage = Math.min(lastPage, startPage + maxPagesToShow - 1);
+        let startPage = Math.max(1, current_page - Math.floor(maxPagesToShow / 2));
+        let endPage = Math.min(last_page, startPage + maxPagesToShow - 1);
 
         if (endPage - startPage < maxPagesToShow - 1) {
             startPage = Math.max(1, endPage - maxPagesToShow + 1);
@@ -218,7 +226,7 @@ export default function MedicationsIndex({ auth }: PageProps) {
                 <button
                     key={i}
                     type="button"
-                    className={`btn btn-sm ${i === currentPage ? 'btn-primary' : 'btn-ghost'}`}
+                    className={`btn btn-sm ${i === current_page ? 'btn-primary' : 'btn-ghost'}`}
                     onClick={() => handlePageChange(i)}
                 >
                     {i}
@@ -233,11 +241,11 @@ export default function MedicationsIndex({ auth }: PageProps) {
                     <div className="text-sm text-base-content/60">
                         Mostrando{' '}
                         <span className="font-medium">
-                            {(currentPage - 1) * 15 + 1}
+                            {(current_page - 1) * per_page + 1}
                         </span>{' '}
                         a{' '}
                         <span className="font-medium">
-                            {Math.min(currentPage * 15, total)}
+                            {Math.min(current_page * per_page, total)}
                         </span>{' '}
                         de <span className="font-medium">{total}</span>{' '}
                         medicamentos
@@ -246,8 +254,8 @@ export default function MedicationsIndex({ auth }: PageProps) {
                         <button
                             type="button"
                             className="join-item btn btn-sm"
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
+                            onClick={() => handlePageChange(current_page - 1)}
+                            disabled={current_page === 1}
                         >
                             «
                         </button>
@@ -255,8 +263,8 @@ export default function MedicationsIndex({ auth }: PageProps) {
                         <button
                             type="button"
                             className="join-item btn btn-sm"
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === lastPage}
+                            onClick={() => handlePageChange(current_page + 1)}
+                            disabled={current_page === last_page}
                         >
                             »
                         </button>
@@ -266,14 +274,14 @@ export default function MedicationsIndex({ auth }: PageProps) {
                 {/* Mobile Pagination */}
                 <div className="sm:hidden flex flex-col gap-3">
                     <div className="text-xs text-center text-base-content/60">
-                        Página {currentPage} de {lastPage} ({total} medicamentos)
+                        Página {current_page} de {last_page} ({total} medicamentos)
                     </div>
                     <div className="flex justify-center gap-2">
                         <button
                             type="button"
                             className="btn btn-sm"
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
+                            onClick={() => handlePageChange(current_page - 1)}
+                            disabled={current_page === 1}
                         >
                             ← Anterior
                         </button>
@@ -282,13 +290,13 @@ export default function MedicationsIndex({ auth }: PageProps) {
                             className="btn btn-sm btn-primary"
                             disabled
                         >
-                            {currentPage}
+                            {current_page}
                         </button>
                         <button
                             type="button"
                             className="btn btn-sm"
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === lastPage}
+                            onClick={() => handlePageChange(current_page + 1)}
+                            disabled={current_page === last_page}
                         >
                             Próxima →
                         </button>
@@ -347,8 +355,8 @@ export default function MedicationsIndex({ auth }: PageProps) {
 
                         <div className="rounded-lg bg-base-200 p-4">
                             <MedicationsTable
-                                medications={medications}
-                                isLoading={isLoading}
+                                medications={medicationsProp.data}
+                                isLoading={false}
                                 onView={handleOpenDetailsModal}
                                 onEdit={handleOpenEditModal}
                                 onDelete={handleOpenDeleteModal}
@@ -362,7 +370,7 @@ export default function MedicationsIndex({ auth }: PageProps) {
                 <MedicationFormModal
                     medication={formModal.medication}
                     isOpen={formModal.isOpen}
-                    isSubmitting={isSubmitting}
+                    isSubmitting={formModal.isSubmitting}
                     onClose={handleCloseFormModal}
                     onSubmit={handleSubmitForm}
                 />
@@ -370,7 +378,7 @@ export default function MedicationsIndex({ auth }: PageProps) {
                 <DeleteMedicationModal
                     medication={deleteModal.medication}
                     isOpen={deleteModal.isOpen}
-                    isSubmitting={isSubmitting}
+                    isSubmitting={deleteForm.processing}
                     onClose={handleCloseDeleteModal}
                     onConfirm={handleConfirmDelete}
                 />
@@ -384,4 +392,3 @@ export default function MedicationsIndex({ auth }: PageProps) {
         </>
     );
 }
-

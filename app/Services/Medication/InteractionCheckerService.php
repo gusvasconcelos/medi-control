@@ -22,7 +22,7 @@ class InteractionCheckerService
     /**
      * @param Collection<int, int> $medicationIds
      */
-    public function checkInteractionsWithOpenAI(Medication $mainMedication, Collection $medicationIds): InteractionCheckResult
+    public function checkInteractionsWithOpenAI(Medication $medication, Collection $medicationIds): InteractionCheckResult
     {
         $medicationsToCheck = $this->medication
             ->whereIn('id', $medicationIds->toArray())

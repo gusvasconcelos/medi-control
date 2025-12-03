@@ -395,9 +395,10 @@ export function Sidebar({ navItems, isMobileOpen = false, onMobileClose, onLogou
         localStorage.setItem('sidebar-collapsed', String(newState));
     };
 
-    // Bloqueia o scroll do body quando a sidebar estiver expandida
+    // Bloqueia o scroll do body quando a sidebar mobile estiver aberta
     useEffect(() => {
-        if (!isCollapsed) {
+        // Só aplica o bloqueio de scroll em mobile quando o drawer está aberto
+        if (isMobileOpen) {
             // Salva o scroll atual antes de bloquear
             const scrollY = window.scrollY;
             document.body.style.position = 'fixed';
@@ -405,7 +406,7 @@ export function Sidebar({ navItems, isMobileOpen = false, onMobileClose, onLogou
             document.body.style.width = '100%';
             document.body.style.overflow = 'hidden';
         } else {
-            // Restaura o scroll quando a sidebar for colapsada
+            // Restaura o scroll quando a sidebar for fechada
             const scrollY = document.body.style.top;
             document.body.style.position = '';
             document.body.style.top = '';
@@ -427,7 +428,7 @@ export function Sidebar({ navItems, isMobileOpen = false, onMobileClose, onLogou
                 window.scrollTo(0, parseInt(scrollY || '0') * -1);
             }
         };
-    }, [isCollapsed]);
+    }, [isMobileOpen]);
 
     // Fecha o drawer mobile ao clicar em um link
     const handleLinkClick = () => {

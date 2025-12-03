@@ -41,7 +41,6 @@ export function AddMedicationModal({ onSuccess }: AddMedicationModalProps) {
         timeSlots: ['08:00'],
         startDate: dateString(today()),
         endDate: '',
-        notes: '',
         initialStock: 0,
         currentStock: 0,
         lowStockThreshold: 5,
@@ -165,7 +164,6 @@ export function AddMedicationModal({ onSuccess }: AddMedicationModalProps) {
                 initial_stock: formData.initialStock,
                 current_stock: formData.currentStock,
                 low_stock_threshold: formData.lowStockThreshold,
-                notes: formData.notes || undefined,
             };
 
             await medicationService.createUserMedication(data);
@@ -204,7 +202,6 @@ export function AddMedicationModal({ onSuccess }: AddMedicationModalProps) {
                 timeSlots: ['08:00'],
                 startDate: dateString(today()),
                 endDate: '',
-                notes: '',
                 initialStock: 0,
                 currentStock: 0,
                 lowStockThreshold: 5,
@@ -285,7 +282,6 @@ export function AddMedicationModal({ onSuccess }: AddMedicationModalProps) {
                     timeSlots={formData.timeSlots}
                     startDate={formData.startDate}
                     endDate={formData.endDate}
-                    notes={formData.notes}
                     errors={errors}
                     onChange={updateFormData}
                 />

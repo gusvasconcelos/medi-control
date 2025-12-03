@@ -31,8 +31,6 @@ class MedicationFactory extends Factory
             'strength' => fake()->randomElement(['100mg', '250mg', '500mg', '1g']),
             'form' => fake()->randomElement($forms),
             'description' => fake()->sentence(),
-            'warnings' => fake()->sentence(),
-            'interactions' => null,
         ];
     }
 }

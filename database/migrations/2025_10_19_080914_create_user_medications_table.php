@@ -30,7 +30,6 @@ return new class () extends Migration {
             $table->integer('initial_stock')->default(0);
             $table->integer('current_stock')->default(0);
             $table->integer('low_stock_threshold')->default(5);
-            $table->text('notes')->nullable();
             $table->boolean('active')->default(true);
             $table->timestamps();
 

@@ -3,6 +3,8 @@
 namespace App\Services\Medication;
 
 use App\Models\Medication;
+use App\Models\MedicationInteraction;
+use App\Services\Medication\MedicationInteractionService;
 use App\Packages\Filter\FilterQ;
 use Illuminate\Support\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -11,7 +13,6 @@ class MedicationService
 {
     public function __construct(
         private Medication $medication,
-        private InteractionCheckerService $interactionChecker
     ) {
     }
 
@@ -30,79 +31,42 @@ class MedicationService
         return $this->medication->create($data->toArray());
     }
 
-    public function update(Collection $data, int $id): Medication
+    public function update(Collection $data, Medication $medication): Medication
     {
-        $medication = $this->medication->findOrFail($id);
-
         $medication->update($data->toArray());
-
-        $medication->refresh();
 
         return $medication;
     }
 
-    public function destroy(int $id): void
+    public function destroy(Medication $medication): void
     {
-        $this->medication->findOrFail($id)->delete();
+        $medication->delete();
     }
 
-    /**
-     * @param Collection<string, mixed> $data
-     * @param int $mainMedicationId
-     * @return array<string, array<int, array<string, mixed>>>
-     */
-    public function checkInteractions(Collection $data, int $mainMedicationId): array
+    public function checkInteractions(Collection $data, Medication $medication): Collection
     {
-        $mainMedication = $this->medication->findOrFail($mainMedicationId);
+        $medicationIds = $data->get('medications', []);
 
-        $requestedIds = collect($data->get('medications', []));
-        $existingInteractions = collect($mainMedication->interactions ?? []);
+        /** @var Collection<int, MedicationInteraction> $existingInteractions */
+        $existingInteractions = MedicationInteraction::with('owner', 'related')
+            ->where('owner_id', $medication->id)
+            ->whereIn('related_id', $medicationIds)
+            ->get();
 
-        if ($existingInteractions->isNotEmpty()) {
-            $alreadyCheckedIds = $existingInteractions->pluck('medication_id');
+        $uncheckedMedicationIds = array_diff(
+            $medicationIds,
+            $existingInteractions->pluck('related_id')->toArray()
+        );
 
-            $allChecked = $requestedIds->every(
-                fn (int $id) => $alreadyCheckedIds->contains($id)
+        $newInteractions = collect();
+
+        if (!empty($uncheckedMedicationIds)) {
+            $newInteractions = MedicationInteractionService::check(
+                $medication,
+                collect($uncheckedMedicationIds)
             );
-
-            if ($allChecked) {
-                $cachedResults = $existingInteractions
-                    ->whereIn('medication_id', $requestedIds->toArray())
-                    ->values();
-
-                $medicationIds = $cachedResults->pluck('medication_id')->unique();
-                $medications = $this->medication->whereIn('id', $medicationIds)->get()->keyBy('id');
-
-                $enrichedResults = $cachedResults->map(function ($interaction) use ($medications) {
-                    $medication = $medications->get($interaction['medication_id']);
-                    return array_merge($interaction, [
-                        'medication_name' => $medication->name ?? 'Unknown',
-                    ]);
-                });
-
-                return ['interactions' => $enrichedResults->toArray()];
-            }
         }
 
-        $uncheckedMedicationIds = $this->interactionChecker->filterAlreadyChecked(
-            $mainMedication,
-            $requestedIds
-        );
-
-        if ($uncheckedMedicationIds->isEmpty()) {
-            return ['interactions' => []];
-        }
-
-        $checkResult = $this->interactionChecker->checkInteractionsWithOpenAI(
-            $mainMedication,
-            $uncheckedMedicationIds
-        );
-
-        $this->interactionChecker->persistInteractionsBidirectionally(
-            $mainMedication,
-            $checkResult->interactions
-        );
-
-        return $this->interactionChecker->buildInteractionResponse($checkResult->interactions);
+        return $existingInteractions->merge($newInteractions);
     }
 }

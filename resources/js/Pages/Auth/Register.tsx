@@ -39,7 +39,7 @@ export default function Register({ auth }: PageProps) {
         } catch (error: unknown) {
             if (axios.isAxiosError(error) && error.response) {
                 if (error.response.status === 422) {
-                    setErrors(error.response.data.details || {});
+                    setErrors(error.response.data.errors || {});
                     showError(error.response.data.message);
                 } else {
                     showError('Ocorreu um erro ao criar sua conta. Tente novamente.');

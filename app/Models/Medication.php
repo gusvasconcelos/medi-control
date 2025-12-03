@@ -21,16 +21,15 @@ class Medication extends Model
         'strength',
         'form',
         'description',
-        'warnings',
-        'interactions',
-    ];
-
-    protected $casts = [
-        'interactions' => 'array',
     ];
 
     public function userMedications(): HasMany
     {
         return $this->hasMany(UserMedication::class);
+    }
+
+    public function interactions(): HasMany
+    {
+        return $this->hasMany(MedicationInteraction::class);
     }
 }

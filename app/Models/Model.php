@@ -31,7 +31,7 @@ abstract class Model extends EloquentModel
 
         $unaccented = cast()->unaccent($value);
 
-        return $query->orWhereRaw("UNACCENT({$field})::text ILIKE ?", ["%{$unaccented}%"]);
+        return $query->whereRaw("UNACCENT({$field})::text ILIKE ?", ["%{$unaccented}%"]);
     }
 
     #[Scope]
@@ -43,9 +43,11 @@ abstract class Model extends EloquentModel
 
         $searchable = $this->searchable ?: $this->getFillable();
 
-        $query->where(function (Builder $q) use ($searchable, $value) {
+        $unaccented = cast()->unaccent($value);
+
+        $query->where(function (Builder $q) use ($searchable, $unaccented) {
             foreach ($searchable as $field) {
-                $q->whereFullText($field, $value);
+                $q->orWhereRaw("UNACCENT({$field})::text ILIKE ?", ["%{$unaccented}%"]);
             }
         });
 

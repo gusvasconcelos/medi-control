@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 import { ResponsiveModal } from '@/Components/Modal/ResponsiveModal';
 import type { Medication } from '@/types';
 
@@ -10,6 +11,8 @@ interface MedicationFormModalProps {
     onSubmit: (data: Omit<Medication, 'id'>) => Promise<void>;
 }
 
+type MedicationFormData = Omit<Medication, 'id'>;
+
 export function MedicationFormModal({
     medication,
     isOpen,
@@ -17,23 +20,30 @@ export function MedicationFormModal({
     onClose,
     onSubmit,
 }: MedicationFormModalProps) {
-    const [formData, setFormData] = useState<Omit<Medication, 'id'>>({
-        name: '',
-        active_principle: '',
-        manufacturer: '',
-        category: '',
-        therapeutic_class: '',
-        registration_number: '',
-        strength: '',
-        form: '',
-        description: '',
-        warnings: '',
-        interactions: [],
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { errors },
+    } = useForm<MedicationFormData>({
+        defaultValues: {
+            name: '',
+            active_principle: '',
+            manufacturer: '',
+            category: '',
+            therapeutic_class: '',
+            registration_number: '',
+            strength: '',
+            form: '',
+            description: '',
+            warnings: '',
+            interactions: [],
+        },
     });
 
     useEffect(() => {
         if (medication) {
-            setFormData({
+            reset({
                 name: medication.name,
                 active_principle: medication.active_principle || '',
                 manufacturer: medication.manufacturer || '',
@@ -47,7 +57,7 @@ export function MedicationFormModal({
                 interactions: medication.interactions || [],
             });
         } else {
-            setFormData({
+            reset({
                 name: '',
                 active_principle: '',
                 manufacturer: '',
@@ -61,20 +71,10 @@ export function MedicationFormModal({
                 interactions: [],
             });
         }
-    }, [medication]);
+    }, [medication, reset]);
 
-    const handleChange = (
-        e: React.ChangeEvent<
-            HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-        >
-    ) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        await onSubmit(formData);
+    const onSubmitForm = async (data: MedicationFormData) => {
+        await onSubmit(data);
     };
 
     useEffect(() => {
@@ -120,7 +120,7 @@ export function MedicationFormModal({
             onClose={onClose}
             footer={footer}
         >
-            <form id="medication-form" onSubmit={handleSubmit}>
+            <form id="medication-form" onSubmit={handleSubmit(onSubmitForm)}>
                 <div className="mb-4 rounded-lg bg-base-200 p-3 text-xs sm:text-sm text-base-content/70">
                     <span className="text-error font-semibold">*</span> Campos obrigatórios
                 </div>
@@ -136,13 +136,13 @@ export function MedicationFormModal({
                             </label>
                             <input
                                 type="text"
-                                name="name"
                                 className="input input-bordered input-sm sm:input-md w-full"
-                                value={formData.name}
-                                onChange={handleChange}
-                                required
+                                {...register('name', { required: true })}
                                 disabled={isSubmitting}
                             />
+                            {errors.name && (
+                                <span className="text-error text-xs mt-1">Campo obrigatório</span>
+                            )}
                         </div>
 
                         <div className="form-control w-full">
@@ -153,13 +153,13 @@ export function MedicationFormModal({
                             </label>
                             <input
                                 type="text"
-                                name="active_principle"
                                 className="input input-bordered input-sm sm:input-md w-full"
-                                value={formData.active_principle || ''}
-                                onChange={handleChange}
-                                required
+                                {...register('active_principle', { required: true })}
                                 disabled={isSubmitting}
                             />
+                            {errors.active_principle && (
+                                <span className="text-error text-xs mt-1">Campo obrigatório</span>
+                            )}
                         </div>
                     </div>
 
@@ -173,13 +173,13 @@ export function MedicationFormModal({
                             </label>
                             <input
                                 type="text"
-                                name="manufacturer"
                                 className="input input-bordered input-sm sm:input-md w-full"
-                                value={formData.manufacturer || ''}
-                                onChange={handleChange}
-                                required
+                                {...register('manufacturer', { required: true })}
                                 disabled={isSubmitting}
                             />
+                            {errors.manufacturer && (
+                                <span className="text-error text-xs mt-1">Campo obrigatório</span>
+                            )}
                         </div>
 
                         <div className="form-control w-full">
@@ -190,13 +190,13 @@ export function MedicationFormModal({
                             </label>
                             <input
                                 type="text"
-                                name="category"
                                 className="input input-bordered input-sm sm:input-md w-full"
-                                value={formData.category || ''}
-                                onChange={handleChange}
-                                required
+                                {...register('category', { required: true })}
                                 disabled={isSubmitting}
                             />
+                            {errors.category && (
+                                <span className="text-error text-xs mt-1">Campo obrigatório</span>
+                            )}
                         </div>
                     </div>
 
@@ -210,10 +210,8 @@ export function MedicationFormModal({
                             </label>
                             <input
                                 type="text"
-                                name="therapeutic_class"
                                 className="input input-bordered input-sm sm:input-md w-full"
-                                value={formData.therapeutic_class || ''}
-                                onChange={handleChange}
+                                {...register('therapeutic_class')}
                                 disabled={isSubmitting}
                             />
                         </div>
@@ -226,13 +224,13 @@ export function MedicationFormModal({
                             </label>
                             <input
                                 type="text"
-                                name="registration_number"
                                 className="input input-bordered input-sm sm:input-md w-full"
-                                value={formData.registration_number || ''}
-                                onChange={handleChange}
-                                required
+                                {...register('registration_number', { required: true })}
                                 disabled={isSubmitting}
                             />
+                            {errors.registration_number && (
+                                <span className="text-error text-xs mt-1">Campo obrigatório</span>
+                            )}
                         </div>
                     </div>
 
@@ -245,11 +243,8 @@ export function MedicationFormModal({
                                 </span>
                             </label>
                             <select
-                                name="form"
                                 className="select select-bordered select-sm sm:select-md w-full"
-                                value={formData.form || ''}
-                                onChange={handleChange}
-                                required
+                                {...register('form', { required: true })}
                                 disabled={isSubmitting}
                             >
                                 <option value="">Selecione a forma</option>
@@ -264,6 +259,9 @@ export function MedicationFormModal({
                                 <option value="patch">Adesivo</option>
                                 <option value="other">Outro</option>
                             </select>
+                            {errors.form && (
+                                <span className="text-error text-xs mt-1">Campo obrigatório</span>
+                            )}
                         </div>
 
                         <div className="form-control w-full">
@@ -274,10 +272,8 @@ export function MedicationFormModal({
                             </label>
                             <input
                                 type="text"
-                                name="strength"
                                 className="input input-bordered input-sm sm:input-md w-full"
-                                value={formData.strength || ''}
-                                onChange={handleChange}
+                                {...register('strength')}
                                 disabled={isSubmitting}
                                 placeholder="Ex: 500mg, 10ml"
                             />
@@ -292,26 +288,8 @@ export function MedicationFormModal({
                             </span>
                         </label>
                         <textarea
-                            name="description"
                             className="textarea textarea-bordered h-20 text-sm w-full"
-                            value={formData.description || ''}
-                            onChange={handleChange}
-                            disabled={isSubmitting}
-                        />
-                    </div>
-
-                    {/* Avisos */}
-                    <div className="form-control w-full">
-                        <label className="label pb-1">
-                            <span className="label-text text-sm font-medium">
-                                Avisos
-                            </span>
-                        </label>
-                        <textarea
-                            name="warnings"
-                            className="textarea textarea-bordered h-20 text-sm w-full"
-                            value={formData.warnings || ''}
-                            onChange={handleChange}
+                            {...register('description')}
                             disabled={isSubmitting}
                         />
                     </div>

@@ -18,7 +18,7 @@ return new class () extends Migration {
             $table->string('category')->nullable();
             $table->string('therapeutic_class')->nullable();
             $table->string('registration_number')->unique();
-            $table->string('strength')->nullable(); // ex: "500mg", "10mg/ml"
+            $table->string('strength')->nullable();
             $table->enum('form', [
                 'tablet',
                 'capsule',
@@ -32,8 +32,6 @@ return new class () extends Migration {
                 'other',
             ])->nullable();
             $table->text('description')->nullable();
-            $table->text('warnings')->nullable();
-            $table->json('interactions')->nullable();
             $table->timestamps();
 
             $table->index('name');

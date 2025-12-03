@@ -9,7 +9,7 @@ class UpdateMedicationRequest extends FormRequest
 {
     public function rules(): array
     {
-        $medicationId = $this->route('id');
+        $medication = $this->route('medication');
 
         return [
             'name' => ['required', 'string', 'max:255'],
@@ -21,12 +21,11 @@ class UpdateMedicationRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('medications', 'registration_number')->ignore($medicationId),
+                Rule::unique('medications', 'registration_number')->ignore($medication->id),
             ],
             'strength' => ['nullable', 'string', 'max:255'],
             'form' => ['required', 'string', Rule::in(['tablet', 'capsule', 'liquid', 'injection', 'cream', 'drops', 'spray', 'inhaler', 'patch', 'other'])],
             'description' => ['nullable', 'string', 'max:4000'],
-            'warnings' => ['nullable', 'string', 'max:1000'],
         ];
     }
 
@@ -42,7 +41,6 @@ class UpdateMedicationRequest extends FormRequest
             'strength' => __('validation.attributes.strength'),
             'form' => __('validation.attributes.form'),
             'description' => __('validation.attributes.description'),
-            'warnings' => __('validation.attributes.warnings'),
         ];
     }
 }

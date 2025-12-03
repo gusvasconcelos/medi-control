@@ -16,7 +16,6 @@ return new class () extends Migration {
             $table->dateTime('scheduled_at');
             $table->dateTime('taken_at')->nullable();
             $table->enum('status', ['pending', 'taken', 'missed', 'skipped'])->default('pending');
-            $table->text('notes')->nullable();
             $table->timestamp('created_at')->useCurrent();
 
             $table->index('user_medication_id');

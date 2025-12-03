@@ -10,6 +10,7 @@ class StoreUserMedicationRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'user_id' => ['nullable', 'integer', 'exists:users,id'],
             'medication_id' => ['required', 'exists:medications,id'],
             'dosage' => ['required', 'string', 'max:255'],
             'time_slots' => ['required', 'array', 'min:1'],
@@ -20,13 +21,13 @@ class StoreUserMedicationRequest extends FormRequest
             'initial_stock' => ['required', 'integer', 'min:0'],
             'current_stock' => ['required', 'integer', 'min:0'],
             'low_stock_threshold' => ['required', 'integer', 'min:0'],
-            'notes' => ['nullable', 'string'],
         ];
     }
 
     public function attributes(): array
     {
         return [
+            'user_id' => __('validation.attributes.user_id'),
             'medication_id' => __('validation.attributes.medication_id'),
             'dosage' => __('validation.attributes.dosage'),
             'time_slots' => __('validation.attributes.time_slots'),
@@ -36,7 +37,6 @@ class StoreUserMedicationRequest extends FormRequest
             'initial_stock' => __('validation.attributes.initial_stock'),
             'current_stock' => __('validation.attributes.current_stock'),
             'low_stock_threshold' => __('validation.attributes.low_stock_threshold'),
-            'notes' => __('validation.attributes.notes'),
         ];
     }
 }

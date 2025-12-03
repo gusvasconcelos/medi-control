@@ -55,7 +55,7 @@ export const medicationService = {
      */
     async logMedicationTaken(
         medicationId: number,
-        data?: { taken_at?: string; notes?: string }
+        data?: { user_id?: number; taken_at?: string }
     ): Promise<void> {
         await axios.post(
             `${API_BASE}/user-medications/${medicationId}/log-taken`,
@@ -195,7 +195,8 @@ export const medicationService = {
      */
     async getAdherenceReport(
         startDate: string,
-        endDate: string
+        endDate: string,
+        userId?: number
     ): Promise<AdherenceReportResponse> {
         const response = await axios.get<AdherenceReportResponse>(
             `${API_BASE}/user-medications/adherence-reports`,
@@ -203,6 +204,7 @@ export const medicationService = {
                 params: {
                     start_date: startDate,
                     end_date: endDate,
+                    user_id: userId,
                 },
             }
         );
@@ -214,13 +216,15 @@ export const medicationService = {
      */
     async downloadAdherenceReportPdf(
         startDate: string,
-        endDate: string
+        endDate: string,
+        userId?: number
     ): Promise<Blob> {
         const response = await axios.post(
             `${API_BASE}/user-medications/adherence-reports`,
             {
                 start_date: startDate,
                 end_date: endDate,
+                user_id: userId,
             },
             {
                 responseType: 'blob',

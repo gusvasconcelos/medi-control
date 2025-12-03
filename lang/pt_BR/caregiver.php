@@ -9,4 +9,8 @@ return [
     'permissions_updated' => 'Permissões atualizadas com sucesso.',
     'cannot_invite_self' => 'Você não pode se convidar como cuidador.',
     'already_invited' => 'Este usuário já foi convidado ou já é seu cuidador.',
+    'medication_created' => 'Medicamento adicionado com sucesso.',
+    'medication_updated' => 'Medicamento atualizado com sucesso.',
+    'medication_deleted' => 'Medicamento removido com sucesso.',
+    'adherence_marked' => 'Adesão registrada com sucesso.',
 ];

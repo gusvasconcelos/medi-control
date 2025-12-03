@@ -28,7 +28,6 @@ class UserMedication extends Model
         'initial_stock',
         'current_stock',
         'low_stock_threshold',
-        'notes',
         'active',
     ];
 
@@ -37,6 +36,10 @@ class UserMedication extends Model
         'start_date' => 'date',
         'end_date' => 'date',
         'active' => 'boolean',
+    ];
+
+    protected $attributes = [
+        'active' => true,
     ];
 
     public function medication(): BelongsTo

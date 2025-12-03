@@ -107,10 +107,6 @@ export default function PatientsIndex({ auth }: PageProps) {
         }
     };
 
-    const handleView = (relationship: CaregiverPatient) => {
-        // TODO: Navigate to patient details or show modal
-        console.log('View patient:', relationship);
-    };
 
     const renderPagination = () => {
         if (lastPage <= 1) return null;
@@ -246,7 +242,6 @@ export default function PatientsIndex({ auth }: PageProps) {
                                     <PatientsTable
                                         patients={patients.filter((p) => p.status === 'active')}
                                         isLoading={isLoading}
-                                        onView={handleView}
                                     />
                                     {renderPagination()}
                                 </>

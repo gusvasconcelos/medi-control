@@ -25,8 +25,8 @@ trait UserRelation
         static::addGlobalScope(new UserScope());
 
         static::creating(function (Model $model) {
-            if (auth()->check()) {
-                $model->user_id = auth()->id();
+            if (auth('web')->check() && $model->isClean('user_id')) {
+                $model->user_id = auth('web')->id();
             }
         });
     }

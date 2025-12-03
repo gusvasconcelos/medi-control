@@ -110,6 +110,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'description' => 'Usuário paciente que gerencia seus próprios medicamentos e cuidadores'
             ]
         );
+
         $patient->givePermissionTo([
             // Manage own medications
             'medications.view_own',
@@ -134,16 +135,15 @@ class RolesAndPermissionsSeeder extends Seeder
                 'description' => 'Cuidador que pode gerenciar medicamentos de pacientes específicos conforme permissões concedidas'
             ]
         );
-        // Caregivers não recebem permissões por padrão
-        // As permissões são gerenciadas pelo paciente através da tabela caregiver_permissions
+
         $this->command->info('🎉 Roles and permissions created successfully!');
         $this->command->info('');
-        $this->command->info('📋 Roles criadas:');
-        $this->command->info('  - super-admin: Acesso total');
-        $this->command->info('  - admin: Gerenciamento do sistema');
-        $this->command->info('  - patient: Gerencia próprios medicamentos e cuidadores');
-        $this->command->info('  - caregiver: Acesso definido pelo paciente');
+        $this->command->info('📋 Roles created:');
+        $this->command->info('  - super-admin: Full access');
+        $this->command->info('  - admin: System management');
+        $this->command->info('  - patient: Manage own medications and caregivers');
+        $this->command->info('  - caregiver: Access defined by the patient');
         $this->command->info('');
-        $this->command->info('💡 Permissões para cuidadores são gerenciadas pelo paciente!');
+        $this->command->info('💡 Caregiver permissions are managed by the patient!');
     }
 }

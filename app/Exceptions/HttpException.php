@@ -10,7 +10,7 @@ class HttpException extends Exception
         string $message,
         protected int $statusCode,
         protected string $errorCode,
-        protected string|array|null $details = null
+        protected string|array|null $errors = null
     ) {
         parent::__construct($message);
     }
@@ -25,8 +25,8 @@ class HttpException extends Exception
         return $this->errorCode;
     }
 
-    public function getDetails(): string|array|null
+    public function getErrors(): string|array|null
     {
-        return $this->details;
+        return $this->errors;
     }
 }

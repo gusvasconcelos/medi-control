@@ -31,7 +31,6 @@ class MedicationLogControllerTest extends TestCase
         $response = $this->actingAsUser($user)->postJson(
             "/api/v1/user-medications/{$userMedication->id}/log-taken",
             [
-                'notes' => 'Tomei com água',
             ]
         );
 
@@ -43,7 +42,6 @@ class MedicationLogControllerTest extends TestCase
         $this->assertDatabaseHas('medication_logs', [
             'user_medication_id' => $userMedication->id,
             'status' => 'taken',
-            'notes' => 'Tomei com água',
         ]);
 
         $this->assertDatabaseHas('user_medications', [

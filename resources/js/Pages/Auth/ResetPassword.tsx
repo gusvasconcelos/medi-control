@@ -35,7 +35,7 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
             }, 1500);
         } catch (error: any) {
             if (error.response?.status === 422) {
-                setErrors(error.response.data.details || {});
+                setErrors(error.response.data.errors || {});
                 showError(error.response.data.message || 'Verifique os campos e tente novamente.');
             } else {
                 showError('Ocorreu um erro ao redefinir sua senha. O link pode ter expirado.');

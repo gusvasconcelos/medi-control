@@ -161,59 +161,6 @@ export function MedicationDetailsModal({
                         </p>
                     </div>
                 )}
-
-                {medication.warnings && (
-                    <div className="rounded-lg bg-warning/10 p-3 sm:p-4">
-                        <h4 className="mb-3 text-base sm:text-lg font-semibold text-warning">
-                            Avisos
-                        </h4>
-                        <p className="text-sm sm:text-base text-base-content/80 whitespace-pre-wrap">
-                            {medication.warnings}
-                        </p>
-                    </div>
-                )}
-
-                {medication.interactions &&
-                    medication.interactions.length > 0 && (
-                        <div className="rounded-lg bg-error/10 border border-error/30 p-3 sm:p-4">
-                            <h4 className="mb-3 text-base sm:text-lg font-semibold text-error">
-                                Interações Conhecidas
-                            </h4>
-                            <div className="space-y-3">
-                                {medication.interactions.map(
-                                    (interaction, index) => {
-                                        const medicationName = interaction.medication_name ||
-                                            interactionMedications[interaction.medication_id] ||
-                                            'Medicamento desconhecido';
-
-                                        return (
-                                            <div key={index} className="border-b border-error/20 last:border-0 pb-2 last:pb-0">
-                                                <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                                    <span className="font-semibold text-base-content">
-                                                        Com: {medicationName}
-                                                    </span>
-                                                    <span className={`badge badge-sm ${
-                                                        interaction.severity === 'severe' || interaction.severity === 'contraindicated'
-                                                            ? 'badge-error'
-                                                            : interaction.severity === 'moderate'
-                                                            ? 'badge-warning'
-                                                            : 'badge-info'
-                                                    }`}>
-                                                        {interaction.severity === 'severe' ? 'Severa' :
-                                                         interaction.severity === 'contraindicated' ? 'Contraindicação' :
-                                                         interaction.severity === 'moderate' ? 'Moderada' : 'Leve'}
-                                                    </span>
-                                                </div>
-                                                <p className="text-base-content/90 text-sm sm:text-base mt-1">
-                                                    {interaction.description}
-                                                </p>
-                                            </div>
-                                        );
-                                    }
-                                )}
-                            </div>
-                        </div>
-                    )}
             </div>
         </ResponsiveModal>
     );

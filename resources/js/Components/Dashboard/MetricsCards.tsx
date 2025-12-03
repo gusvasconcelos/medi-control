@@ -11,17 +11,17 @@ export const MetricsCards: React.FC<MetricsCardsProps> = ({ metrics }) => {
         {
             label: 'Doses programadas',
             value: metrics.totalMedications.toString(),
-            icon: '/storage/medication.png',
+            icon: '/storage/medication.webp',
         },
         {
             label: 'Doses tomadas',
             value: metrics.medicationsTaken.toString(),
-            icon: '/storage/checkmark.png',
+            icon: '/storage/checkmark.webp',
         },
         {
             label: 'Adesão ao tratamento',
             value: `${metrics.adherencePercentage}%`,
-            icon: '/storage/analytics.png',
+            icon: '/storage/analytics.webp',
         },
     ];
 

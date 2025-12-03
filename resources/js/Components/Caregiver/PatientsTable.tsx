@@ -1,4 +1,5 @@
-import { Check, X, Eye } from 'lucide-react';
+import { router } from '@inertiajs/react';
+import { Check, X, ArrowRight } from 'lucide-react';
 import type { CaregiverPatient } from '@/types/caregiver';
 
 interface PatientsTableProps {
@@ -34,6 +35,13 @@ export function PatientsTable({
     onReject,
     onView,
 }: PatientsTableProps) {
+    const handleViewPatient = (relationship: CaregiverPatient) => {
+        if (onView) {
+            onView(relationship);
+        } else if (relationship.patient?.id) {
+            router.visit(`/my-patients/${relationship.patient.id}`);
+        }
+    };
     if (isLoading) {
         return (
             <div className="flex items-center justify-center py-12">
@@ -128,14 +136,14 @@ export function PatientsTable({
                                                 )}
                                             </>
                                         )}
-                                        {relationship.status === 'active' && onView && (
+                                        {relationship.status === 'active' && (
                                             <button
                                                 type="button"
-                                                className="btn btn-sm btn-ghost"
-                                                onClick={() => onView(relationship)}
-                                                title="Ver Detalhes"
+                                                className="btn btn-sm btn-primary"
+                                                onClick={() => handleViewPatient(relationship)}
+                                                title="Acessar Paciente"
                                             >
-                                                <Eye className="w-4 h-4" />
+                                                <ArrowRight className="w-4 h-4" />
                                             </button>
                                         )}
                                     </div>
@@ -201,14 +209,14 @@ export function PatientsTable({
                                         )}
                                     </>
                                 )}
-                                {relationship.status === 'active' && onView && (
+                                {relationship.status === 'active' && (
                                     <button
                                         type="button"
-                                        className="btn btn-sm btn-ghost"
-                                        onClick={() => onView(relationship)}
-                                        title="Ver Detalhes"
+                                        className="btn btn-sm btn-primary"
+                                        onClick={() => handleViewPatient(relationship)}
+                                        title="Acessar Paciente"
                                     >
-                                        <Eye className="w-4 h-4" />
+                                        <ArrowRight className="w-4 h-4" />
                                     </button>
                                 )}
                             </div>
