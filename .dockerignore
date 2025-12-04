@@ -22,6 +22,7 @@ public/storage
 # Storage
 storage/app/*
 !storage/app/.gitignore
+!storage/app/public
 storage/framework/cache/*
 !storage/framework/cache/.gitignore
 storage/framework/sessions/*
