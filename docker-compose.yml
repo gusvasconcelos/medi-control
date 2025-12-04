@@ -24,6 +24,7 @@ services:
       REDIS_CLIENT: predis
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
 
       CACHE_STORE: redis
       SESSION_DRIVER: redis
@@ -31,6 +32,14 @@ services:
 
       PULSE_ENABLED: "true"
       RUN_MIGRATIONS: "true"
+
+      FILESYSTEM_DISK: minio
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_REGION: ${MINIO_REGION:-us-east-1}
+      MINIO_BUCKET: ${MINIO_BUCKET:-medicontrol}
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_URL: ${MINIO_URL}
 
     volumes:
       - ./storage/app/public:/app/storage/app/public
@@ -40,6 +49,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      minio:
+        condition: service_started
     networks:
       - medicontrol_network
 
@@ -65,6 +76,7 @@ services:
       REDIS_CLIENT: predis
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
 
       CACHE_STORE: redis
       QUEUE_CONNECTION: redis
@@ -108,12 +120,13 @@ services:
     image: redis:7-alpine
     container_name: medicontrol_redis
     restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD}
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -135,6 +148,84 @@ services:
     networks:
       - medicontrol_network
 
+  minio:
+    image: minio/minio:latest
+    container_name: medicontrol_minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9002:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - medicontrol_network
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-superadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-superadmin}
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: medicontrol_minio_init
+    depends_on:
+      minio:
+        condition: service_healthy
+    networks:
+      - medicontrol_network
+    environment:
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-superadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-superadmin}
+      MINIO_BUCKET: ${MINIO_BUCKET:-medicontrol}
+    entrypoint: /bin/sh
+    command: /init-minio.sh
+    volumes:
+      - ./docker/init-minio.sh:/init-minio.sh:ro
+    restart: "no"
+
+  reverb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: medicontrol_reverb
+    restart: unless-stopped
+    ports:
+      - "${REVERB_PORT:-8080}:8080"
+    command: php artisan reverb:start
+    environment:
+      APP_DEBUG: "false"
+      APP_KEY: ${APP_KEY}
+
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      REDIS_CLIENT: predis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+
+      RUN_MIGRATIONS: "false"
+
+      REVERB_APP_ID: ${REVERB_APP_ID}
+      REVERB_APP_KEY: ${REVERB_APP_KEY}
+      REVERB_APP_SECRET: ${REVERB_APP_SECRET}
+      REVERB_PASSWORD: ${REVERB_PASSWORD}
+    networks:
+      - medicontrol_network
+    depends_on:
+      - redis
+
 networks:
   medicontrol_network:
     driver: bridge
@@ -143,6 +234,8 @@ volumes:
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+  minio_data:
     driver: local
   logs:
     driver: local

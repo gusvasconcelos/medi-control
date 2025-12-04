@@ -39,7 +39,7 @@ export const fileService = {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('visibility', visibility);
-        formData.append('disk', 's3');
+        formData.append('disk', 'minio');
 
         const response = await axios.post<FileUploadResponse>(
             `${API_BASE}/users/${userId}/files`,
@@ -60,13 +60,10 @@ export const fileService = {
     getFileUrl(path?: string): string | undefined {
         if (!path) return undefined;
 
-        // If it's already a full URL, return it
         if (path.startsWith('http://') || path.startsWith('https://')) {
             return path;
         }
 
-        // Otherwise, assume it's a storage path and construct the URL
-        // Adjust this based on your storage configuration
         return path;
     },
 };

@@ -31,7 +31,7 @@ class FileService
             uploadedBy: auth()->id(),
             fileableType: get_class($fileable),
             originalName: $uploadedFileData->originalName,
-            disk: $data->get('disk', 's3')
+            disk: $data->get('disk', 'minio')
         );
 
         $metadata = array_merge(
@@ -44,7 +44,7 @@ class FileService
             'original_name' => $uploadedFileData->originalName,
             'stored_name' => $storageResult['stored_name'],
             'path' => $storageResult['path'],
-            'disk' => $data->get('disk', 's3'),
+            'disk' => $data->get('disk', 'minio'),
             'mime_type' => $uploadedFileData->mimeType,
             'size' => $uploadedFileData->size,
             'visibility' => $data->get('visibility', 'private'),

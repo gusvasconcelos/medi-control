@@ -70,25 +70,22 @@ class User extends Authenticatable
             return $this->profile_photo_path;
         }
 
-        // Determine the disk from files table or default to 's3'
         /** @var \App\Models\File|null $file */
         $file = $this->files()->where('path', $this->profile_photo_path)->first();
-        $disk = $file ? $file->disk : 's3';
+        $disk = $file?->disk ?? 'minio';
 
         // Try to generate URL based on disk type
         try {
-            if ($disk === 's3') {
-                return \App\Services\FileStorageService::generateTemporaryUrl(
+            if ($disk === 'minio') {
+                // Use public URL for MinIO (bucket is configured as public-read)
+                return \App\Services\FileStorageService::generatePublicUrl(
                     $this->profile_photo_path,
-                    's3',
-                    60 * 24 * 7 // 7 days
+                    'minio'
                 );
             }
 
-            // For local/public disk, use storage URL
             return \Illuminate\Support\Facades\Storage::disk($disk)->url($this->profile_photo_path);
         } catch (\Exception $e) {
-            // Fallback to public storage URL
             return url('/storage/' . $this->profile_photo_path);
         }
     }

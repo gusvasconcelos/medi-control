@@ -35,7 +35,7 @@ class FileFactory extends Factory
             'original_name' => $originalName,
             'stored_name' => fake()->uuid() . '.' . $extension,
             'path' => fake()->uuid() . '/user/' . fake()->uuid() . '.' . $extension,
-            'disk' => 's3',
+            'disk' => 'minio',
             'mime_type' => $mimeTypes[$extension],
             'size' => fake()->numberBetween(1024, 10485760),
             'visibility' => fake()->randomElement(['private', 'public', 'shared']),

@@ -17,7 +17,7 @@ return new class () extends Migration {
             $table->string('original_name');
             $table->string('stored_name');
             $table->string('path');
-            $table->string('disk')->default('s3');
+            $table->string('disk')->default('minio');
             $table->string('mime_type');
             $table->unsignedBigInteger('size');
             $table->enum('visibility', ['private', 'public', 'shared'])->default('private');

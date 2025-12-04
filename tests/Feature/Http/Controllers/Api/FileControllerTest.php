@@ -18,7 +18,7 @@ class FileControllerTest extends TestCase
     {
         parent::setUp();
 
-        Storage::fake('s3');
+        Storage::fake('minio');
     }
 
     public function test_index_returns_user_files(): void

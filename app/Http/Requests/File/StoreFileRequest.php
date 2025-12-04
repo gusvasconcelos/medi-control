@@ -14,7 +14,7 @@ class StoreFileRequest extends FormRequest
             'url' => ['required_without:file', 'nullable', 'url', 'max:2048'],
             'original_name' => ['nullable', 'string', 'max:255'],
             'visibility' => ['required', Rule::in(['private', 'public', 'shared'])],
-            'disk' => ['nullable', Rule::in(['s3', 'local'])],
+            'disk' => ['nullable', Rule::in(['s3', 'local', 'minio'])],
             'metadata' => ['nullable', 'array'],
         ];
     }
