@@ -6,7 +6,7 @@
 	{$CADDY_AUTO_HTTPS:auto_https off}
 }
 
-{$APP_URL:localhost:8000} {
+:{$PORT:8000} {
 	root * /app/public
 
 	# Enable PHP handler
