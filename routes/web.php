@@ -38,6 +38,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('medications')->name('medications.')->group(function () {
         Route::get('/', [MedicationController::class, 'index'])->name('index');
+        Route::get('/import', [MedicationController::class, 'createImport'])->name('import.create');
+        Route::post('/import', [MedicationController::class, 'storeImport'])->name('import.store');
         Route::get('/{medication}', [MedicationController::class, 'show'])->name('show');
         Route::post('/', [MedicationController::class, 'store'])->name('store');
         Route::put('/{medication}', [MedicationController::class, 'update'])->name('update');

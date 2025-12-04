@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Upload } from 'lucide-react';
 
 import { AuthenticatedLayout } from '@/Layouts/AuthenticatedLayout';
 import { MedicationsTable } from '@/Components/Medications/MedicationsTable';
@@ -88,6 +88,10 @@ export default function MedicationsIndex({ auth, medications: medicationsProp }:
 
     const handleOpenAddModal = () => {
         setFormModal({ isOpen: true, medication: null, isSubmitting: false });
+    };
+
+    const handleNavigateToImport = () => {
+        router.get('/medications/import');
     };
 
     const handleOpenEditModal = (medication: Medication) => {
@@ -326,15 +330,26 @@ export default function MedicationsIndex({ auth, medications: medicationsProp }:
                                         sistema
                                     </p>
                                 </div>
-                                <button
-                                    type="button"
-                                    className="btn btn-primary gap-2 w-full sm:w-auto"
-                                    onClick={handleOpenAddModal}
-                                >
-                                    <Plus className="h-5 w-5" />
-                                    <span className="hidden sm:inline">Adicionar Medicamento</span>
-                                    <span className="sm:hidden">Adicionar</span>
-                                </button>
+                                <div className="flex gap-2 w-full sm:w-auto">
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline gap-2 flex-1 sm:flex-initial"
+                                        onClick={handleNavigateToImport}
+                                    >
+                                        <Upload className="h-5 w-5" />
+                                        <span className="hidden sm:inline">Importar Medicamentos</span>
+                                        <span className="sm:hidden">Importar</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-primary gap-2 flex-1 sm:flex-initial"
+                                        onClick={handleOpenAddModal}
+                                    >
+                                        <Plus className="h-5 w-5" />
+                                        <span className="hidden sm:inline">Adicionar Medicamento</span>
+                                        <span className="sm:hidden">Adicionar</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 

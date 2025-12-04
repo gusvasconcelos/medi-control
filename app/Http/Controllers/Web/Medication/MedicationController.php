@@ -12,6 +12,7 @@ use App\Services\Medication\MedicationService;
 use App\Http\Requests\Medication\StoreMedicationRequest;
 use App\Http\Requests\Medication\UpdateMedicationRequest;
 use App\Http\Requests\Medication\CheckInteractionsRequest;
+use App\Http\Requests\Medication\ImportMedicationRequest;
 
 class MedicationController extends Controller
 {
@@ -72,5 +73,43 @@ class MedicationController extends Controller
         return Inertia::render('Medications/CheckInteractions', [
             'interactions' => $interactions,
         ]);
+    }
+
+    public function createImport(): Response
+    {
+        return Inertia::render('Medications/Import');
+    }
+
+    public function storeImport(ImportMedicationRequest $request): RedirectResponse
+    {
+        $validated = $request->validated();
+
+        $file = $request->file('file');
+
+        if (!$file) {
+            return redirect()->back()->withErrors(['file' => 'Arquivo não encontrado']);
+        }
+
+        $uploadedPath = $file->storeAs('imports', $file->getClientOriginalName(), 'local');
+
+        if (!$uploadedPath) {
+            return redirect()->back()->withErrors(['file' => 'Erro ao fazer upload do arquivo']);
+        }
+
+        $fullPath = storage_path('app/' . $uploadedPath);
+
+        $exitCode = \Artisan::call('medications:import', [
+            'file' => $fullPath,
+        ]);
+
+        if ($exitCode !== 0) {
+            return redirect()->back()->withErrors(['file' => 'Erro ao importar medicamentos']);
+        }
+
+        if (file_exists($fullPath)) {
+            unlink($fullPath);
+        }
+
+        return redirect()->route('medications.index')->with('success', 'Medicamentos importados com sucesso');
     }
 }
