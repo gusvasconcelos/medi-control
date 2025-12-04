@@ -2,6 +2,8 @@
     admin off
     frankenphp
     order php_server before file_server
+    # Disable automatic HTTPS when running behind a reverse proxy
+    {$CADDY_AUTO_HTTPS:auto_https off}
 }
 
 {$APP_URL:localhost:8000} {
