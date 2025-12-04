@@ -128,13 +128,13 @@ export default function MedicationsImport({ auth }: PageProps) {
                                         <p>
                                             O arquivo deve conter as colunas:
                                         </p>
-                                        <ul>
-                                            <li>nome_produto</li>
-                                            <li>principio_ativo</li>
-                                            <li>empresa_detentora_registro</li>
-                                            <li>categoria_regulatoria</li>
-                                            <li>classe_terapeutica</li>
-                                            <li>numero_registro_produto</li>
+                                        <ul className="list-disc list-inside">
+                                            <li className="font-semibold">nome_produto: <span className="font-normal">Nome do medicamento</span></li>
+                                            <li className="font-semibold">principio_ativo: <span className="font-normal">Princípio ativo</span></li>
+                                            <li className="font-semibold">empresa_detentora_registro: <span className="font-normal">Empresa detentora do registro</span></li>
+                                            <li className="font-semibold">categoria_regulatoria: <span className="font-normal">Categoria regulatoria</span></li>
+                                            <li className="font-semibold">classe_terapeutica: <span className="font-normal">Classe terapeutica</span></li>
+                                            <li className="font-semibold">numero_registro_produto: <span className="font-normal">Número de registro do produto</span></li>
                                         </ul>
                                         <p>
                                             O arquivo deve ser um CSV, XLS ou XLSX.
