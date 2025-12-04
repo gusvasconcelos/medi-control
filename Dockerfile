@@ -97,6 +97,14 @@ RUN { \
         echo 'opcache.fast_shutdown=1'; \
     } > /usr/local/etc/php/conf.d/opcache.ini
 
+# Configure PHP upload limits
+RUN { \
+        echo 'upload_max_filesize=20M'; \
+        echo 'post_max_size=20M'; \
+        echo 'memory_limit=256M'; \
+        echo 'max_execution_time=300'; \
+    } > /usr/local/etc/php/conf.d/uploads.ini
+
 # Set working directory
 WORKDIR /app
 
