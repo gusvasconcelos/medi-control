@@ -9,6 +9,15 @@
 :{$PORT:8000} {
 	root * /app/public
 
+    # Serve storage files directly (for file uploads)
+    @storage {
+      path /storage/*
+    }
+    handle @storage {
+      root * /app/storage/app/public
+      file_server
+    }
+
 	# Enable PHP handler
 	php_server
 
