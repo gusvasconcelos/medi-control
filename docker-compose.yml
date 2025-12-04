@@ -133,23 +133,6 @@ services:
     networks:
       - medicontrol_network
 
-  vite:
-    image: node:24-alpine
-    container_name: medicontrol_vite
-    restart: unless-stopped
-    working_dir: /app
-    entrypoint: ["/entrypoint-vite.sh"]
-    ports:
-      - "5173:5173"
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - ./docker/entrypoint-vite.sh:/entrypoint-vite.sh:ro
-    environment:
-      NODE_ENV: development
-    networks:
-      - medicontrol_network
-
   minio:
     image: minio/minio:latest
     container_name: medicontrol_minio
