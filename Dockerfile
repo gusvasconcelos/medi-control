@@ -119,10 +119,12 @@ RUN composer dump-autoload --optimize --no-scripts --no-dev
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache \
     && chmod -R 775 /app/storage /app/bootstrap/cache
 
-# Copy Caddyfile and create writable config directory
+# Copy Caddyfile and create writable config and data directories
 COPY docker/Caddyfile /etc/caddy/Caddyfile
 RUN chmod 644 /etc/caddy/Caddyfile && chown root:root /etc/caddy/Caddyfile \
-    && mkdir -p /config/caddy && chmod 775 /config/caddy && chown www-data:www-data /config/caddy
+    && mkdir -p /config/caddy /data/caddy /data/caddy/locks \
+    && chmod -R 775 /config/caddy /data/caddy \
+    && chown -R www-data:www-data /config/caddy /data/caddy
 
 # Copy entrypoint script
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
